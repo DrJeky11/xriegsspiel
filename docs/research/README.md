@@ -4,6 +4,8 @@
 
 Start with the [owner requirements](../product-requirements.md). The [manual review](manual-review.md) and later [CPE study](command-professional-edition.md) cover eight MCU-linked documents plus publisher references, with explicit coverage and gaps. CPE is a reference for our own platform; obtaining or integrating its software is outside the owner's requested direction.
 
+**Quest platform decision, 2026-09-16:** after reviewing the research on `codex/fullVR`, the owner selected continuing with WebXR and authorized merging the documentation. The [native versus WebXR assessment](quest-native-vs-webxr.md) traces the provisional Three.js choice, compares capabilities and installed PWA delivery, inventories a possible Unity migration, and separates engine work from unfinished game features. Continue the existing application; Unity/OpenXR is an alternative only if future evidence warrants reconsideration. No native migration, IWSDK adoption or PWA implementation was authorized. The audited snapshot passed 60 tests and typechecking; concurrent opponent changes arrived afterward and were not evaluated. Only read-only device/version checks occurred, not a headset usability or performance trial.
+
 The [dataset review](dataset-review.md) evaluates four owner-supplied PDFs: two dated tactics references, the Red Team Handbook, and a 2026 review of educational wargaming research. The [dataset catalog](../datasets/README.md) links the originals; D01–D04 in the source register pin editions and hashes.
 
 The [unit catalog and data-source review](unit-catalog-and-data-sources.md) locates named Command units, explains the boundary between manuals and equipment databases, verifies public WEG and service references, and proposes six initial unit families plus six later candidates. Source specifications remain separate from authored game movement and adjudication rules.
@@ -43,6 +45,7 @@ The [unit catalog and data-source review](unit-catalog-and-data-sources.md) loca
 | Build an adjustable Red opponent or decide whether to train a model | [Opponent research and implementation sequence](opponent-ai.md) |
 | Capture decisions, compare exercises, or prepare training datasets | [Data-capture design and implementation sequence](../design/data-capture.md) |
 | Build or evaluate Quest support | [Quest guide](quest3-development.md), then [prior project](prior-project-audit.md) |
+| Decide between WebXR, an installed web app and native Quest | [Current platform assessment and migration scope](quest-native-vs-webxr.md) |
 | Design a scenario or rules engine | [Manual review](manual-review.md), [games](wargames-and-rules.md), then [learning](learning-and-adjudication.md) |
 | Run, score or train on the eight maritime exercises | [Scenario library](../scenarios/README.md), [adjudication](../scenarios/adjudication.md), [AI and human evaluation](../scenarios/ai-evaluation.md) |
 | Verify a claim or refresh research | [Sources](sources.md), then [verification](verification.md) |
@@ -59,4 +62,4 @@ The [unit catalog and data-source review](unit-catalog-and-data-sources.md) loca
 
 ## Unresolved product questions
 
-The audience, team planning scope, hybrid adjudication, usability needs, original-platform direction, initial 2–4 players, tabletop-first experience, and eight-scenario authoring scope are confirmed in the [requirements](../product-requirements.md). Still open: which authored scenario to integrate first (SPR-H01 recommended), model detail, passthrough versus fully virtual surroundings, long-term stack, hackathon duration/rubric, team skills, device/room arrangement, network restrictions, instructor availability, and session length. Ask about these one at a time only when needed; scenario authoring is already authorized.
+The audience, team planning scope, hybrid adjudication, usability needs, original-platform direction, initial 2–4 players, tabletop-first experience, eight-scenario authoring scope, and continuing with WebXR are confirmed in the [requirements](../product-requirements.md). Still open: which authored scenario to integrate first (SPR-H01 recommended), model detail, passthrough versus fully virtual surroundings, optional framework/packaging choices, hackathon duration/rubric, team skills, device/room arrangement, network restrictions, instructor availability, and session length. Ask about these one at a time only when needed; scenario authoring is already authorized.

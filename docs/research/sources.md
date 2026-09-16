@@ -4,6 +4,8 @@ Sources were accessed **2026-09-15**, except the explicitly dated follow-ups bel
 
 ## Quest and web development
 
+The **2026-09-16** native/WebXR reassessment has a [dedicated source register, N01–N27](quest-native-vs-webxr.md#sources-and-retrieval-scope), including current immersive PWA packaging, interaction tooling, camera/depth APIs, colocation and native migration references. It qualifies the older browser capability descriptions below.
+
 ### Q01
 
 [Meta: Device-specific optimization, Quest 3 vs Quest 2](https://developers.meta.com/horizon/resources/device-optimization-comparison/) — updated 2026-05-11. Hardware table and mobile rendering constraints.

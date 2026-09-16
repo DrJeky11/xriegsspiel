@@ -1,10 +1,12 @@
 # Architecture options and initial recommendation
 
-**Status: proposed, not accepted.** Research baseline: 2026-09-15. The owner's confirmed priorities include Quest 3 first, browser participation, operational team planning, hybrid adjudication, and reducing rule-lookup/bookkeeping burden. See [requirements](../product-requirements.md). The VR approach and stack remain open.
+**Status: continuing with WebXR accepted on 2026-09-16; remaining architecture details are proposals unless separately confirmed.** Research baseline: 2026-09-15. The owner's confirmed priorities include Quest 3 first, browser participation, operational team planning, hybrid adjudication, and reducing rule-lookup/bookkeeping burden. See [requirements](../product-requirements.md). Passthrough versus fully virtual surroundings remains open.
+
+**Platform reassessment and owner decision, 2026-09-16:** use the [native versus WebXR study](quest-native-vs-webxr.md) for the application audit and accepted direction. Continue the existing Three.js/WebXR client, TypeScript rules and Node authority. IWSDK is not installed or selected. Unity/OpenXR remains the native candidate if future measured interaction, performance or required API evidence justifies reconsideration. Earlier passages below describing an entirely unimplemented API/repository are historical proposals, not the present implementation inventory.
 
 ## Recommendation
 
-Start with a **shared immersive tabletop**, a fully playable browser view, and a facilitator view. Evaluate a small first-person observation mode using the same scenario. For this scope, test **WebXR/IWSDK first** because it offers a direct web/Quest delivery path. Keep **Unity/OpenXR** as the native candidate if headset-specific features or richer first-person interaction prove central. The [Quest guide](quest3-development.md) documents the technical evidence.
+Continue the **shared immersive tabletop** and fully playable browser view using the existing **Three.js/WebXR** implementation. A facilitator view and any first-person observation mode remain future product work. Retain **Unity/OpenXR** as the native alternative if measured needs justify revisiting the choice. The [Quest guide](quest3-development.md) and [current assessment](quest-native-vs-webxr.md) document the evidence; this decision does not authorize an IWSDK migration.
 
 Browser users should be able to play a side and issue the same valid orders as headset users. A browser-only referee dashboard is useful, but it would not by itself satisfy the owner's requirement to use the wargame through a browser.
 
