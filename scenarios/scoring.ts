@@ -64,15 +64,16 @@ export function matches(p: Predicate, values: Record<string, number>): boolean {
 
 export function validateLibrary(input: unknown): asserts input is Library {
   check(record(input), 'Library must be an object');
-  check(input.schema === 'xriegsspiel-maritime-scenarios/1' && input.version === '1.0.0', 'Unsupported library version');
+  check(input.schema === 'xriegsspiel-maritime-scenarios/1' && ['1.0.0', '2.0.0'].includes(String(input.version)), 'Unsupported library version');
+  const geographic = input.version === '2.0.0';
   check(Array.isArray(input.scenarios) && input.scenarios.length === 8, 'Library must contain eight scenarios');
   check(nonempty(input.sourceRegister) && nonempty(input.rulesDocument), 'Missing provenance documents');
   const ids = new Set<string>(), pairs = new Set<string>();
   for (const s of input.scenarios as Scenario[]) {
     check(record(s) && nonempty(s.id) && !ids.has(s.id), 'Missing or duplicate scenario ID');
     ids.add(s.id);
-    check(s.version === '1.0.0' && s.rulesVersion === 'maritime-crisis-rules/1.0.0', 'Unsupported scenario/rules version');
-    check(nonempty(s.title) && nonempty(s.brief) && s.status === 'authored-unplaytested', 'Missing scenario metadata');
+    check(s.version === input.version && s.rulesVersion === (geographic ? 'maritime-geographic-rules/1.0.0' : 'maritime-crisis-rules/1.0.0'), 'Unsupported scenario/rules version');
+    check(nonempty(s.title) && nonempty(s.brief) && s.status === (geographic ? 'geographic-development' : 'authored-unplaytested'), 'Missing scenario metadata');
     check(Object.hasOwn(maps, s.region) && maps[s.region].includes(s.mapId), `Invalid map for ${s.id}`);
     check(['historical', 'fictional'].includes(s.type), 'Invalid scenario type');
     const pair = `${s.region}/${s.type}`;

@@ -117,7 +117,7 @@ try {
   }
   void initPlayableWorkspace({
     mapId:map.region.id,mapIds:REGIONS.map(r=>r.id),
-    view:{renderer:view.renderer,stats:view.stats,setGrabBindings:b=>view.setGrabBindings(b),cancelGrab:()=>view.cancelGrab(),setScenarioPieces:(...args)=>view.setScenarioPieces(...args),setScenarioPanel:p=>view.setScenarioPanel(p),reset:()=>view.reset(),exit:()=>view.exit(),scale:f=>view.zoom(f)},
+    view:{renderer:view.renderer,stats:view.stats,get inputDiagnostics(){return view.inputDiagnostics;},setGrabBindings:b=>view.setGrabBindings(b),cancelGrab:()=>view.cancelGrab(),setScenarioPieces:(...args)=>view.setScenarioPieces(...args),setScenarioPanel:p=>view.setScenarioPanel(p),reset:()=>view.reset(),exit:()=>view.exit(),scale:f=>view.zoom(f)},
     showMap:loadRegion,selectTile:id=>{const tile=map.tiles.find(t=>t.id===id);if(tile)select(tile);},
     focusTile:id=>{const tile=map.tiles.find(t=>t.id===id);if(tile)view.focusTile(tile);},
     coordinates:id=>map.tiles.find(t=>t.id===id),tileAt:(q,r)=>map.byAxial.get(axialKey({q,r}))?.id,openMenu:()=>menu.setOpen(true),

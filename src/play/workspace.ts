@@ -1,4 +1,7 @@
 import './workspace.css';
+import { CaptureClient } from '../capture/client.ts';
+import type { WebXRManager } from 'three';
+import { initOpponentWorkspace } from '../opponent/workspace.ts';
 import { unitVisual, UNIT_GROUPS, miniatureThumbnail } from './miniatures.ts';
 import type { Domain, UnitVisual } from './miniatures.ts';
 import { GrabTransaction } from './grab-transaction.ts';
@@ -21,7 +24,7 @@ import review from '../scenario/variant-review.json';
 
 export interface WorkspaceOptions {
   mapId: string; mapIds: string[];
-  view: { renderer: { domElement: HTMLCanvasElement }; stats: object; setGrabBindings:(bindings:GrabBindings)=>void; cancelGrab:()=>void; setScenarioPieces:(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void)=>void; setScenarioPanel:(panel:TablePanel)=>void; reset:()=>void; exit:()=>Promise<void>; scale:(factor:number)=>void };
+  view: { renderer: { domElement: HTMLCanvasElement; xr?: WebXRManager }; stats: object; readonly inputDiagnostics:object; setGrabBindings:(bindings:GrabBindings)=>void; cancelGrab:()=>void; setScenarioPieces:(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void)=>void; setScenarioPanel:(panel:TablePanel)=>void; reset:()=>void; exit:()=>Promise<void>; scale:(factor:number)=>void };
   showMap:(id:string)=>void; selectTile:(id:string)=>void; focusTile:(id:string)=>void;
   coordinates:(id:string)=>{q:number;r:number}|undefined; tileAt:(q:number,r:number)=>string|undefined;
   openMenu:()=>void; terrainActions:()=>PanelButton[];
@@ -35,6 +38,10 @@ const esc=(s:unknown)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 const json=async<T>(url:string):Promise<T>=>{const response=await fetch(url);if(!response.ok)throw new Error(`Unable to load ${url} (${response.status}).`);return response.json();};
 let rules:GeographicRules, envelope:ScenarioState, map:TerrainMap;
 const table=options.view;
+const capture=new CaptureClient(()=>table.renderer.xr?.isPresenting?(table.renderer.xr.getSession()?.environmentBlendMode==='opaque'?'vr':'mr'):'browser');
+let draftObservationId:string|undefined,draftRunId:string|undefined;
+table.renderer.xr?.addEventListener('sessionstart',()=>{capture.event('xr-start');void capture.flush();});
+table.renderer.xr?.addEventListener('sessionend',()=>{capture.event('xr-end');void capture.flush();});
 let stream:EventSource|null=null,generation=0,ready=false;
 const api=(action:string,mapId=map.id)=>`/api/maps/${action}?map=${encodeURIComponent(mapId)}`;
 let active:string|null=null, selectedTile:Cell|null=null, draft:Operation|null=null, draftPreview:Preview|null=null, draftRevision=0;
@@ -46,6 +53,8 @@ let xrDomain:Domain='ground',xrGroup='All';
 const visual=(id:string)=>visuals.get(id)!;
 let setup:Setup={mapId:options.mapId,year:2026,demo:false};
 let message='Loading geographic exercise…';
+let opponent:Awaited<ReturnType<typeof initOpponentWorkspace>>|null=null;
+let opponentMapSwitch=false;
 const state=()=>envelope.exercise;
 const piece=()=>state().pieces.find(p=>p.id===active);
 const short=(id:string)=>DEMO.find(d=>d.definitionId===id)?.label??rules.lab.definition(id).name.split(' ').slice(0,3).join(' ');
@@ -57,9 +66,10 @@ const status=(text:string)=>{message=text;$('status').textContent=text;};
 const original=document.querySelector<HTMLElement>('.terrain-menu-content')!;
 original.id='terrain-controls';original.hidden=true;
 const tabs=document.createElement('div');tabs.className='workspace-tabs';
-tabs.innerHTML='<button id="play-pieces-tab" type="button" aria-pressed="true">Pieces & orders</button><button id="play-terrain-tab" type="button" aria-pressed="false">Terrain & regions</button>';
+tabs.innerHTML='<button id="play-pieces-tab" type="button" aria-pressed="true">Pieces & orders</button><button id="play-terrain-tab" type="button" aria-pressed="false">Terrain & regions</button><button id="play-opponent-tab" type="button" aria-pressed="false">Play against AI</button>';
 original.before(tabs);
 const root=document.createElement('section');root.className='terrain-menu-content play-controls';root.id='piece-workspace';original.before(root);
+const opponentRoot=document.createElement('section');opponentRoot.className='terrain-menu-content opponent-controls';opponentRoot.hidden=true;original.before(opponentRoot);
 root.innerHTML=`<fieldset id="play-controls" disabled>
   <p class="eyebrow">Saved map exercise</p><h2 id="play-title">Loading…</h2><p id="play-map-label" hidden></p><p id="play-scale-label" class="muted"></p>
   <label>Map<select id="play-map-select"></select></label><div class="play-meta"><span id="play-year-label">2026</span><span id="play-turn-label">Turn 1</span><button id="play-setup-open" type="button">New exercise</button></div>
@@ -72,21 +82,26 @@ root.innerHTML=`<fieldset id="play-controls" disabled>
     <p id="play-result-count" class="muted"></p><div id="play-results"></div><div class="play-pager"><button id="play-previous">← Previous</button><button id="play-next">Next →</button></div>
   </section>
   <section class="play-inspector" aria-label="Piece inspector"><div class="play-inspector-head"><p class="eyebrow">Selection & orders</p><button id="play-clear">Clear</button></div><div id="play-details"></div><div id="play-orders"></div><div id="play-preview" aria-label="Order preview"></div></section>
+  <label>Intent for the next order <span class="muted">· optional, shared</span><input id="play-intent" maxlength="1000" placeholder="What are you trying to achieve?"></label>
   <div class="play-commit"><button id="play-confirm" disabled>Confirm order</button><button id="play-cancel" disabled>Cancel</button></div>
   <details><summary>Hex destination & keyboard</summary><form id="play-coordinates"><label>q<input id="play-q" type="number" value="0" required></label><label>r<input id="play-r" type="number" value="0" required></label><button>Preview / inspect hex</button></form><p>Map arrows and Q/E select neighbors. Enter confirms; Escape cancels.</p></details>
+  <details><summary>Quest controller controls · v2</summary><p>Use either controller. The index-finger trigger selects buttons. Hold the side grip button under your middle finger to pick up a unit: bring the controller close to a tile or miniature, or point its ray at one. Keep holding, lower it over the board until the preview turns green, then release the side grip.</p><p>To move the menu, hold the side grip on its top handle or title, move your controller, then release. Trigger − to hide it or Units + to reopen it. Bare-hand grabbing is not enabled.</p></details>
   <button id="play-advance" class="full">Preview next turn</button>
+  <button id="play-finish" class="full">Finish exercise & review</button>
   <div class="play-save"><button id="play-export">Export save</button><button id="play-import-open">Import save</button><input type="file" id="play-import" accept="application/json,.json" hidden></div>
   <details><summary>Committed history <span id="play-history-count"></span></summary><ol id="play-history"></ol></details>
   <details><summary>Rules & model limits</summary><div id="play-rules-copy"></div></details>
+  <p><a href="/review.html" id="play-review">Exercise review & reports ↗</a> · <a href="/scenario-review.html">Scenario learning records ↗</a></p><p id="play-capture" class="muted">Connecting to the exercise database…</p>
   <p><a href="/catalog.html">Full equipment evidence & database ↗</a></p>
 </fieldset><p id="play-status" role="status" aria-live="polite">Loading pieces…</p><p id="play-connection" class="muted">Connecting…</p><button id="play-retry" hidden>Retry loading map</button>
-<dialog id="play-setup-dialog"><form id="play-setup-form"><p class="eyebrow">This map only</p><h2>New exercise</h2><p>Replaces this map's pieces and progress. Other maps are kept. Export first if you want a portable copy of this run.</p><label>Scenario year<input id="play-year" type="number" min="1980" max="2026" value="2026" required></label><label class="play-checkbox"><input id="play-demo" type="checkbox"> Add a demonstration roster where eligible</label><div class="play-dialog-actions"><button type="button" id="play-setup-close">Cancel</button><button>Preview new exercise</button></div></form></dialog>`;
+<dialog id="play-setup-dialog"><form id="play-setup-form"><p class="eyebrow">This map only</p><h2>New exercise</h2><p>Replaces this map's pieces and progress. Other maps are kept. This run remains in the exercise archive.</p><label>Scenario year<input id="play-year" type="number" min="1980" max="2026" value="2026" required></label><label class="play-checkbox"><input id="play-demo" type="checkbox"> Add a demonstration roster where eligible</label><div class="play-dialog-actions"><button type="button" id="play-setup-close">Cancel</button><button>Preview new exercise</button></div></form></dialog>`;
 const bar=document.createElement('div');bar.className='play-command-bar';bar.hidden=true;
 bar.innerHTML='<p id="play-quick-status"></p><div><button id="play-quick-inspect">Pieces & orders</button><button id="play-quick-confirm" disabled>Confirm</button><button id="play-quick-cancel">Cancel</button></div>';
 document.querySelector('.terrain-layout')!.append(bar);
-function menuTab(pieces:boolean) {root.hidden=!pieces;original.hidden=pieces;$('pieces-tab').setAttribute('aria-pressed',String(pieces));$('terrain-tab').setAttribute('aria-pressed',String(!pieces));}
+function menuTab(pieces:boolean) {opponent?.deactivate();opponentRoot.hidden=true;root.hidden=!pieces;original.hidden=pieces;$('pieces-tab').setAttribute('aria-pressed',String(pieces));$('terrain-tab').setAttribute('aria-pressed',String(!pieces));$('opponent-tab').setAttribute('aria-pressed','false');if(ready)render();}
 function showPieces(){menuTab(true);options.openMenu();}
 $('pieces-tab').onclick=()=>menuTab(true);$('terrain-tab').onclick=()=>menuTab(false);
+$('opponent-tab').onclick=()=>{if(busy||pendingCommand)return;table.cancelGrab();opponent?.activate();};
 $('retry').onclick=()=>void openMap(map.id);
 $('quick-inspect').onclick=showPieces;$('quick-confirm').onclick=()=>void commit();$('quick-cancel').onclick=cancel;
 
@@ -102,6 +117,7 @@ function selectPiece(id:string) {
   if(selectedTile){options.selectTile(selectedTile.id);const coordinate=options.coordinates(selectedTile.id);if(coordinate){$<HTMLInputElement>('q').value=String(coordinate.q);$<HTMLInputElement>('r').value=String(coordinate.r);}}status('Legal destinations are marked. Choose a hex to preview movement; carried items preview unloading.');render();
 }
 function chooseCell(cell:Cell) {
+  if(opponent?.active){opponent.chooseTile(cell.id);return;}
   if(busy||!ready)return;selectedTile=cell;options.selectTile(cell.id);const coordinate=options.coordinates(cell.id)!;$<HTMLInputElement>('q').value=String(coordinate.q);$<HTMLInputElement>('r').value=String(coordinate.r);
   if(grab.active){const result=grab.preview(rules,envelope,cell.id);status(result.reason);render();return;}
   if(placement)preview({type:'action',action:{type:'deploy',definitionId:definition,force:$<HTMLSelectElement>('force').value as Force,tileId:cell.id,id:`${$<HTMLSelectElement>('force').value==='blue'?'B':'R'}-${crypto.randomUUID().slice(0,8)}`}});
@@ -110,8 +126,9 @@ function chooseCell(cell:Cell) {
 }
 function preview(operation:Operation) {
   if(busy||!ready)return;
-  clearDraft();draft=operation;draftRevision=envelope.revision;
+  clearDraft();draft=operation;draftRevision=envelope.revision;draftObservationId=envelope.observationId;draftRunId=envelope.runId;
   try {
+    if(operation.type==='action'&&envelope.runStatus==='archived')throw new Error('This exercise is finished. Open its review, or start a new exercise to continue.');
     if(operation.type==='action')draftPreview=rules.evaluate(state(),operation.action);
     else {
       const target=operation.type==='new'?rules.create(operation.setup):rules.import(operation.save);
@@ -119,17 +136,19 @@ function preview(operation:Operation) {
       draftPreview={allowed:true,cost:0,path:[],reason:`${operation.type==='new'?'Start':'Restore'} ${target.pieces.length} pieces on ${map.view.id==='focus'?map.region.focusName:map.region.name}, year ${target.year}, turn ${target.turn}. This replaces only this map's exercise; other maps are kept.`};
     }
   } catch(error) {draftPreview={allowed:false,cost:0,path:[],reason:error instanceof Error?error.message:'Invalid exercise.'};}
+  capture.event(draftPreview.allowed?'preview':'restriction',{action:operation.type==='action'?operation.action.type:operation.type,reasonCode:draftPreview.reasonCode??null});
   status(draftPreview.reason);render();
 }
 async function commit() {
   if(busy||!ready||!draft||!draftPreview?.allowed)return;
   if(!online){status('Connection unavailable. Reconnect before committing; the draft has spent nothing.');return;}
-  const command=pendingCommand??{id:crypto.randomUUID(),revision:draftRevision,operation:draft};pendingCommand=command;busy=true;render();
+  const command=pendingCommand??{id:crypto.randomUUID(),revision:draftRevision,operation:draft,runId:draftRunId,observationId:draftObservationId,rationale:$<HTMLInputElement>('intent').value.trim()||undefined};pendingCommand=command;busy=true;render();
   try {
-    const response=await fetch(api('command'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(command)});
+    const response=await fetch(api('command'),{method:'POST',headers:capture.headers(),body:JSON.stringify(command)});
     const result=await response.json();
-    if(result.state)acceptState(result.state);
-    if(!response.ok){clearDraft();throw new Error(result.error??'Order rejected.');}
+    if(result.state?.observationId)acceptState(result.state);
+    if(!response.ok){if(response.status<500)clearDraft();throw new Error(result.error??'Order rejected.');}
+    $<HTMLInputElement>('intent').value='';
     if(command.operation.type==='action'&&command.operation.action.type==='deploy'){active=command.operation.action.id;switchTab(false);}
     clearDraft();placement=false;xrPage=command.operation.type==='action'&&command.operation.action.type==='deploy'?'catalog':'main';status(`Saved · ${result.duplicate?'Request already applied': 'Order committed'} · revision ${envelope.revision}`);
   } catch(error) {
@@ -139,8 +158,10 @@ async function commit() {
 function acceptState(next:ScenarioState) {
   if(next.exercise.manifest.mapId!==map.id)throw new Error('Received state for another map.');
   if(envelope&&next.revision<envelope.revision)return;
-  const changed=envelope&&next.revision!==envelope.revision;
+  const changed=envelope&&(next.revision!==envelope.revision||next.runStatus!==envelope.runStatus);
   rules.assertVersion(next.exercise);envelope=next;ready=true;
+  capture.presented(next);$('capture').textContent=`${next.runStatus==='archived'?'Exercise finished · review available':'Database capture active'} · ${next.participantLabel??'Participant'} · run ${next.runId?.slice(0,8)??'unknown'}`;
+  $<HTMLAnchorElement>('review').href='/review.html?run='+encodeURIComponent(next.runId??'');
   if(changed&&!busy){table.cancelGrab();clearDraft();placement=false;status('Shared state updated. Review the refreshed pieces before issuing an order.');}
   if(active&&!piece()){active=null;selectedTile=null;}
   if(active){const p=piece()!,tileId=p.tileId??state().pieces.find(c=>c.id===p.carrierId)?.tileId;selectedTile=map.cells.find(c=>c.id===tileId)??null;if(selectedTile)options.selectTile(selectedTile.id);}
@@ -148,6 +169,7 @@ function acceptState(next:ScenarioState) {
 }
 async function openMap(id:string) {
   if(busy||pendingCommand||grab.active)return;
+  opponent?.onMap(id);
   table.cancelGrab();
   $('retry').hidden=true;
   const ticket=++generation;stream?.close();stream=null;ready=false;online=false;clearDraft();active=null;selectedTile=null;placement=false;xrPage='catalog';
@@ -158,8 +180,8 @@ async function openMap(id:string) {
     const initial=await json<ScenarioState>(api('state',id));if(ticket!==generation)return;
     online=true;acceptState(initial);status('Each map saves independently. Add pieces or select a token to begin.');render();
     stream=new EventSource(api('events',id));
-    stream.onopen=()=>{if(ticket===generation){online=true;render();}};
-    stream.onerror=()=>{if(ticket===generation){online=false;table.cancelGrab();render();}};
+    stream.onopen=()=>{if(ticket===generation){online=true;capture.event('reconnect');render();}};
+    stream.onerror=()=>{if(ticket===generation){online=false;capture.event('disconnect');table.cancelGrab();render();}};
     stream.onmessage=e=>{if(ticket!==generation)return;try{acceptState(JSON.parse(e.data));}catch(error){online=false;status(String(error));render();}};
   } catch(error){if(ticket!==generation)return;$('retry').hidden=false;status(String(error));table.setScenarioPanel({title:'MAP COULD NOT LOAD',lines:[String(error)],buttons:[{label:'Retry loading map',run:()=>void openMap(id)}]});}
 }
@@ -180,6 +202,7 @@ function renderCatalog() {
 }
 function render() {
   if(!ready||!envelope||!rules)return;
+  if(opponent?.active){bar.hidden=true;opponent.render();return;}
   $<HTMLFieldSetElement>('controls').disabled=busy;
   const s=state(),p=piece(),d=rules.lab.definition(p?.definitionId??definition),profile=rules.lab.profiles.get(d.profileId)!,fact=equipment.get(d.equipmentId);
   $('title').textContent=map.view.id==='focus'?map.region.focusName:map.region.name;
@@ -218,6 +241,7 @@ const panelPreview=new URL(location.href).searchParams.has('controller-preview')
 if(panelPreview){panelPreview.className='controller-preview'+(new URL(location.href).searchParams.has('palette-review')?' palette-review':'');panelPreview.setAttribute('aria-label','Controller panel preview');(new URL(location.href).searchParams.has('palette-review')?document.body:root).append(panelPreview);}
 function renderXR() {
   if(!ready)return;
+  if(opponent?.active){opponent.render();return;}
   const p=piece(),profile=p?rules.lab.profile(p):null;
   const button=(label:string,run:()=>void,enabled=true):PanelButton=>({label,run,enabled:enabled&&!busy});
   const go=(page:typeof xrPage)=>{xrPage=page;renderXR();};
@@ -255,7 +279,7 @@ function renderXR() {
   } else if(xrPage==='candidate') {
     const d=rules.lab.definition(definition),pr=rules.lab.profiles.get(d.profileId)!,eligible=rules.eligibility(d.id,$<HTMLSelectElement>('force').value as Force,state().year);
     panel.title='UNIT DETAILS';panel.lines=[...wrap(d.name).slice(0,3),forceName($<HTMLSelectElement>('force').value as Force),`${pr.movement} MP · Stylized ${visual(d.id).model} model`,`Cargo ${pr.cargoSlots} slots · Load size ${d.loadSlots}`,...wrap(eligible.reason).slice(0,2)];
-    panel.buttons=[{...button('Grip here to pick up',()=>status('Hold the grip on the unit tile, carry it over a hex and release.'),eligible.allowed),grab:eligible.allowed?{definitionId:d.id}:undefined},button('Place with pointer',beginPlacement,eligible.allowed),button('Source evidence',()=>go('evidence')),button('Back to catalog',()=>go('catalog'))];
+    panel.buttons=[{...button('Hold SIDE GRIP here to pick up',()=>{status('Use the side button under your middle finger. Hold, lower to green, then release.');renderXR();},eligible.allowed),grab:eligible.allowed?{definitionId:d.id}:undefined},button('Place with pointer',beginPlacement,eligible.allowed),button('Source evidence',()=>go('evidence')),button('Back to catalog',()=>go('catalog'))];
   } else if(xrPage==='maps') {
     panel.title='MAPS & TERRAIN';panel.lines=[name(map.id),'Switching maps keeps their pieces and progress.','Regions in this workspace open inside VR/MR.','The other workspace opens after exiting immersion.'];
     panel.buttons=options.mapIds.map(id=>button(name(id),()=>{if(id===map.id){go('main');return;}options.showMap(id);}));
@@ -283,8 +307,11 @@ function renderXR() {
   } else {
     panel.title=p?'SELECTED UNIT':'TABLE SETTINGS';
     if(!p)panel.lines=[name(map.id),`${state().year} · Turn ${state().turn}`,'The unit palette is beside the table.','Grip its top handle to move it; − hides it.'];
-    panel.buttons=[button('Unit palette',()=>{xrCatalogPage=0;go('catalog');}),...(p?[button('Cargo / load / unload',()=>{xrCargoPage=0;go('cargo');}),button('More unit actions',()=>go('actions'))]:[]),button('Preview next turn',()=>preview({type:'action',action:{type:'advance'}})),button('Maps & terrain',()=>go('maps')),button('Table & exercise',()=>go('table'))];
+    panel.buttons=[button('Unit palette',()=>{xrCatalogPage=0;go('catalog');}),...(p?[button('Cargo / load / unload',()=>{xrCargoPage=0;go('cargo');}),button('More unit actions',()=>go('actions'))]:[]),button('Preview next turn',()=>preview({type:'action',action:{type:'advance'}})),button('Maps & terrain',()=>go('maps')),button('Table & exercise',()=>go('table')),button('Play against AI',()=>opponent?.activate())];
   }
+  presentPanel(panel);
+}
+function presentPanel(panel:TablePanel) {
   lastPanel=panel;table.setScenarioPanel(panel);
   if(panelPreview){
     panelPreview.innerHTML=`<h3>Controller panel preview</h3><strong>${esc(panel.title)}</strong><p>${panel.lines.map(esc).join('<br>')}</p>`;
@@ -293,14 +320,16 @@ function renderXR() {
       const card=panel.catalog?.cards.find(c=>c.run===target.run);if(card){const img=document.createElement('img');img.src=miniatureThumbnail(card.model,card.force).toDataURL();img.alt='';b.prepend(img);}surface.append(b);
       if(target.grab){const grip=document.createElement('button');grip.textContent='Pick up '+target.label;grip.onclick=()=>{grabBindings.begin(target.grab!);};panelPreview.append(grip);}
     }
+    if(opponent?.active&&opponent.diagnostics.selected){const pickup=document.createElement('button');pickup.textContent='Grip selected AI ship';pickup.onclick=()=>grabBindings.begin({pieceId:opponent!.diagnostics.selected!});panelPreview.append(pickup);if(opponent.diagnostics.held){const drop=document.createElement('button');drop.textContent='Release at previewed route';drop.onclick=()=>{const c=opponent!.diagnostics.movePreview;grabBindings.release(c?.order.type==='move'?c.order.target:null);};panelPreview.append(drop);}}
     if(grab.active){const release=document.createElement('button');release.textContent='Release over chosen hex';release.onclick=()=>grabBindings.release(selectedTile?.id??null);panelPreview.append(release);}
   }
 }
 
 const grabBindings:GrabBindings={
-  version:()=>ready?map.id+':'+envelope.revision:'loading',
+  version:()=>opponent?.active?opponent.grabBindings.version():ready?map.id+':'+envelope.revision:'loading',
   begin:source=>{
-    if(!ready||busy||pendingCommand||grab.active||!online)return null;
+    if(opponent?.active)return opponent.grabBindings.begin(source);
+    if(!ready||busy||pendingCommand||grab.active||!online||envelope.runStatus==='archived')return null;
     let id=source.definitionId,instance=source.pieceId?state().pieces.find(p=>p.id===source.pieceId):undefined;
     if(source.pieceId&&!instance)return null;if(instance)id=instance.definitionId;if(!id||!rules.lab.definitions.has(id))return null;
     const d=rules.lab.definition(id),force=instance?.force??$<HTMLSelectElement>('force').value as Force;
@@ -310,18 +339,19 @@ const grabBindings:GrabBindings={
     if(!grab.begin(envelope,action))return null;status('Holding '+d.name+'. Release over a valid hex to place.');render();
     return{name:d.name,model:visual(id).model,force,pieceId:instance?.id};
   },
-  preview:tileId=>!ready||!online?{allowed:false,reason:'Connection unavailable; release to cancel.'}:grab.preview(rules,envelope,tileId),
+  preview:tileId=>opponent?.active?opponent.grabBindings.preview(tileId):!ready||!online?{allowed:false,reason:'Connection unavailable; release to cancel.'}:grab.preview(rules,envelope,tileId),
   release:tileId=>{
+    if(opponent?.active){opponent.grabBindings.release(tileId);return;}
     if(!grab.active)return;
     if(!ready||!online||busy){grab.cancel();status('Placement cancelled. The saved pieces are unchanged.');render();return;}
     const result=grab.take(rules,envelope,tileId);
     if(result.action){preview({type:'action',action:result.action});void commit();}
-    else{clearDraft();status(result.preview.reason+' Returned without spending.');render();}
+    else{capture.event('restriction',{action:'drop',reasonCode:result.preview.reasonCode??'drop.invalid'});clearDraft();status(result.preview.reason+' Returned without spending.');render();}
   },
-  cancel:()=>{grab.cancel();if(ready){status('Pickup cancelled. No changes were saved.');render();}},
+  cancel:()=>{if(opponent?.active){opponent.grabBindings.cancel();return;}capture.event('cancel',{action:'pickup'});grab.cancel();if(ready){status('Pickup cancelled. No changes were saved.');render();}},
 };
 
-function cancel() {if(busy||!ready)return;table.cancelGrab();grab.cancel();clearDraft();placement=false;status('Preview cancelled. No movement or cargo was spent.');render();}
+function cancel() {if(busy||!ready)return;if(draft||grab.active)capture.event('cancel',{action:draft?.type==='action'?draft.action.type:'preview'});table.cancelGrab();grab.cancel();clearDraft();placement=false;status('Preview cancelled. No movement or cargo was spent.');render();}
   const [catalog,profiles,research,regional,shoal,senkaku]=await Promise.all([json<PieceCatalog>(piecesUrl),json<PieceRules>(rulesUrl),json<{equipment:Equipment[]}>(equipmentUrl),json<Geography>('/terrain/pacific/regional-land.json'),json<Geography>('/terrain/pacific/shoal-detail.json'),json<Geography>('/terrain/pacific/senkaku-detail.json')]);
   rules=new GeographicRules(catalog,profiles,scenarioMaps({regional,shoal,senkaku}));equipment=new Map(research.equipment.map(e=>[e.id,e]));
   for(const d of catalog.pieces)visuals.set(d.id,unitVisual(d,equipment.get(d.equipmentId)));
@@ -338,15 +368,27 @@ function cancel() {if(busy||!ready)return;table.cancelGrab();grab.cancel();clear
   $('previous').onclick=()=>{page--;renderCatalog();};$('next').onclick=()=>{page++;renderCatalog();};
   $('confirm').onclick=()=>void commit();$('cancel').onclick=cancel;$('clear').onclick=()=>{if(busy||!ready)return;active=null;clearDraft();placement=false;status('Selection cleared. Choose a piece or add one from the catalog.');render();};
   $('advance').onclick=()=>preview({type:'action',action:{type:'advance'}});
+  $('finish').onclick=()=>{if(busy||pendingCommand||!ready)return;void (async()=>{busy=true;render();try{await capture.flush();const response=await fetch('/api/capture/finish',{method:'POST',headers:capture.headers(),body:JSON.stringify({mapId:map.id,runId:envelope.runId,revision:envelope.revision})});const result=await response.json();if(!response.ok)throw new Error(result.error);await table.exit();location.assign('/review.html?run='+encodeURIComponent(envelope.runId!));}catch(error){status(String(error));}finally{busy=false;render();}})();};
   $('coordinates').onsubmit=e=>{e.preventDefault();const q=Number($<HTMLInputElement>('q').value),r=Number($<HTMLInputElement>('r').value),tileId=options.tileAt(q,r),cell=map.cells.find(c=>c.id===tileId);if(cell)chooseCell(cell);else{clearDraft();status('No hex exists at those coordinates in this map.');render();}};
-  $('export').onclick=()=>{try{const save=rules.export(state()),url=URL.createObjectURL(new Blob([JSON.stringify(save,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`xriegsspiel-${state().manifest.mapId.replaceAll('/','-')}-${state().year}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status('Save exported after exact journal replay verification.');}catch(e){status(String(e));}};
+  $('export').onclick=()=>{try{const save={...rules.export(state()),capture:{runId:envelope.runId!,serviceRevision:envelope.revision}},url=URL.createObjectURL(new Blob([JSON.stringify(save,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`xriegsspiel-${state().manifest.mapId.replaceAll('/','-')}-${state().year}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status('Save exported after exact journal replay verification.');}catch(e){status(String(e));}};
   $('import-open').onclick=()=>$<HTMLInputElement>('import').click();$('import').onchange=()=>{const input=$<HTMLInputElement>('import'),file=input.files?.[0];input.value='';if(!file)return;if(busy||!ready)return;clearDraft();if(file.size>8_000_000){status('Save exceeds the 8 MB import limit.');render();return;}void file.text().then(text=>{preview({type:'import',save:JSON.parse(text)});}).catch(()=>{status('Unable to read this JSON save.');render();});};
   document.addEventListener('keydown',e=>{if(e.key==='Escape')cancel();if(e.key==='Enter'&&e.target===table.renderer.domElement){e.preventDefault();void commit();}});
-  Object.defineProperty(window,'__playableTerrain',{value:{get diagnostics(){return{state:structuredClone(envelope),mapId:map.id,selected:active,selectedTile:selectedTile?.id,preview:draftPreview?structuredClone(draftPreview):null,placement,ready,controllerPanel:lastPanel?{title:lastPanel.title,lines:lastPanel.lines,buttons:panelTargets(lastPanel).map(b=>({label:b.label,enabled:b.enabled!==false}))}:null,...table.stats};}}});
+  Object.defineProperty(window,'__playableTerrain',{value:{get diagnostics(){return{state:structuredClone(envelope),mapId:map.id,selected:active,selectedTile:selectedTile?.id,preview:draftPreview?structuredClone(draftPreview):null,placement,ready,interactionBuild:'controller-grab-2',input:table.inputDiagnostics,controllerPanel:lastPanel?{title:lastPanel.title,lines:lastPanel.lines,buttons:panelTargets(lastPanel).map(b=>({label:b.label,enabled:b.enabled!==false}))}:null,...table.stats};}}});
+  root.querySelectorAll('details').forEach(detail=>detail.addEventListener('toggle',()=>{if(detail.open&&/Rules|controls/.test(detail.querySelector('summary')?.textContent??''))capture.event('help');}));
+  await capture.join();
   await openMap(options.mapId);
+  opponent=await initOpponentWorkspace({
+    root:opponentRoot,map:id=>rules.map(id),currentMap:()=>map.id,
+    switchMap:async id=>{opponentMapSwitch=true;try{options.showMap(id);}finally{opponentMapSwitch=false;}await openMap(id);},selectTile:options.selectTile,focusTile:options.focusTile,
+    setPieces:(...args)=>table.setScenarioPieces(...args),setPanel:presentPanel,exitXR:()=>table.exit(),
+    show:()=>{table.cancelGrab();clearDraft();placement=false;bar.hidden=true;root.hidden=true;original.hidden=true;opponentRoot.hidden=false;$('pieces-tab').setAttribute('aria-pressed','false');$('terrain-tab').setAttribute('aria-pressed','false');$('opponent-tab').setAttribute('aria-pressed','true');options.openMenu();},
+    hide:()=>menuTab(true),
+  });
+  Object.defineProperty(window,'__opponent',{value:{get diagnostics(){return opponent?.diagnostics;}}});
+  if(opponent.active)opponent.render();
   const requested=new URL(location.href).searchParams.get('piece');
   const requestedForce=new URL(location.href).searchParams.get('force');
   if(requestedForce==='red'||requestedForce==='blue')$<HTMLSelectElement>('force').value=requestedForce;
   if(ready&&requested&&rules.catalog.pieces.some(p=>p.id===requested)){switchTab(true);chooseDefinition(requested);showPieces();}
-  return {openMap,chooseTile:(id:string)=>{if(!ready)return;const cell=map.cells.find(c=>c.id===id);if(cell)chooseCell(cell);},get canSwitch(){return !busy&&!pendingCommand&&!grab.active;}};
+  return {openMap,chooseTile:(id:string)=>{if(!ready)return;const cell=map.cells.find(c=>c.id===id);if(cell)chooseCell(cell);},get canSwitch(){return !busy&&!pendingCommand&&!grab.active&&(!opponent?.busy||opponentMapSwitch);}};
 }

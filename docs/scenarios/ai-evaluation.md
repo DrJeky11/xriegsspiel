@@ -1,5 +1,7 @@
 # Opponent training and human evaluation
 
+**Implementation update, 2026-09-16:** the [playable opponent](../ai-opponent.md) now supplies the shared resolver, legal baselines, bounded search, authenticated sessions and replay records for all eight exercises. Its 768-match development comparison is recorded separately; the held-out protocol and human/learning studies below remain proposed. No learned policy was trained.
+
 **Original experiment specification, 2026-09-16.** This library supplies tasks and scoring, not a trained policy, demonstration corpus or complete simulation environment. Historical articles provide context; they lack the legal action sets, observations and counterfactual outcomes needed for supervised decision training. Do not label the action taken in history as the optimal action.
 
 ## Build and measure in this order

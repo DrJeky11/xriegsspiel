@@ -32,7 +32,7 @@ export interface LabState {
   catalogVersion: string; rulesVersion: string; board: LabBoard; year: number;
   turn: number; revision: number; pieces: Piece[]; events: LabEvent[];
 }
-export interface Evaluation { allowed: boolean; reason: string; cost: number; path: number[] }
+export interface Evaluation { allowed: boolean; reason: string; reasonCode?: string; cost: number; path: number[] }
 /** Optional board policy; the shared evaluator still owns routes, budgets and cargo transfers. */
 export interface BoardPolicy {
   neighbors(cell: number): number[];
@@ -152,47 +152,47 @@ export class PieceLab {
   cargoUsed(state: LabState, carrierId: string) { return state.pieces.filter(p => p.carrierId === carrierId).reduce((n,p) => n + this.definition(p.definitionId).loadSlots, 0); }
   evaluate(state: LabState, action: LabAction): Evaluation {
     this.assertVersion(state);
-    const no = (reason: string): Evaluation => ({ allowed: false, reason, cost: 0, path: [] });
+    const no = (reason: string, reasonCode: string): Evaluation => ({ allowed: false, reason, reasonCode, cost: 0, path: [] });
     const yes = (reason: string, cost = 0, path: number[] = []): Evaluation => ({ allowed: true, reason, cost, path });
     if (action.type === 'advance') return yes('Advance the laboratory turn and restore movement budgets. Inventories remain unchanged.');
     const piece = state.pieces.find(p => p.id === action.pieceId);
-    if (!piece) return no('Unknown piece instance.');
+    if (!piece) return no('Unknown piece instance.', 'piece.unknown');
     if (action.type === 'move') {
-      if (piece.carrierId !== null) return no('This item is carried; move its carrier or unload it.');
-      if (action.to === piece.cell) return no('The piece is already here.');
-      const reason = this.occupancyReason(state, piece, action.to); if (reason) return no(`No legal route: ${reason}`);
+      if (piece.carrierId !== null) return no('This item is carried; move its carrier or unload it.', 'piece.carried');
+      if (action.to === piece.cell) return no('The piece is already here.', 'destination.unchanged');
+      const reason = this.occupancyReason(state, piece, action.to); if (reason) return no(`No legal route: ${reason}`, 'destination.unavailable');
       const route = this.reachable(state, piece.id).get(action.to);
-      return route ? yes(`Move for ${route.cost} points; ${piece.movement-route.cost} remain.`, route.cost, route.path) : no('No legal route within this piece’s remaining movement budget.');
+      return route ? yes(`Move for ${route.cost} points; ${piece.movement-route.cost} remain.`, route.cost, route.path) : no('No legal route within this piece’s remaining movement budget.', 'movement.unreachable');
     }
     if (action.type === 'hold') return yes('Hold position and spend the remaining movement budget.', piece.movement);
     if (action.type === 'load') {
       const carrier = state.pieces.find(p => p.id === action.carrierId);
-      if (!carrier || carrier.id === piece.id || carrier.carrierId !== null || carrier.cell === null) return no('Choose an independently deployed carrier.');
-      if (piece.carrierId !== null || piece.cell === null) return no('The item is already carried.');
-      if (piece.force !== carrier.force) return no('The laboratory transfers equipment within the same force.');
-      if (this.cargoUsed(state, piece.id)) return no('Unload this carrier before transporting it. Nested cargo is unsupported.');
+      if (!carrier || carrier.id === piece.id || carrier.carrierId !== null || carrier.cell === null) return no('Choose an independently deployed carrier.', 'carrier.invalid');
+      if (piece.carrierId !== null || piece.cell === null) return no('The item is already carried.', 'piece.carried');
+      if (piece.force !== carrier.force) return no('The laboratory transfers equipment within the same force.', 'cargo.force-mismatch');
+      if (this.cargoUsed(state, piece.id)) return no('Unload this carrier before transporting it. Nested cargo is unsupported.', 'cargo.nested');
       const cp = this.profile(carrier), def = this.definition(piece.definitionId);
-      if (cp.cargoSlots === 0) return no('This profile has no cargo capacity.');
+      if (cp.cargoSlots === 0) return no('This profile has no cargo capacity.', 'cargo.unsupported');
       // Vehicle transport belongs to maritime transport profiles. Other carriers handle parts/towed equipment.
-      if (def.kind === 'platform' && this.profile(piece).id !== 'towed' && !['sea-transport','landing-craft'].includes(cp.id)) return no('This laboratory carrier accepts equipment items and towed equipment only.');
-      if (def.kind === 'platform' && ['air','subsurface'].includes(this.profile(piece).layer)) return no('Aircraft and submarines are not cargo in this laboratory.');
-      if (def.kind === 'platform' && ['surface-vessel','sea-transport','landing-craft'].includes(this.profile(piece).id)) return no('Vessels are not cargo in this laboratory.');
-      if (this.cargoUsed(state, carrier.id) + def.loadSlots > cp.cargoSlots) return no('There are not enough free cargo slots.');
-      if (carrier.movement < 1) return no('The carrier needs one movement point for loading.');
-      if (piece.cell !== carrier.cell && !this.neighbors(state, carrier.cell).includes(piece.cell)) return no('Move the carrier beside the item before loading.');
-      const reason = this.policy?.transferReason(piece, carrier, piece.cell); if (reason) return no(reason);
+      if (def.kind === 'platform' && this.profile(piece).id !== 'towed' && !['sea-transport','landing-craft'].includes(cp.id)) return no('This laboratory carrier accepts equipment items and towed equipment only.', 'cargo.class-mismatch');
+      if (def.kind === 'platform' && ['air','subsurface'].includes(this.profile(piece).layer)) return no('Aircraft and submarines are not cargo in this laboratory.', 'cargo.class-mismatch');
+      if (def.kind === 'platform' && ['surface-vessel','sea-transport','landing-craft'].includes(this.profile(piece).id)) return no('Vessels are not cargo in this laboratory.', 'cargo.class-mismatch');
+      if (this.cargoUsed(state, carrier.id) + def.loadSlots > cp.cargoSlots) return no('There are not enough free cargo slots.', 'cargo.capacity');
+      if (carrier.movement < 1) return no('The carrier needs one movement point for loading.', 'cargo.movement-budget');
+      if (piece.cell !== carrier.cell && !this.neighbors(state, carrier.cell).includes(piece.cell)) return no('Move the carrier beside the item before loading.', 'cargo.distance');
+      const reason = this.policy?.transferReason(piece, carrier, piece.cell); if (reason) return no(reason, 'cargo.transfer-terrain');
       return yes(`Load ${def.loadSlots} slots; carrier spends 1 point.`, 1);
     }
     if (action.type === 'unload') {
       const carrier = state.pieces.find(p => p.id === piece.carrierId);
-      if (!carrier || carrier.cell === null) return no('This item has no deployed carrier.');
-      if (carrier.movement < 1) return no('The carrier needs one movement point for unloading.');
-      if (action.to !== carrier.cell && !this.neighbors(state, carrier.cell).includes(action.to)) return no('Choose the carrier’s cell or an adjacent cell.');
-      const occupancy = this.occupancyReason(state, piece, action.to); if (occupancy) return no(occupancy);
-      const reason = this.policy?.transferReason(piece, carrier, action.to); if (reason) return no(reason);
+      if (!carrier || carrier.cell === null) return no('This item has no deployed carrier.', 'carrier.invalid');
+      if (carrier.movement < 1) return no('The carrier needs one movement point for unloading.', 'cargo.movement-budget');
+      if (action.to !== carrier.cell && !this.neighbors(state, carrier.cell).includes(action.to)) return no('Choose the carrier’s cell or an adjacent cell.', 'cargo.distance');
+      const occupancy = this.occupancyReason(state, piece, action.to); if (occupancy) return no(occupancy, 'destination.unavailable');
+      const reason = this.policy?.transferReason(piece, carrier, action.to); if (reason) return no(reason, 'cargo.transfer-terrain');
       return yes('Unload the item; carrier spends 1 point. The item can move next turn.', 1);
     }
-    return no('Unsupported laboratory action.');
+    return no('Unsupported laboratory action.', 'action.unsupported');
   }
   apply(state: LabState, action: LabAction): LabState {
     const result = this.evaluate(state, action);

@@ -6,17 +6,18 @@ import type { PieceCatalog, PieceRules } from '../src/pieces.ts';
 import type { Geography } from '../src/pacific/terrain.ts';
 
 export type Operation = { type: 'action'; action: Action } | { type: 'new'; setup: Setup } | { type: 'import'; save: Save };
-export interface ScenarioCommand { id: string; revision: number; operation: Operation }
-export interface ScenarioState { revision: number; exercise: Exercise }
+export interface ScenarioCommand { id: string; revision: number; operation: Operation; runId?: string; observationId?: string; rationale?: string }
+export interface ScenarioState { revision: number; exercise: Exercise; runId?: string; runStatus?: 'active'|'archived'; observationId?: string; participantId?: string; participantLabel?: string; capture?: 'durable' }
 export function loadGeographicRules() {
   const json = <T>(path: string): T => JSON.parse(readFileSync(path, 'utf8'));
   return new GeographicRules(json<PieceCatalog>('catalog/pieces.json'), json<PieceRules>('catalog/rules.json'), scenarioMaps({
     regional: json<Geography>('public/terrain/pacific/regional-land.json'), shoal: json<Geography>('public/terrain/pacific/shoal-detail.json'), senkaku: json<Geography>('public/terrain/pacific/senkaku-detail.json'),
   }));
 }
-function validCommand(v: unknown): v is ScenarioCommand {
+export function validCommand(v: unknown): v is ScenarioCommand {
   if (!v || typeof v !== 'object') return false;
   const c = v as ScenarioCommand;
+  if(c.rationale!==undefined&&(typeof c.rationale!=='string'||c.rationale.length>1000))return false;
   if (typeof c.id !== 'string' || c.id.length < 1 || c.id.length > 120 || !Number.isSafeInteger(c.revision) || c.revision < 0 || !c.operation) return false;
   return c.operation.type === 'action' ? validAction(c.operation.action)
     : c.operation.type === 'new' ? !!c.operation.setup && typeof c.operation.setup.mapId === 'string' && typeof c.operation.setup.demo === 'boolean' && Number.isInteger(c.operation.setup.year)

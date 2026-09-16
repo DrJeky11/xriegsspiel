@@ -6,7 +6,7 @@ The name plays on *Kriegsspiel*. The project is being developed for a Marine Cor
 
 ## Run the map workspaces
 
-Requires Node 22.18+ (tested with Node 26.0.0).
+Requires Node 22.18+ (database and full tests verified on Node 22.18.0 and 26.0.0).
 
 ```sh
 npm ci
@@ -21,13 +21,23 @@ All six maps retain their own pieces, year, turn, budgets and history. Switching
 
 With an authorized Quest connected by USB, run `npm run quest` (Pacific), or `QUEST_PATH=/centcom.html npm run quest`. Choose **Enter VR** or **Enter MR** in Quest Browser. Controller panels provide catalog search with a spatial keyboard, Red/Blue assignment, placement, movement, cargo, turns, region selection and terrain/table controls. Changing between the two major workspaces exits immersion; reenter in the destination. Full headset usability still needs the hands-on checklist.
 
-See [playable terrain controls, persistence and verification](docs/playable-terrain.md). `npm test` verifies rules and persistence; `npm run build` typechecks and builds; `npm start` serves the production build. Use `PORT` for a different port and `DATA_DIR` for a separate journal directory. One server process may write a given directory.
+See [playable terrain controls, persistence and verification](docs/playable-terrain.md). `npm test` verifies rules and persistence; `npm run build` typechecks and builds; `npm start` serves the production build. Use `PORT` for a different port and `DATA_DIR` for a separate exercise database directory. One server process may write a given directory.
 
 The Island Coordination trial and the catalog's fictional test board have been retired from the application. Their source remains in Git baseline `f25a7a7` on `main`. The original trial's [runbook](docs/prototype.md) and [geographic integration record](docs/geographic-scenario.md) are historical records.
 
+## Reconstruct and learn from exercises
+
+Every new order is captured in a local SQLite exercise database. Open **Pieces & orders → Exercise review**, or **Finish exercise & review**, to inspect the historical board and decisions, add reflections/assessments, compare compatible exercises and export records. Earlier exercises survive resets and imports. AI scenario learning records use their invitation access rules. See the [database and review guide](docs/exercise-database.md) for controls, capture scope, backup/restore and verification limits.
+
+## Play against AI
+
+Choose **Menu → Play against AI** in either workspace. Play either side in all eight maritime scenarios against **Novice, Standard or Advanced** opposition. Move visible Blue and Red ships on the existing water hexes, preview routes, build and seal orders, review position-dependent interception, resume saved runs, contest outcomes and export the completed replay. The Quest controller panel supports the same play cycle. See the [AI controls, rules, evaluation and limitations](docs/ai-opponent.md).
+
+The opponent uses authored priorities and bounded search. It has no access to your draft or private information and uses the same rules at every difficulty. Second Thomas Resupply offers an explicit **Short window** variant for tighter opposition, separate from difficulty. Automated and browser checks pass; physical Quest usability and human balance trials remain pending.
+
 ## Authored scenario library
 
-The [maritime crisis library](docs/scenarios/README.md) provides **eight scenarios**: one historical adaptation and one plausible fictional exercise each for the Spratlys, Senkakus, Hormuz and Bab al-Mandeb. Each includes roles, objectives, injects, scoring and AI-training variations. [Common adjudication](docs/scenarios/adjudication.md) and the [training/evaluation protocol](docs/scenarios/ai-evaluation.md) separate game results from learning assessment. Versioned JSON definitions and an offline score calculator are included; these scenarios are not yet integrated into the geographic app or balance-tested.
+The [maritime crisis library](docs/scenarios/README.md) provides **eight playable scenarios**: one historical adaptation and one plausible fictional exercise each for the Spratlys, Senkakus, Hormuz and Bab al-Mandeb. Each includes roles, objectives, injects, scoring and proposed training variations. [Common adjudication](docs/scenarios/adjudication.md) and the [training/evaluation protocol](docs/scenarios/ai-evaluation.md) separate game results from learning assessment. Versioned JSON definitions and an offline score calculator accompany the playable geographic resolver. Initial automated comparisons exist; instructor balance and learning trials remain pending.
 
 ```sh
 node scripts/score-scenarios.mjs --validate
@@ -76,9 +86,9 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 - Build our own platform, using CPE as a reference. CPE software access and integration are outside the requested direction.
 - Start with 2–4 players using headsets or browsers and work through the headset tabletop experience first. Passthrough versus fully virtual surroundings remains open.
 - Preserve the owner's long-term AI Sensei vision through agent development, integration, and analytics. The API, headless runner, and teaching roadmap are **proposals**; the reported institutional cloud capacity is not a first-build requirement.
-- Research an adjustable Red opponent. The [opponent study](docs/research/opponent-ai.md) recommends authored planning and bounded search first, then a compact learned policy if evaluation warrants it. `npm run research:opponent` runs a read-only in-memory mechanics probe; a competitive opponent and trained model are not implemented yet.
-- Treat data capture as a core pillar for trends, analysis, and future AI training. The [data-capture proposal](docs/design/data-capture.md) recommends a replayable decision record, historical observations, local transactional storage, and purpose-specific exports. The collector and analytics pipeline remain unimplemented.
+- Provide adjustable opposition. The [playable opponent](docs/ai-opponent.md) now supports both roles, three planning budgets and all eight scenarios; `npm run evaluate:opponent` runs policy comparisons. No learned model is trained. The earlier [opponent study](docs/research/opponent-ai.md) remains the design rationale.
+- Treat data capture as a core pillar for trends, analysis, and future AI training. The owner approved phases 1–3 of the [implementation plan](docs/design/data-capture-implementation-plan.md). Local transactional capture, historical decision review and initial reports are implemented and verified through browser checks and an owner-confirmed Quest movement trial; [the operating guide](docs/exercise-database.md) records the evidence and remaining headset usability checks. Controlled AI dataset jobs and central hosting remain future work.
 
 Research baseline: **15 September 2026**. Recheck platform documentation and game editions before implementation. Future contributors should read [AGENTS.md](AGENTS.md).
 
-The VR/MR unit palette now uses miniature tiles grouped by force, domain and role. Hold the controller grip to pick up a miniature; lower it over a valid hex and release to place or move it. Grip the palette handle to reposition it, and use − / Units + to hide or reopen it. Models are stylized classes with real catalog names; exact vehicle/variant artwork and physical Quest usability remain separate verification work. See [the controls and checklist](docs/playable-terrain.md#vr--mr-controller-controls).
+The VR/MR unit palette uses miniature tiles grouped by force, domain and role. Bring either controller close to a tile/piece or point its ray at it, then hold the **side grip under your middle finger**. Lower the held miniature until the preview turns green, then release to place or move it. Hold the side grip on the palette's handle or title to reposition it. Use the index-finger trigger for buttons, including − / Units + to hide or reopen the palette. Bare-hand grabbing is not enabled. Models are stylized classes with real catalog names; exact vehicle/variant artwork and physical Quest usability remain separate verification work. See [the controls and checklist](docs/playable-terrain.md#vr--mr-controller-controls).

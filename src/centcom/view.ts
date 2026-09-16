@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { SpatialPalette, MiniatureGrabber } from '../play/spatial-palette.ts';
+import { SpatialPalette, MiniatureGrabber, controllerRay } from '../play/spatial-palette.ts';
 import type { GrabBindings } from '../play/spatial-palette.ts';
 import { PieceLayer } from '../play/piece-layer.ts';
 import type { TablePiece } from '../play/piece-layer.ts';
@@ -41,6 +41,7 @@ export class TerrainView {
   private texture: THREE.CanvasTexture;
   private panel: THREE.Mesh;
   private controllers: THREE.Group[] = [];
+  private grips=new Map<THREE.Group,THREE.Group>();
   private inputSources = new Map<THREE.Group, XRInputSource>();
   private recenterNeeded = false;
   private lastTime = 0;
@@ -97,13 +98,12 @@ export class TerrainView {
     this.renderer.domElement.addEventListener('pointerleave',()=>this.pieceLayer.hover(null));
     for (let i = 0; i < 2; i++) {
       const controller = this.renderer.xr.getController(i), grip=this.renderer.xr.getControllerGrip(i);this.scene.add(grip);
+      this.grips.set(controller,grip);
       controller.addEventListener('connected', event => this.inputSources.set(controller, event.data));
-      controller.addEventListener('disconnected', () => {this.grabber.cancel();this.inputSources.delete(controller);});
-      controller.addEventListener('squeezestart',()=>{this.controllerRay(controller);this.grabber.begin(controller,grip,this.hit());});
-      controller.addEventListener('squeezeend',()=>this.grabber.end(controller,grip));
+      controller.addEventListener('disconnected', () => this.inputSources.delete(controller));
+      this.grabber.bindController(controller,grip,()=>{this.controllerRay(controller);return this.hit();});
       controller.addEventListener('select', () => {
-        this.ray.ray.origin.setFromMatrixPosition(controller.matrixWorld);
-        this.ray.ray.direction.set(0, 0, -1).transformDirection(controller.matrixWorld);
+        this.controllerRay(controller);
         this.pick();
       });
       const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -4)]), new THREE.LineBasicMaterial({ color: '#f4c86d' }));
@@ -180,7 +180,7 @@ export class TerrainView {
     if (!this.map) return;
     this.pieceLayer.configure(this.map.tiles.map(tile=>({id:tile.id,x:tile.xKm*this.unitScale,z:-tile.yKm*this.unitScale,y:this.height(tile)})),this.map.region.spacingKm/Math.sqrt(3)*this.unitScale);
   }
-  private hoverPanel(hit?:THREE.Intersection){if(!this.scenarioPanel)return;const label=hit?.object===this.panel&&hit.uv?panelTargetAt(this.scenarioPanel,hit.uv.x,hit.uv.y)?.label:undefined;if(this.scenarioPanel.hovered!==label){this.scenarioPanel.hovered=label;this.drawPanel();}}
+  private hoverPanel(hit?:THREE.Intersection){this.palette.hover(hit);if(!this.scenarioPanel)return;const label=hit?.object===this.panel&&hit.uv?panelTargetAt(this.scenarioPanel,hit.uv.x,hit.uv.y)?.label:undefined;if(this.scenarioPanel.hovered!==label){this.scenarioPanel.hovered=label;this.drawPanel();}}
   setGrabBindings(bindings:GrabBindings){this.grabber.bindings=bindings;}
   cancelGrab(){this.grabber.cancel();}
   setScenarioPieces(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void) { this.pieceLayer.set(pieces,reachable,path,select); }
@@ -265,7 +265,8 @@ export class TerrainView {
     try { this.renderer.setClearColor('#122b34', mode === 'immersive-ar' ? 0 : 1); session.addEventListener('visibilitychange',()=>{if(session.visibilityState!=='visible')this.grabber.cancel();});await this.renderer.xr.setSession(session); }
     catch (error) { this.renderer.setClearColor('#122b34', 1); await session.end(); throw error; }
   }
-  private controllerRay(controller:THREE.Group){this.ray.ray.origin.setFromMatrixPosition(controller.matrixWorld);this.ray.ray.direction.set(0,0,-1).transformDirection(controller.matrixWorld);}
+  private controllerRay(controller:THREE.Group){this.board.updateWorldMatrix(true,true);this.palette.root.updateWorldMatrix(true,true);controllerRay(this.ray,controller);}
+  get inputDiagnostics(){return this.grabber.diagnostics;}
   private hit(){return this.mesh?this.ray.intersectObjects([this.mesh,...this.palette.hits,...this.pieceLayer.pieceHits.filter(m=>m.visible)],false)[0]:undefined;}
   private pick() {
     if (!this.mesh || !this.map) return;
@@ -329,7 +330,9 @@ export class TerrainView {
       }
       let hoveredPiece:string|null=null,hoveredPanel:THREE.Intersection|undefined;
       for (const controller of this.controllers) {
-        this.controllerRay(controller);const hit=this.hit();if(hit?.object===this.panel)hoveredPanel=hit;hoveredPiece=hit?.object.userData.pieceId??hoveredPiece;
+        if(!this.inputSources.has(controller)||!controller.visible)continue;
+        this.controllerRay(controller);const grip=this.grips.get(controller)!,rayHit=this.hit(),hit=grip.visible?this.grabber.target(grip,rayHit):rayHit;
+        if(hit&&this.palette.hits.includes(hit.object as THREE.Mesh))hoveredPanel=hit;hoveredPiece=hit?.object.userData.pieceId??hoveredPiece;
         if(this.grabber.holding||this.palette.moving)continue;
         const source = this.inputSources.get(controller), axes = source?.gamepad?.axes;
         if (axes && axes.length >= 4) {

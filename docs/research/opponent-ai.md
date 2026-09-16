@@ -1,5 +1,9 @@
 # Building an adjustable Red opponent
 
+**Geographic implementation update, 2026-09-16:** New matches use actual existing water hexes, ship positions and spatial interception across the eight scenarios. See [rules](../ai-geographic-rules.md), [controls and verification](../ai-opponent.md), and the [new comparison](opponent-geographic-evaluation-2026-09-16.json). Earlier audit/probe findings below are dated baselines.
+
+**Implementation follow-up, 2026-09-16:** the owner authorized a fully playable opponent with varying difficulty. The [runtime and verification record](../ai-opponent.md) now covers all eight scenarios, either role, three planning budgets, sealed orders, persistent matches and referee/replay controls. Authored planning and bounded search were implemented; a learned model remains conditional on better data and evaluation. The research below records its earlier baseline.
+
 **Research and local checks: 2026-09-16. Branch: `oppoenent-research` (owner's requested spelling).** Recommendations below are proposals. The new executable deliverable is a feasibility probe, not a playable opponent or a trained model. It does not change the live exercise.
 
 ## Recommendation

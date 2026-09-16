@@ -1,6 +1,8 @@
 # Maritime crisis scenario library
 
-**Version 1.0.0 · authored and researched 2026-09-16.** Eight original educational exercises: one historical adaptation and one plausible fictional companion for each requested location. These are scenario designs with an executable **offline score calculator**, not eight newly playable scenarios in the geographic app. No model has been trained and no balance or learning-effectiveness trial has occurred.
+**Geographic update, 2026-09-16:** New AI matches use [library 2.0.0](../../scenarios/maritime-crises.v2.json) and [geographic rules](../ai-geographic-rules.md): actual native water hexes, visible patrols, spatial interception and offshore delivery at Sierra Madre. The original narratives, sector diagrams and v1 offline ledgers below remain the design/legacy record. New exercises use the geographic objective areas instead of sector movement. Old saved games retain the v1 resolver.
+
+**Version 1.0.0 · authored and researched 2026-09-16.** Eight original educational exercises: one historical adaptation and one plausible fictional companion for each requested location. All eight now have a [playable AI implementation](../ai-opponent.md) in Pacific/CENTCOM as well as the offline score calculator. Initial automated policy comparisons exist; no model training or human balance/learning-effectiveness trial has occurred.
 
 The owner authorized creative scenario development for opponent training and human competition. This library develops the earlier [Island Resupply proposal](../research/objectives-and-victory.md) into a broader set. Start implementation with **SPR-H01**, whose delivery objective is closest to the existing movement/cargo foundation.
 
@@ -18,7 +20,7 @@ The owner authorized creative scenario development for opponent training and hum
 1. Read the selected location brief and [common adjudication rules](adjudication.md). Give teams only their briefing and current reports. Two players command one side each; four divide each side into operations and information/logistics. A facilitator adjudicates; if none is available, use full-information practice and disclose that limitation.
 2. Use the named map as geographic context and the specified **abstract sector overlay** for decisions. Tokens, sectors, command budgets, delays, and rounds are authored game quantities, not real navigation or weapons models. Do not convert rounds into minutes or hex movement budgets into ship speed.
 3. Play the stated number of rounds, collect objective events and rulings, then evaluate the terminal ledger. Compare mission outcome, the two 0–100 scorecards, and the separate reasoning rubric. High secondary points never buy a failed mission.
-4. Use [AI training and evaluation](ai-evaluation.md) to collect trajectories, establish baselines, and define experiments once the decision resolver and authority layer exist.
+4. Use [AI training and evaluation](ai-evaluation.md) to define further experiments. The [runtime record](../ai-opponent.md) distinguishes implemented behavior and initial comparisons from that proposed research protocol.
 
 The [source register](sources.md) records URLs, access dates, locators, evidence disagreements, and retrieval limits. National labels identify scenario roles, not endorsements of territorial claims. These exercises do not change the existing US/China equipment catalog. Philippines, Japan, Iran, the UK, UAE and civilian actors require separate generic scenario tokens; substituting an unrelated US/Chinese catalog vehicle would misrepresent history.
 
@@ -38,8 +40,8 @@ Complete ledgers must identify `scenarioId`, `scenarioVersion`, `rulesVersion`, 
 
 ## Scope and integration sequence
 
-Existing geographic maps, rendering and cargo identity are useful foundations. Current shared control, unrestricted assembly and full-state broadcasting are inappropriate for competitive assessment. Before automated play, implement authenticated ownership, frozen setup, sealed commitments, the common sector resolver, scenario-specific actions, event-derived objective ledgers, role-filtered observations and referee branching. Keep those modules behind the same commands for humans and bots.
+The AI workspace supplies capability-based side ownership, fixed scenario setup, sealed commitments, a shared versioned resolver, scenario-specific actions, state/event-derived objective ledgers, role-filtered observations and referee branching. Humans and bots use the same order validator. The separate map-assembly sandbox retains shared control and unrestricted assembly.
 
-The current app's year selector ends at 2026 and its saves use a different schema. Fictional scenarios have **no calendar year**; historical terrain uses today's pinned cartographic snapshot, not a reconstruction. These JSON files must not be imported as geographic saves. Scenario overlays and generic actor tokens are not implemented in the app.
+The map-assembly year selector ends at 2026 and its saves use a different schema. Fictional scenarios have **no calendar year**; historical terrain uses today's pinned cartographic snapshot, not a reconstruction. These JSON definitions must not be imported as geographic saves. Playable scenarios have labeled abstract sector overlays, generic actor tokens and independent AI run saves.
 
 The first facilitated trial should check whether both sides have meaningful choices, whether ties and rescue obligations work, and whether the score rewards the intended behavior. Change parameters by creating a new version and retaining old ledgers. The initial numbers are testable starting values, not validated estimates of national capability.
