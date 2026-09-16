@@ -4,6 +4,7 @@ import type { Force } from '../pieces.ts';
 export interface PanelButton { label: string; run: () => void; enabled?: boolean; selected?:boolean; grab?:{definitionId?:string;pieceId?:string} }
 export interface TablePanel {
   hovered?:string;
+  helpLine?:string;
   title: string; lines: string[]; buttons: PanelButton[];
   catalog?: {toolbar:PanelButton[];tabs:PanelButton[];groups:PanelButton[];cards:(PanelButton & {model:MiniatureKind;force:Force;available:boolean})[]};
   keyboard?: { value: string; key: (key: string) => void; done: () => void };
@@ -54,7 +55,7 @@ export function drawPanel(canvas: HTMLCanvasElement, panel: TablePanel) {
       }else{c.fillStyle=t.enabled===false?'#819497':'#f4eddd';c.font='25px sans-serif';c.textAlign='center';c.fillText(t.label,t.x+t.width/2,t.y+t.height/2+9,t.width-20);c.textAlign='left';}
     }
     if(!panel.catalog.cards.length){c.fillStyle='#d5dfd5';c.font='32px sans-serif';c.fillText('No units match these filters.',80,530);c.font='26px sans-serif';c.fillText('Choose another group or clear the search.',80,580);}
-    c.fillStyle='#d5dfd5';c.font='25px sans-serif';c.fillText('Grip a miniature · set it on a hex · release to place',38,1230,948);
+    c.fillStyle='#d5dfd5';c.font='25px sans-serif';c.fillText('Hold SIDE GRIP: pick up · Lower to green · Release: place',38,1230,948);
     c.fillStyle='#c5d3d0';c.font='23px sans-serif';c.fillText(panel.lines[1]??'Tap a unit for its full name and details.',38,1200,948);return;
   }
   c.fillStyle = '#f0ecdf'; c.font = '30px sans-serif';
@@ -65,8 +66,8 @@ export function drawPanel(canvas: HTMLCanvasElement, panel: TablePanel) {
     c.fillText(target.label, target.x + 16, target.y + 54, target.width - 32);
   }
   c.fillStyle = '#c1d3cc'; c.font = '24px sans-serif';
-  c.fillText('Point & trigger · Left stick: move · Right stick: height / rotate', 38, 1180, 948);
-  c.fillText('Each map keeps its own pieces and progress.', 38, 1230, 948);
+  c.fillText(panel.helpLine ?? 'TRIGGER: select · SIDE GRIP: hold a unit or move the menu', 38, 1180, 948);
+  c.fillText('Controllers required · Left stick: move · Right: height / rotate', 38, 1230, 948);
 }
 
 export function wrapPanelText(c:CanvasRenderingContext2D,text:string,width:number,maxLines:number){

@@ -1,5 +1,7 @@
 # Product requirements and owner clarifications
 
+**Opponent authorization and implementation, 2026-09-16:** after reviewing the scenario-aware opponent plan, the owner instructed us to begin, with the goal of a fully playable AI opponent with varying difficulty. The first [implemented version](ai-opponent.md) supports all eight authored scenarios, either player side, three planning budgets, saved matches, sealed commitments, role-filtered observations, automated scoring, contests/referee takeover and replay exports. It uses authored planning/search; no model has been trained. Difficulty and human balance calibration remain separate from teaching-quality validation. The baseline map-assembly sandbox retains shared control; opposed exercises have separate state and access.
+
 **Updated: 2026-09-16.** This records the owner's answers in the project conversation. It takes precedence over earlier research assumptions. Acceptance examples below are proposed ways to verify the requirements, not implemented behavior.
 
 ## Confirmed direction
@@ -89,6 +91,10 @@ The owner explicitly requested research on the current feature branch into why g
 
 **Confirmed follow-up, 2026-09-16:** after reviewing the findings, the owner chose to stay with WebXR and authorized recording the decision, merging this documentation into local and remote `main`, and removing the research branch. Continue the existing Three.js/TypeScript application. This supersedes the earlier open-stack language; it does not select IWSDK, PWA packaging, offline topology or an immersive mode, and does not authorize a native migration. Unity/OpenXR remains a documented alternative if future measured requirements justify reconsideration.
 
+## Exercise learning database
+
+**Owner authorization and implementation, 2026-09-16:** the owner approved the [data-capture implementation plan](design/data-capture-implementation-plan.md), emphasizing that learning from wargames is the purpose of Kriegsspiel. Phases 1–3 now provide local transactional capture, historical decisions and permitted views, notes/assessments, reconstruction, initial comparison reports, exports and verified backup/restore. The six live map saves were preserved during database cutover. See the [operating and verification record](exercise-database.md); browser visual QA and a physical Quest capture exercise remain pending. Automated learning judgments, longitudinal personal scores, controlled AI dataset generation and central hosting were not added.
+
 ## Implementation references
 
 **First prototype authorized, 2026-09-15:** the owner asked to build something small, test it, and then expand. The [first prototype record](prototype.md) documents the implemented original cooperative movement/delivery slice and then-provisional Three.js/WebXR stack. It does not approve or implement all proposed multiplayer, WEGO, opposing-side, or referee behavior. The owner subsequently selected continuing with WebXR as recorded above; the final immersive mode and headset acceptance remain open.
@@ -174,8 +180,14 @@ The owner requested a working catalog/geographic tabletop slice: map/year setup,
 
 **Still to verify on the headset:** physical grip targeting, palette reach/placement, name readability, release feedback, passthrough contrast and sustained performance. Browser callback and Three.js transform tests are separate evidence from a Quest trial.
 
+**Owner follow-up and controller repair, 2026-09-16:** the owner could use pointer placement but could not grab pieces or reposition the menu, and asked which buttons/hand gestures are supported. Code inspection found ray-only pickup, a misplaced handle on CENTCOM, stale controller world transforms and no feedback on missed grip attempts. The repair adds close-range controller pickup, current-pose ray targeting, attached handles/title grabbing and explicit side-grip/drop feedback. The required interaction remains hold/release of the controller's side grip; bare-hand interaction remains unimplemented. The [repair verification and headset retest record](playable-terrain.md#controller-pickup-repair--2026-09-16) separates desktop checks from the pending physical retest. The failed trial's precise cause is not yet established.
+
 ## Data-capture direction — 2026-09-16
 
 The owner emphasized data capture for discovering trends, conducting analysis, and training future AI models, and requested a data-capture branch with ideas for accomplishing this. The work was developed on **`codex/data-capture`** in an isolated sibling worktree and merged into `main` during branch consolidation. The [data-capture design](design/data-capture.md) audits the baseline journals and proposes a replayable decision record, historical player observations, selected rationales, separate outcomes/assessments, and controlled dataset exports. Its implementation targets the active Pacific/CENTCOM map sessions.
 
 Local SQLite storage, the event contract, metrics, retention/reuse policy, and phased implementation are recommendations. The initial scope remains 2–4 players. Human learning, game performance, and referee authority remain distinct; no training dataset or analytics service has been implemented by this research task.
+
+## Geographic AI integration (2026-09-16)
+
+The owner approved integrating the opponent into the existing maps as the active implementation goal. Second Thomas Shoal must use the existing Pacific focus terrain with actual Blue and Red ships, routes through its water hexes, position-dependent interference and delivery at Sierra Madre. The same approach applies to the current eight scenario matches; the six saved catalog map assemblies and original renderers remain intact. New matches use the versioned [geographic rules](ai-geographic-rules.md); original sector matches remain replayable under their original rules. Authored starts, four-point movement and offshore transfer areas are implementation choices, not reported operational facts. Playing strength, learning effectiveness and physical Quest usability require separate evaluation.

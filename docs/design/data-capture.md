@@ -4,6 +4,8 @@
 
 **Integration update, 2026-09-16:** this proposal is now merged into `main`. Pacific and CENTCOM are the active [playable workspaces](../playable-terrain.md), with one saved geographic session per map. The Island trial and standalone Geographic UI were retired by the parallel terrain work. The baseline audit below retains its original evidence; the capture implementation should target [map sessions](../../server/map-sessions.ts), the shared [geographic session handler](../../server/scenario-session.ts) and [workspace callbacks](../../src/play/workspace.ts). Legacy Island journals remain historical inputs, not a second active game to instrument.
 
+**Implementation update, 2026-09-16:** the owner approved phases 1–3 of the [implementation plan](data-capture-implementation-plan.md). Local SQLite capture, historical review, notes, initial reports and exports now exist for the active workspaces; the live map journals have been migrated with exact reconciliation. Scenario decisions and referee branches use the same database with role-specific access. Browser verification and an owner-confirmed Quest movement capture trial passed; see the [operating guide](../exercise-database.md) for evidence and remaining headset usability checks. The original baseline audit below remains historical; controlled training datasets and central hosting are still future work.
+
 ## Recommendation
 
 Build a **replayable decision record** into the existing authoritative session service. For each committed decision, preserve who acted, what information was available, what they attempted, what happened, and which rules produced that result. Link selected reflections and instructor assessments to those records. Derive reports and training datasets from this common history.

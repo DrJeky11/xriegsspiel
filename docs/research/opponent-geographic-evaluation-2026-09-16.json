@@ -1,0 +1,675 @@
+{
+  "schema": "xriegsspiel-policy-evaluation/1",
+  "policyVersion": "geographic-planner/1.0.0",
+  "date": "2026-09-16T23:14:13.334Z",
+  "node": "v26.0.0",
+  "protocol": "1 paired policy seeds × four frozen baselines × eight scenarios × both sides × three difficulty levels. Baseline geographic scenarios v2 on the existing native water graphs. No held-out variant or human-learning claim.",
+  "matches": 192,
+  "decisions": 1392,
+  "elapsedMs": 170812,
+  "latencyMs": {
+    "p50": 11.441208000000188,
+    "p95": 801.4331670000101,
+    "max": 1197.7023749999935
+  },
+  "rows": [
+    {
+      "scenario": "SPR-H01",
+      "side": "blue",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 1,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 66.25,
+      "outcomes": {
+        "blue_win": 1,
+        "red_win": 3
+      }
+    },
+    {
+      "scenario": "SPR-H01",
+      "side": "blue",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 1,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 66.25,
+      "outcomes": {
+        "blue_win": 1,
+        "red_win": 3
+      }
+    },
+    {
+      "scenario": "SPR-H01",
+      "side": "blue",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 1,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 77.5,
+      "outcomes": {
+        "blue_win": 1,
+        "contested": 3
+      }
+    },
+    {
+      "scenario": "SPR-H01",
+      "side": "red",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 2,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 85,
+      "outcomes": {
+        "red_win": 2,
+        "contested": 2
+      }
+    },
+    {
+      "scenario": "SPR-H01",
+      "side": "red",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 88.75,
+      "outcomes": {
+        "red_win": 4
+      }
+    },
+    {
+      "scenario": "SPR-H01",
+      "side": "red",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 88.75,
+      "outcomes": {
+        "red_win": 4
+      }
+    },
+    {
+      "scenario": "SPR-F01",
+      "side": "blue",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 1,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 63.44,
+      "outcomes": {
+        "blue_win": 1,
+        "red_win": 3
+      }
+    },
+    {
+      "scenario": "SPR-F01",
+      "side": "blue",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 91.56,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "SPR-F01",
+      "side": "blue",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "SPR-F01",
+      "side": "red",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 0,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 79.38,
+      "outcomes": {
+        "shared_failure": 1,
+        "contested": 3
+      }
+    },
+    {
+      "scenario": "SPR-F01",
+      "side": "red",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 3,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 87.81,
+      "outcomes": {
+        "shared_failure": 1,
+        "red_win": 3
+      }
+    },
+    {
+      "scenario": "SPR-F01",
+      "side": "red",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 2,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 90.63,
+      "outcomes": {
+        "shared_failure": 1,
+        "red_win": 2,
+        "contested": 1
+      }
+    },
+    {
+      "scenario": "SEN-H01",
+      "side": "blue",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 4,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "joint_success": 4
+      }
+    },
+    {
+      "scenario": "SEN-H01",
+      "side": "blue",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 3,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 1,
+        "joint_success": 3
+      }
+    },
+    {
+      "scenario": "SEN-H01",
+      "side": "blue",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 3,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 1,
+        "joint_success": 3
+      }
+    },
+    {
+      "scenario": "SEN-H01",
+      "side": "red",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 3,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "red_win": 1,
+        "joint_success": 3
+      }
+    },
+    {
+      "scenario": "SEN-H01",
+      "side": "red",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 3,
+      "jointSuccess": 3,
+      "sharedFailure": 0,
+      "averageScore": 88.75,
+      "outcomes": {
+        "contested": 1,
+        "joint_success": 3
+      }
+    },
+    {
+      "scenario": "SEN-H01",
+      "side": "red",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 3,
+      "jointSuccess": 3,
+      "sharedFailure": 0,
+      "averageScore": 87.5,
+      "outcomes": {
+        "contested": 1,
+        "joint_success": 3
+      }
+    },
+    {
+      "scenario": "SEN-F01",
+      "side": "blue",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 3,
+      "sharedFailure": 0,
+      "averageScore": 88.75,
+      "outcomes": {
+        "blue_win": 1,
+        "joint_success": 3
+      }
+    },
+    {
+      "scenario": "SEN-F01",
+      "side": "blue",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 3,
+      "sharedFailure": 0,
+      "averageScore": 88.75,
+      "outcomes": {
+        "blue_win": 1,
+        "joint_success": 3
+      }
+    },
+    {
+      "scenario": "SEN-F01",
+      "side": "blue",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 3,
+      "sharedFailure": 0,
+      "averageScore": 88.75,
+      "outcomes": {
+        "blue_win": 1,
+        "joint_success": 3
+      }
+    },
+    {
+      "scenario": "SEN-F01",
+      "side": "red",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 4,
+      "sharedFailure": 0,
+      "averageScore": 85,
+      "outcomes": {
+        "joint_success": 4
+      }
+    },
+    {
+      "scenario": "SEN-F01",
+      "side": "red",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 4,
+      "sharedFailure": 0,
+      "averageScore": 85,
+      "outcomes": {
+        "joint_success": 4
+      }
+    },
+    {
+      "scenario": "SEN-F01",
+      "side": "red",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 4,
+      "sharedFailure": 0,
+      "averageScore": 85,
+      "outcomes": {
+        "joint_success": 4
+      }
+    },
+    {
+      "scenario": "HOR-H01",
+      "side": "blue",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 1,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 55,
+      "outcomes": {
+        "blue_win": 1,
+        "red_win": 3
+      }
+    },
+    {
+      "scenario": "HOR-H01",
+      "side": "blue",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 88.75,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "HOR-H01",
+      "side": "blue",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "HOR-H01",
+      "side": "red",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 0,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 40,
+      "outcomes": {
+        "contested": 1,
+        "blue_win": 3
+      }
+    },
+    {
+      "scenario": "HOR-H01",
+      "side": "red",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 3,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 85,
+      "outcomes": {
+        "contested": 1,
+        "red_win": 3
+      }
+    },
+    {
+      "scenario": "HOR-H01",
+      "side": "red",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 3,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 85,
+      "outcomes": {
+        "contested": 1,
+        "red_win": 3
+      }
+    },
+    {
+      "scenario": "HOR-F01",
+      "side": "blue",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "HOR-F01",
+      "side": "blue",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "HOR-F01",
+      "side": "blue",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "HOR-F01",
+      "side": "red",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 1,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 65.5,
+      "outcomes": {
+        "shared_failure": 1,
+        "blue_win": 2,
+        "red_win": 1
+      }
+    },
+    {
+      "scenario": "HOR-F01",
+      "side": "red",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 3,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 91,
+      "outcomes": {
+        "shared_failure": 1,
+        "red_win": 3
+      }
+    },
+    {
+      "scenario": "HOR-F01",
+      "side": "red",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 1,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 82,
+      "outcomes": {
+        "shared_failure": 1,
+        "contested": 2,
+        "red_win": 1
+      }
+    },
+    {
+      "scenario": "BAB-H01",
+      "side": "blue",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 87.5,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "BAB-H01",
+      "side": "blue",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "BAB-H01",
+      "side": "blue",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "BAB-H01",
+      "side": "red",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 0,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 65,
+      "outcomes": {
+        "shared_failure": 1,
+        "blue_win": 3
+      }
+    },
+    {
+      "scenario": "BAB-H01",
+      "side": "red",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 0,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 80,
+      "outcomes": {
+        "shared_failure": 1,
+        "blue_win": 3
+      }
+    },
+    {
+      "scenario": "BAB-H01",
+      "side": "red",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 0,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 80,
+      "outcomes": {
+        "shared_failure": 1,
+        "blue_win": 3
+      }
+    },
+    {
+      "scenario": "BAB-F01",
+      "side": "blue",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 83.75,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "BAB-F01",
+      "side": "blue",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 100,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "BAB-F01",
+      "side": "blue",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 4,
+      "jointSuccess": 0,
+      "sharedFailure": 0,
+      "averageScore": 98.75,
+      "outcomes": {
+        "blue_win": 4
+      }
+    },
+    {
+      "scenario": "BAB-F01",
+      "side": "red",
+      "difficulty": "novice",
+      "matches": 4,
+      "missionSuccess": 0,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 80,
+      "outcomes": {
+        "shared_failure": 1,
+        "contested": 3
+      }
+    },
+    {
+      "scenario": "BAB-F01",
+      "side": "red",
+      "difficulty": "standard",
+      "matches": 4,
+      "missionSuccess": 0,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 75,
+      "outcomes": {
+        "shared_failure": 1,
+        "blue_win": 2,
+        "contested": 1
+      }
+    },
+    {
+      "scenario": "BAB-F01",
+      "side": "red",
+      "difficulty": "advanced",
+      "matches": 4,
+      "missionSuccess": 2,
+      "jointSuccess": 0,
+      "sharedFailure": 1,
+      "averageScore": 85,
+      "outcomes": {
+        "shared_failure": 1,
+        "red_win": 2,
+        "contested": 1
+      }
+    }
+  ]
+}

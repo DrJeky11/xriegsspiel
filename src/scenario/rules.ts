@@ -3,6 +3,7 @@ import type { Force, Piece, PieceCatalog, PieceRules, LabState, LabAction, Evalu
 import { neighbors, hexDistance } from '../pacific/terrain.ts';
 import type { TerrainMap } from '../pacific/terrain.ts';
 import { DEFAULT_MAP } from './maps.ts';
+import { vesselTerrainReason } from './navigation.ts';
 
 export const SCENARIO_VERSION = 'geographic-tabletop/0.1.0';
 export const RULES_VERSION = 'geographic-movement/0.1.0';
@@ -25,7 +26,7 @@ export interface Exercise {
   pieces: ScenarioPiece[]; events: Event[];
 }
 export interface Preview extends Omit<Evaluation, 'path'> { path: string[] }
-export interface Save { schema: string; exercise: Exercise }
+export interface Save { schema: string; exercise: Exercise; capture?: { runId: string; serviceRevision: number } }
 // Authored demonstration, never an order of battle. Stable variants, individually identified instances.
 export const DEMO = [
   { force: 'blue', definitionId: 'piece-318957732468f616f5ad6c99ddeeaa0f', label: 'M1A2', role: 'ground' },
@@ -90,8 +91,7 @@ export class GeographicRules {
         if (profile.layer === 'air') return null;
         if (cell.containsReef || cell.terrain === 'reef' || cell.terrain === 'lagoon') return 'Reef and lagoon surface travel is excluded: depth and passages are unknown. Air may overfly.';
         if (ships.has(profile.id)) {
-          if (cell.terrain === 'ocean' || (profile.id === 'landing-craft' && cell.terrain === 'coast')) return null;
-          return profile.id === 'landing-craft' ? 'Landing craft use ocean or mixed coast; inland land is excluded.' : 'This vessel uses open-water hexes only. Coast is mixed; clearance is unknown.';
+          return vesselTerrainReason(cell, profile.id === 'landing-craft');
         }
         if (cell.terrain === 'land' || cell.terrain === 'coast') return null;
         return amphibious(profile.id) ? null : 'Ground pieces require land or a mixed coast hex. Use a carrier to cross water.';
@@ -160,18 +160,18 @@ export class GeographicRules {
   cargoUsed(state: Exercise, carrierId: string) { return this.lab.cargoUsed(this.labState(state), carrierId); }
   evaluate(state: Exercise, action: Action): Preview {
     this.assertVersion(state);
-    if (!validAction(action)) return { allowed: false, reason: 'Malformed geographic action.', cost: 0, path: [] };
+    if (!validAction(action)) return { allowed: false, reason: 'Malformed geographic action.', reasonCode: 'action.malformed', cost: 0, path: [] };
     const { lab, index } = this.adapter(state.manifest.mapId), current = this.labState(state), map = this.map(state.manifest.mapId);
     try {
       if (action.type === 'deploy') {
-        if (state.pieces.length >= MAX_PIECES) throw new Error(`This tabletop supports at most ${MAX_PIECES} instances.`);
-        const eligible = this.eligibility(action.definitionId, action.force, state.year); if (!eligible.allowed) throw new Error(eligible.reason);
+        if (state.pieces.length >= MAX_PIECES) return {allowed:false, reason:`This tabletop supports at most ${MAX_PIECES} instances.`, reasonCode:'deployment.limit', cost:0, path:[]};
+        const eligible = this.eligibility(action.definitionId, action.force, state.year); if (!eligible.allowed) return {allowed:false, reason:eligible.reason, reasonCode:'deployment.eligibility', cost:0, path:[]};
         lab.deploy(current, action.definitionId, action.force, index.get(action.tileId) ?? -1, action.id);
         return { allowed: true, reason: 'Place one instance with a fresh authored movement budget. Assembly remains available during the exercise.', cost: 0, path: [action.tileId] };
       }
       const result = lab.evaluate(current, this.action(state, action));
       return { ...result, reason: action.type === 'advance' ? 'Start the next planning turn; refresh movement and retain every piece and cargo item. No fixed elapsed time is modeled.' : result.reason, path: result.path.map(i => map.cells[i].id) };
-    } catch (error) { return { allowed: false, reason: error instanceof Error ? error.message : 'Action rejected.', cost: 0, path: [] }; }
+    } catch (error) { return { allowed: false, reason: error instanceof Error ? error.message : 'Action rejected.', reasonCode: 'deployment.invalid', cost: 0, path: [] }; }
   }
   apply(state: Exercise, action: Action): Exercise {
     const preview = this.evaluate(state, action); if (!preview.allowed) throw new Error(preview.reason);

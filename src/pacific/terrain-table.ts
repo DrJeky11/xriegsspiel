@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { SpatialPalette, MiniatureGrabber } from '../play/spatial-palette.ts';
+import { SpatialPalette, MiniatureGrabber, controllerRay } from '../play/spatial-palette.ts';
 import type { GrabBindings } from '../play/spatial-palette.ts';
 import { PieceLayer } from '../play/piece-layer.ts';
 import type { TablePiece } from '../play/piece-layer.ts';
@@ -44,6 +44,7 @@ export class TerrainTable {
   private outline=new THREE.LineLoop(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:'#f1d39c',depthTest:false}));
   private hover=new THREE.LineLoop(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:'#f1e9d4',transparent:true,opacity:.7,depthTest:false}));
   private controllers:THREE.Group[]=[];
+  private grips=new Map<THREE.Group,THREE.Group>();
   private sources=new Map<THREE.Group,XRInputSource>();
   private panelActions:(()=>void)[]=[];
   private recenter=false;
@@ -77,12 +78,12 @@ export class TerrainTable {
     this.palette=new SpatialPalette(this.board,this.panel);this.grabber=new MiniatureGrabber(this.scene,this.board,this.pieceLayer,this.palette,()=>this.scenarioPanel);
     for(let i=0;i<2;i++) {
       const c=this.renderer.xr.getController(i),grip=this.renderer.xr.getControllerGrip(i);this.scene.add(grip);
+      this.grips.set(c,grip);
       c.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3(0,0,-3)]),new THREE.LineBasicMaterial({color:'#eace91'})));
       this.scene.add(c);this.controllers.push(c);
       c.addEventListener('connected',e=>this.sources.set(c,e.data));
-      c.addEventListener('disconnected',()=>{this.grabber.cancel();this.sources.delete(c);});
-      c.addEventListener('squeezestart',()=>this.grabber.begin(c,grip,this.controllerHit(c)));
-      c.addEventListener('squeezeend',()=>this.grabber.end(c,grip));
+      c.addEventListener('disconnected',()=>this.sources.delete(c));
+      this.grabber.bindController(c,grip,()=>this.controllerHit(c));
       c.addEventListener('select',()=>this.selectHit(this.controllerHit(c)));
     }
     this.renderer.xr.addEventListener('sessionstart',()=>{
@@ -166,7 +167,8 @@ export class TerrainTable {
   select(cell:Cell) {this.selected=cell;this.outline.visible=true;this.placeOutline(this.outline,cell);this.drawPanel();}
   setLabels(visible:boolean) {this.labelsShown=visible;this.labels.visible=visible;}
   setScenarioPanel(panel:TablePanel) {this.scenarioPanel=panel;this.drawPanel();}
-  private hoverPanel(hit?:THREE.Intersection){if(!this.scenarioPanel)return;const label=hit?.object===this.panel&&hit.uv?panelTargetAt(this.scenarioPanel,hit.uv.x,hit.uv.y)?.label:undefined;if(this.scenarioPanel.hovered!==label){this.scenarioPanel.hovered=label;this.drawPanel();}}
+  private hoverPanel(hit?:THREE.Intersection){this.palette.hover(hit);if(!this.scenarioPanel)return;const label=hit?.object===this.panel&&hit.uv?panelTargetAt(this.scenarioPanel,hit.uv.x,hit.uv.y)?.label:undefined;if(this.scenarioPanel.hovered!==label){this.scenarioPanel.hovered=label;this.drawPanel();}}
+  get inputDiagnostics(){return this.grabber.diagnostics;}
   setGrabBindings(bindings:GrabBindings){this.grabber.bindings=bindings;}
   cancelGrab(){this.grabber.cancel();}
   setScenarioPieces(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void) {this.pieceLayer.set(pieces,reachable,path,select);}
@@ -182,7 +184,7 @@ export class TerrainTable {
     return this.ray.intersectObjects(this.hits(),false)[0];
   }
   private controllerHit(controller:THREE.Group) {
-    this.ray.ray.origin.setFromMatrixPosition(controller.matrixWorld);this.ray.ray.direction.set(0,0,-1).transformDirection(controller.matrixWorld);
+    this.board.updateWorldMatrix(true,true);this.palette.root.updateWorldMatrix(true,true);controllerRay(this.ray,controller);
     return this.ray.intersectObjects(this.hits(),false)[0];
   }
   private selectHit(hit?:THREE.Intersection) {
@@ -244,8 +246,9 @@ export class TerrainTable {
       this.hover.visible=false;
       let hoveredPiece:string|null=null,hoveredPanel:THREE.Intersection|undefined;
       for(const controller of this.controllers) {
-        const source=this.sources.get(controller);if(!source)continue;
-        const hit=this.controllerHit(controller);if(hit?.object===this.panel)hoveredPanel=hit;hoveredPiece=hit?.object.userData.pieceId??hoveredPiece;if(hit?.instanceId!==undefined&&this.map){this.hover.visible=true;this.placeOutline(this.hover,this.map.cells[hit.instanceId]);}
+        const source=this.sources.get(controller);if(!source||!controller.visible)continue;
+        const grip=this.grips.get(controller)!,rayHit=this.controllerHit(controller),hit=grip.visible?this.grabber.target(grip,rayHit):rayHit;
+        if(hit&&this.palette.hits.includes(hit.object as THREE.Mesh))hoveredPanel=hit;hoveredPiece=hit?.object.userData.pieceId??hoveredPiece;if(hit?.instanceId!==undefined&&this.map){this.hover.visible=true;this.placeOutline(this.hover,this.map.cells[hit.instanceId]);}
         if(this.grabber.holding||this.palette.moving)continue;
         const axes=source.gamepad?.axes;if(!axes||axes.length<4)continue;
         const x=Math.abs(axes[2])>.2?axes[2]:0,y=Math.abs(axes[3])>.2?axes[3]:0;
