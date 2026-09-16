@@ -1,6 +1,6 @@
 # Product requirements and owner clarifications
 
-**Updated: 2026-09-15.** This records the owner's answers in the project conversation. It takes precedence over earlier research assumptions. Acceptance examples below are proposed ways to verify the requirements, not implemented behavior.
+**Updated: 2026-09-16.** This records the owner's answers in the project conversation. It takes precedence over earlier research assumptions. Acceptance examples below are proposed ways to verify the requirements, not implemented behavior.
 
 ## Confirmed direction
 
@@ -74,7 +74,7 @@ The owner also reported that pieces could be moved during the initial hands-on t
 
 ## Remaining open choices
 
-- First original scenario, rules, and level of model detail. Any later adaptation of a named game is a separate choice.
+- First scenario to integrate into the live app and level of model detail. The eight-scenario authoring scope below is confirmed; its parameters remain uncalibrated. Any later adaptation of a named commercial game is a separate choice.
 - Passthrough versus fully virtual surroundings for the initial tabletop, any later first-person observation, and the implementation stack. WebXR remains a research recommendation.
 - Headset/browser split within the initial 2–4 players, whether teams share a room, and remote participation needs.
 - Development time, session length, venue network, and instructor availability.
@@ -97,6 +97,20 @@ Ask the owner **one question at a time**. Do not re-ask the audience, full plann
 ## CPE scope clarification
 
 The owner's initial wording about implementing Command Professional Edition was clarified on 2026-09-15: understand how it works so XRiegsspiel can be an original, substantially better experience. Do not treat a missing CPE license as a blocker, design an adapter by default, or seek access to MCU's cloud. Public documentation research is authorized. Improvements remain goals to demonstrate, not established comparative results.
+
+## Opponent research direction — 2026-09-16
+
+The owner requested a thinking Red opponent with different difficulty levels, suggested decision trees grounded in game mechanics, and authorized investigating small open-source models or a custom trained AI if justified. The requested branch is **`oppoenent-research`**, preserving the supplied spelling. Research must establish what the current application provides, what is missing and how to build the opponent.
+
+The [opponent study](research/opponent-ai.md) recommends an authored behavior/task system, utility scoring and bounded search, followed by measured compact-policy training experiments. Scenario proposals, difficulty parameters, observation contracts, training budgets and the model shortlist are recommendations, not owner-approved game rules or demonstrated strength. This request does not select combat/detection models, change referee authority, or validate national behavior. The research probe exercises existing rules in memory; no playable opponent or trained model has yet been delivered.
+
+**Scenario follow-up:** the owner asked us to examine Command's objectives and how modern wargames determine winners to guide scenario selection. The [objectives study](research/objectives-and-victory.md) recommends **Island Resupply**: Blue delivers supplies before a deadline; Red denies or delays delivery. It replaces the earlier symmetric cargo race as the preferred playable proposal. The specific roster, terrain, delivery thresholds and disruption rules remain design proposals; this research request did not approve them or authorize treating a mission win as proof of learning.
+
+## Scenario-library direction — 2026-09-16
+
+The owner explicitly authorized creative development and internet research for **two scenarios per location: Spratly Islands, Senkaku Islands, Strait of Hormuz and Bab al-Mandeb**. Each pair must contain one real historical incident and one plausible fictional situation, with scoring tables and ways to train opponent models and evaluate humans playing each other. Scenario authoring does not require another selection/approval question.
+
+The [resulting library](scenarios/README.md) provides eight original adaptations, source-backed incident summaries, explicit fictional assumptions, objectives, common facilitated rules, scoring definitions and a training/evaluation protocol. Historical roles use the relevant actors rather than relabeling them as US/China. This does not change the existing equipment catalog. Score weights, abstractions and variants are authored starting values pending calibration; claims of precise event probabilities, national behavioral models, historical reconstruction, trained-policy strength or learning efficacy are not established. The offline calculator scores trusted terminal ledgers only; live-app adjudication, authority and policy training remain separate implementation work.
 
 ## CENTCOM terrain direction — 2026-09-15
 

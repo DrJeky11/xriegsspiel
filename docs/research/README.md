@@ -8,7 +8,13 @@ The [dataset review](dataset-review.md) evaluates four owner-supplied PDFs: two 
 
 The [unit catalog and data-source review](unit-catalog-and-data-sources.md) locates named Command units, explains the boundary between manuals and equipment databases, verifies public WEG and service references, and proposes six initial unit families plus six later candidates. Source specifications remain separate from authored game movement and adjudication rules.
 
+**Opponent follow-up, 2026-09-16:** the owner requested Red opposition with adjustable difficulty and research into training. The [opponent study](opponent-ai.md) audits the implemented geographic mechanics, compares behavior trees/search/learned policies/small language models, and proposes a staged build. Its [executable probe results](opponent-probe.json) establish headless mechanics feasibility, not competitive strength. This new direction supersedes treating human-only opposition as the sole next research path.
+
 ## Main findings
+
+**Scenario-library follow-up, 2026-09-16:** the owner authorized eight researched scenarios, one historical and one plausible fictional exercise per requested region. The [library](../scenarios/README.md) supplies briefs, original adjudication, two-sided scorecards, terminal JSON definitions, an offline calculator and an [AI/human evaluation protocol](../scenarios/ai-evaluation.md). SPR-H01 is the first implementation candidate. These are authored scenarios awaiting playtesting and app integration; no model has been trained. [SC01–SC13](../scenarios/sources.md) record historical sources and disagreements.
+
+**Objectives follow-up, 2026-09-16:** the [victory and scenario study](objectives-and-victory.md) compares Command's authored objectives with Littoral Commander, Flashpoint, Combat Mission and Hedgemony. It recommends an asymmetric **Island Resupply** exercise with explicit delivery/deadline outcomes. This supersedes the symmetric cargo race as the preferred playable scenario; the race remains an optional engineering fixture. The recommendation and numeric thresholds remain proposals, and Red still needs executable disruption rules.
 
 **Equipment implementation follow-up:** the owner subsequently authorized a Chinese Red / US Blue catalog for 1980 onward. The [catalog guide](../../catalog/README.md) records the four-export ODIN import, SQLite database, versioned playable laboratory definitions, component evidence and browser tests. This supersedes the earlier fictional-only catalog proposal; source facts and authored game rules remain separate.
 
@@ -32,8 +38,10 @@ The [unit catalog and data-source review](unit-catalog-and-data-sources.md) loca
 | Build our original operational simulation | [CPE study](command-professional-edition.md), then [simulation blueprint](../design/simulation-blueprint.md) |
 | Choose units and source their behavior or equipment data | [Unit catalog and data sources](unit-catalog-and-data-sources.md) |
 | Design agents, analytics, or an AI tutor | [Cloud and AI Sensei study](ai-sensei-and-wargaming-cloud.md), then [learning evaluation](learning-and-adjudication.md) |
+| Build an adjustable Red opponent or decide whether to train a model | [Opponent research and implementation sequence](opponent-ai.md) |
 | Build or evaluate Quest support | [Quest guide](quest3-development.md), then [prior project](prior-project-audit.md) |
 | Design a scenario or rules engine | [Manual review](manual-review.md), [games](wargames-and-rules.md), then [learning](learning-and-adjudication.md) |
+| Run, score or train on the eight maritime exercises | [Scenario library](../scenarios/README.md), [adjudication](../scenarios/adjudication.md), [AI and human evaluation](../scenarios/ai-evaluation.md) |
 | Verify a claim or refresh research | [Sources](sources.md), then [verification](verification.md) |
 
 ## Evidence conventions
@@ -48,4 +56,4 @@ The [unit catalog and data-source review](unit-catalog-and-data-sources.md) loca
 
 ## Unresolved product questions
 
-The audience, team planning scope, hybrid adjudication, usability needs, original-platform direction, initial 2–4 players, and tabletop-first experience are confirmed in the [requirements](../product-requirements.md). Still unknown: first rules/scenario, model detail, passthrough versus fully virtual surroundings, stack, hackathon duration/rubric, team skills, device/room arrangement, network restrictions, instructor availability, and session length. Ask about these one at a time as needed.
+The audience, team planning scope, hybrid adjudication, usability needs, original-platform direction, initial 2–4 players, tabletop-first experience, and eight-scenario authoring scope are confirmed in the [requirements](../product-requirements.md). Still open: which authored scenario to integrate first (SPR-H01 recommended), model detail, passthrough versus fully virtual surroundings, long-term stack, hackathon duration/rubric, team skills, device/room arrangement, network restrictions, instructor availability, and session length. Ask about these one at a time only when needed; scenario authoring is already authorized.

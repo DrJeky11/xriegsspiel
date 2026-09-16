@@ -25,6 +25,15 @@ Open [Geographic tabletop](http://127.0.0.1:5173/scenario.html) to choose a map/
 
 The [scenario runbook](docs/geographic-scenario.md) documents original coastal/layer rules, versioned persistence, source ambiguities, browser controls, Quest controller paths, verification and the pending hands-on headset checklist. Its journal is separate from the original Island Coordination saved session.
 
+## Authored scenario library
+
+The [maritime crisis library](docs/scenarios/README.md) provides **eight scenarios**: one historical adaptation and one plausible fictional exercise each for the Spratlys, Senkakus, Hormuz and Bab al-Mandeb. Each includes roles, objectives, injects, scoring and AI-training variations. [Common adjudication](docs/scenarios/adjudication.md) and the [training/evaluation protocol](docs/scenarios/ai-evaluation.md) separate game results from learning assessment. Versioned JSON definitions and an offline score calculator are included; these scenarios are not yet integrated into the geographic app or balance-tested.
+
+```sh
+node scripts/score-scenarios.mjs --validate
+node scripts/score-scenarios.mjs scenarios/example-ledger.json
+```
+
 ## Terrain workspaces
 
 Open [CENTCOM terrain](http://127.0.0.1:5173/centcom.html) for **Strait of Hormuz** and **Bab al-Mandeb** hex maps, or [Pacific terrain](http://127.0.0.1:5173/pacific.html) for **Palawan/Spratlys** and **Taiwan/Senkaku**, including Second Thomas Shoal and western Senkaku close-ups. Each workspace has geographic hex tiles and an inspector. These are terrain foundations; the original playable exercise remains separate. See the [CENTCOM record](docs/centcom-terrain.md) and [Pacific data, controls, and verification record](docs/pacific-terrain.md).
@@ -46,6 +55,8 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 | Candidate unit families, movement behavior, equipment facts, and source gaps | [Unit catalog and data sources](docs/research/unit-catalog-and-data-sources.md) |
 | Our own simulation, orders, resources, information, and referee design | [Simulation blueprint](docs/design/simulation-blueprint.md) |
 | MCU cloud context, game-playing AI, APIs, analytics, and an AI Sensei | [Cloud and AI Sensei study](docs/research/ai-sensei-and-wargaming-cloud.md) |
+| Adjustable Red opposition, search versus trained models, current gaps and measured feasibility | [Opponent research](docs/research/opponent-ai.md) |
+| How Command and other wargames define victory; proposed first opposed scenario | [Objectives and victory](docs/research/objectives-and-victory.md) |
 | Supplied tactics references, red-team methods, and empirical education research | [Dataset review](docs/research/dataset-review.md), [original documents](docs/datasets/README.md) |
 | Learning objectives, adjudication, and after-action review | [Learning and adjudication](docs/research/learning-and-adjudication.md) |
 | Prototype sequence and acceptance criteria | [Prototype plan](docs/research/prototype-plan.md) |
@@ -62,5 +73,6 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 - Build our own platform, using CPE as a reference. CPE software access and integration are outside the requested direction.
 - Start with 2–4 players using headsets or browsers and work through the headset tabletop experience first. Passthrough versus fully virtual surroundings remains open.
 - Preserve the owner's long-term AI Sensei vision through agent development, integration, and analytics. The API, headless runner, and teaching roadmap are **proposals**; the reported institutional cloud capacity is not a first-build requirement.
+- Research an adjustable Red opponent. The [opponent study](docs/research/opponent-ai.md) recommends authored planning and bounded search first, then a compact learned policy if evaluation warrants it. `npm run research:opponent` runs a read-only in-memory mechanics probe; a competitive opponent and trained model are not implemented yet.
 
 Research baseline: **15 September 2026**. Recheck platform documentation and game editions before implementation. Future contributors should read [AGENTS.md](AGENTS.md).

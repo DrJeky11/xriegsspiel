@@ -1,0 +1,1470 @@
+{
+  "schema": "xriegsspiel-maritime-scenarios/1",
+  "version": "1.0.0",
+  "authored": "2026-09-16",
+  "scope": "Facilitated scenario authoring and offline terminal scoring; not a runtime geographic-save schema or complete simulation.",
+  "sourceRegister": "docs/scenarios/sources.md",
+  "rulesDocument": "docs/scenarios/adjudication.md",
+  "scenarios": [
+    {
+      "id": "SPR-H01",
+      "title": "Second Thomas Resupply",
+      "version": "1.0.0",
+      "type": "historical",
+      "region": "spratlys",
+      "mapId": "palawan-spratlys/focus",
+      "eventDate": "2024-06-17",
+      "status": "authored-unplaytested",
+      "rulesVersion": "maritime-crisis-rules/1.0.0",
+      "rounds": 6,
+      "commandPointsPerSide": 3,
+      "pressureTokens": 6,
+      "readinessRoster": {
+        "blue": 3,
+        "red": 2
+      },
+      "actors": {
+        "blue": "Philippine resupply team",
+        "red": "Chinese maritime pressure cell"
+      },
+      "brief": "docs/scenarios/spratlys.md#spr-h01-second-thomas-resupply",
+      "sourceIds": [
+        "SC01"
+      ],
+      "metrics": {
+        "delivered": {
+          "min": 0,
+          "max": 4,
+          "description": "Unique S1-S4 receipts at the Outpost by round 6."
+        },
+        "blue_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "blue_ready": {
+          "min": 0,
+          "max": 3,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "blue_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "blue_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        },
+        "red_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "red_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "red_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "red_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        }
+      },
+      "scorecards": {
+        "blue": [
+          {
+            "label": "Supply delivered",
+            "metric": "delivered",
+            "points": 60,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "blue_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "blue_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "blue_reports",
+            "points": 10,
+            "invert": false
+          }
+        ],
+        "red": [
+          {
+            "label": "Supply denied",
+            "metric": "delivered",
+            "points": 60,
+            "invert": true
+          },
+          {
+            "label": "Conduct",
+            "metric": "red_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "red_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "red_reports",
+            "points": 10,
+            "invert": false
+          }
+        ]
+      },
+      "missions": {
+        "blue": {
+          "metric": "delivered",
+          "op": "gte",
+          "value": 3
+        },
+        "red": {
+          "metric": "delivered",
+          "op": "lte",
+          "value": 1
+        }
+      },
+      "sharedRequirement": null,
+      "constraints": []
+    },
+    {
+      "id": "SPR-F01",
+      "title": "The Medical Window",
+      "version": "1.0.0",
+      "type": "fictional",
+      "region": "spratlys",
+      "mapId": "palawan-spratlys/focus",
+      "eventDate": null,
+      "status": "authored-unplaytested",
+      "rulesVersion": "maritime-crisis-rules/1.0.0",
+      "rounds": 8,
+      "commandPointsPerSide": 3,
+      "pressureTokens": 6,
+      "readinessRoster": {
+        "blue": 3,
+        "red": 2
+      },
+      "actors": {
+        "blue": "Philippine relief team",
+        "red": "Chinese maritime pressure cell"
+      },
+      "brief": "docs/scenarios/spratlys.md#spr-f01-the-medical-window",
+      "sourceIds": [
+        "SC02",
+        "SC03"
+      ],
+      "metrics": {
+        "routine_delivered": {
+          "min": 0,
+          "max": 4,
+          "description": "Unique S1-S4 receipts at Outpost by round 8."
+        },
+        "medical_on_time": {
+          "min": 0,
+          "max": 1,
+          "description": "M1 received by end of round 5."
+        },
+        "blue_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "blue_ready": {
+          "min": 0,
+          "max": 3,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "blue_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "blue_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        },
+        "red_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "red_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "red_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "red_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        }
+      },
+      "scorecards": {
+        "blue": [
+          {
+            "label": "Routine supply",
+            "metric": "routine_delivered",
+            "points": 45,
+            "invert": false
+          },
+          {
+            "label": "Medical exception",
+            "metric": "medical_on_time",
+            "points": 15,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "blue_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "blue_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "blue_reports",
+            "points": 10,
+            "invert": false
+          }
+        ],
+        "red": [
+          {
+            "label": "Routine delay",
+            "metric": "routine_delivered",
+            "points": 45,
+            "invert": true
+          },
+          {
+            "label": "Medical exception",
+            "metric": "medical_on_time",
+            "points": 15,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "red_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "red_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "red_reports",
+            "points": 10,
+            "invert": false
+          }
+        ]
+      },
+      "missions": {
+        "blue": {
+          "metric": "routine_delivered",
+          "op": "gte",
+          "value": 3
+        },
+        "red": {
+          "metric": "routine_delivered",
+          "op": "lte",
+          "value": 1
+        }
+      },
+      "sharedRequirement": {
+        "metric": "medical_on_time",
+        "op": "eq",
+        "value": 1
+      },
+      "constraints": []
+    },
+    {
+      "id": "SEN-H01",
+      "title": "Collision and Custody",
+      "version": "1.0.0",
+      "type": "historical",
+      "region": "senkakus",
+      "mapId": "taiwan-senkaku/overview",
+      "eventDate": "2010-09-07",
+      "status": "authored-unplaytested",
+      "rulesVersion": "maritime-crisis-rules/1.0.0",
+      "rounds": 6,
+      "commandPointsPerSide": 3,
+      "pressureTokens": 4,
+      "readinessRoster": {
+        "blue": 2,
+        "red": 1
+      },
+      "actors": {
+        "blue": "Japanese incident-management team",
+        "red": "Chinese consular/negotiating team"
+      },
+      "brief": "docs/scenarios/senkakus.md#sen-h01-collision-and-custody",
+      "sourceIds": [
+        "SC04",
+        "SC05"
+      ],
+      "metrics": {
+        "case_records": {
+          "min": 0,
+          "max": 3,
+          "description": "Distinct preserved E1 time/location, E2 Japanese account, E3 trawler account."
+        },
+        "handover": {
+          "min": 0,
+          "max": 1,
+          "description": "Completed neutral-investigator handover after all three records."
+        },
+        "released": {
+          "min": 0,
+          "max": 1,
+          "description": "Accepted release agreement completed."
+        },
+        "statement_filed": {
+          "min": 0,
+          "max": 1,
+          "description": "Red statement filed, round 2 or later."
+        },
+        "blue_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "blue_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "blue_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "blue_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        },
+        "red_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "red_ready": {
+          "min": 0,
+          "max": 1,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "red_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "red_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        }
+      },
+      "scorecards": {
+        "blue": [
+          {
+            "label": "Case records",
+            "metric": "case_records",
+            "points": 40,
+            "invert": false
+          },
+          {
+            "label": "Investigator handover",
+            "metric": "handover",
+            "points": 20,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "blue_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "blue_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "blue_reports",
+            "points": 10,
+            "invert": false
+          }
+        ],
+        "red": [
+          {
+            "label": "Release",
+            "metric": "released",
+            "points": 45,
+            "invert": false
+          },
+          {
+            "label": "Statement of position",
+            "metric": "statement_filed",
+            "points": 15,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "red_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "red_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "red_reports",
+            "points": 10,
+            "invert": false
+          }
+        ]
+      },
+      "missions": {
+        "blue": {
+          "all": [
+            {
+              "metric": "case_records",
+              "op": "eq",
+              "value": 3
+            },
+            {
+              "metric": "handover",
+              "op": "eq",
+              "value": 1
+            }
+          ]
+        },
+        "red": {
+          "all": [
+            {
+              "metric": "released",
+              "op": "eq",
+              "value": 1
+            },
+            {
+              "metric": "statement_filed",
+              "op": "eq",
+              "value": 1
+            }
+          ]
+        }
+      },
+      "sharedRequirement": null,
+      "constraints": [
+        {
+          "any": [
+            {
+              "metric": "handover",
+              "op": "eq",
+              "value": 0
+            },
+            {
+              "metric": "case_records",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SEN-F01",
+      "title": "Distress Without Consent",
+      "version": "1.0.0",
+      "type": "fictional",
+      "region": "senkakus",
+      "mapId": "taiwan-senkaku/focus",
+      "eventDate": null,
+      "status": "authored-unplaytested",
+      "rulesVersion": "maritime-crisis-rules/1.0.0",
+      "rounds": 8,
+      "commandPointsPerSide": 3,
+      "pressureTokens": 0,
+      "readinessRoster": {
+        "blue": 2,
+        "red": 2
+      },
+      "actors": {
+        "blue": "Japanese rescue/coordination team",
+        "red": "Chinese rescue/coordination team"
+      },
+      "brief": "docs/scenarios/senkakus.md#sen-f01-distress-without-consent",
+      "sourceIds": [
+        "SC06"
+      ],
+      "metrics": {
+        "rescued": {
+          "min": 0,
+          "max": 4,
+          "description": "Distinct G1-G4 groups in safe custody by round 8."
+        },
+        "coordination": {
+          "min": 0,
+          "max": 3,
+          "description": "Accepted lead enum: 0 none, 1 Blue, 2 Red, 3 joint. First agreement is binding."
+        },
+        "blue_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "blue_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "blue_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "blue_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        },
+        "red_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "red_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "red_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "red_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        }
+      },
+      "scorecards": {
+        "blue": [
+          {
+            "label": "Collective recovery",
+            "metric": "rescued",
+            "points": 30,
+            "invert": false
+          },
+          {
+            "label": "Coordinator",
+            "metric": "coordination",
+            "points": 30,
+            "lookup": [
+              0,
+              30,
+              0,
+              15
+            ]
+          },
+          {
+            "label": "Conduct",
+            "metric": "blue_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "blue_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "blue_reports",
+            "points": 10,
+            "invert": false
+          }
+        ],
+        "red": [
+          {
+            "label": "Collective recovery",
+            "metric": "rescued",
+            "points": 30,
+            "invert": false
+          },
+          {
+            "label": "Coordinator",
+            "metric": "coordination",
+            "points": 30,
+            "lookup": [
+              0,
+              0,
+              30,
+              15
+            ]
+          },
+          {
+            "label": "Conduct",
+            "metric": "red_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "red_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "red_reports",
+            "points": 10,
+            "invert": false
+          }
+        ]
+      },
+      "missions": {
+        "blue": {
+          "any": [
+            {
+              "metric": "coordination",
+              "op": "eq",
+              "value": 1
+            },
+            {
+              "metric": "coordination",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        "red": {
+          "any": [
+            {
+              "metric": "coordination",
+              "op": "eq",
+              "value": 2
+            },
+            {
+              "metric": "coordination",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        }
+      },
+      "sharedRequirement": {
+        "metric": "rescued",
+        "op": "gte",
+        "value": 3
+      },
+      "constraints": []
+    },
+    {
+      "id": "HOR-H01",
+      "title": "Stena Impero",
+      "version": "1.0.0",
+      "type": "historical",
+      "region": "hormuz",
+      "mapId": "hormuz",
+      "eventDate": "2019-07-19",
+      "status": "authored-unplaytested",
+      "rulesVersion": "maritime-crisis-rules/1.0.0",
+      "rounds": 6,
+      "commandPointsPerSide": 3,
+      "pressureTokens": 4,
+      "readinessRoster": {
+        "blue": 1,
+        "red": 2
+      },
+      "actors": {
+        "blue": "UK maritime support and merchant coordination",
+        "red": "Iranian maritime pressure cell"
+      },
+      "brief": "docs/scenarios/hormuz.md#hor-h01-stena-impero",
+      "sourceIds": [
+        "SC07",
+        "SC08"
+      ],
+      "metrics": {
+        "transited": {
+          "min": 0,
+          "max": 1,
+          "description": "T1 exited by round 6."
+        },
+        "on_time": {
+          "min": 0,
+          "max": 1,
+          "description": "T1 exited by end of round 4."
+        },
+        "detained": {
+          "min": 0,
+          "max": 1,
+          "description": "Authored custody transition after two qualifying consecutive delays."
+        },
+        "welfare_checks": {
+          "min": 0,
+          "max": 2,
+          "description": "Protected welfare checks on two distinct rounds, capped at two."
+        },
+        "blue_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "blue_ready": {
+          "min": 0,
+          "max": 1,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "blue_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "blue_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        },
+        "red_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "red_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "red_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "red_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        }
+      },
+      "scorecards": {
+        "blue": [
+          {
+            "label": "Transit",
+            "metric": "transited",
+            "points": 45,
+            "invert": false
+          },
+          {
+            "label": "On-time passage",
+            "metric": "on_time",
+            "points": 15,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "blue_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "blue_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "blue_reports",
+            "points": 10,
+            "invert": false
+          }
+        ],
+        "red": [
+          {
+            "label": "Custody outcome",
+            "metric": "detained",
+            "points": 60,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "red_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "red_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "red_reports",
+            "points": 10,
+            "invert": false
+          }
+        ]
+      },
+      "missions": {
+        "blue": {
+          "metric": "transited",
+          "op": "eq",
+          "value": 1
+        },
+        "red": {
+          "metric": "detained",
+          "op": "eq",
+          "value": 1
+        }
+      },
+      "sharedRequirement": {
+        "metric": "welfare_checks",
+        "op": "eq",
+        "value": 2
+      },
+      "constraints": [
+        {
+          "any": [
+            {
+              "metric": "transited",
+              "op": "eq",
+              "value": 0
+            },
+            {
+              "metric": "detained",
+              "op": "eq",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "metric": "on_time",
+          "op": "lte",
+          "otherMetric": "transited"
+        }
+      ]
+    },
+    {
+      "id": "HOR-F01",
+      "title": "The Unreliable Picture",
+      "version": "1.0.0",
+      "type": "fictional",
+      "region": "hormuz",
+      "mapId": "hormuz",
+      "eventDate": null,
+      "status": "authored-unplaytested",
+      "rulesVersion": "maritime-crisis-rules/1.0.0",
+      "rounds": 8,
+      "commandPointsPerSide": 3,
+      "pressureTokens": 6,
+      "readinessRoster": {
+        "blue": 2,
+        "red": 2
+      },
+      "actors": {
+        "blue": "Merchant passage and welfare team",
+        "red": "Competing maritime administrative cell"
+      },
+      "brief": "docs/scenarios/hormuz.md#hor-f01-the-unreliable-picture",
+      "sourceIds": [
+        "SC09"
+      ],
+      "metrics": {
+        "transited": {
+          "min": 0,
+          "max": 5,
+          "description": "Unique T1-T5 Gate-to-Exit completions by round 8."
+        },
+        "priority_transited": {
+          "min": 0,
+          "max": 1,
+          "description": "Priority T1 is among completed exits."
+        },
+        "welfare_complete": {
+          "min": 0,
+          "max": 1,
+          "description": "Protected welfare intervention completed by round 4."
+        },
+        "blue_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "blue_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "blue_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "blue_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        },
+        "red_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "red_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "red_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "red_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        }
+      },
+      "scorecards": {
+        "blue": [
+          {
+            "label": "Passage",
+            "metric": "transited",
+            "points": 45,
+            "invert": false
+          },
+          {
+            "label": "Priority passage",
+            "metric": "priority_transited",
+            "points": 15,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "blue_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "blue_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "blue_reports",
+            "points": 10,
+            "invert": false
+          }
+        ],
+        "red": [
+          {
+            "label": "Passage delay",
+            "metric": "transited",
+            "points": 45,
+            "invert": true
+          },
+          {
+            "label": "Priority delay",
+            "metric": "priority_transited",
+            "points": 15,
+            "invert": true
+          },
+          {
+            "label": "Conduct",
+            "metric": "red_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "red_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "red_reports",
+            "points": 10,
+            "invert": false
+          }
+        ]
+      },
+      "missions": {
+        "blue": {
+          "all": [
+            {
+              "metric": "transited",
+              "op": "gte",
+              "value": 4
+            },
+            {
+              "metric": "priority_transited",
+              "op": "eq",
+              "value": 1
+            }
+          ]
+        },
+        "red": {
+          "metric": "transited",
+          "op": "lte",
+          "value": 2
+        }
+      },
+      "sharedRequirement": {
+        "metric": "welfare_complete",
+        "op": "eq",
+        "value": 1
+      },
+      "constraints": [
+        {
+          "metric": "priority_transited",
+          "op": "lte",
+          "otherMetric": "transited"
+        },
+        {
+          "any": [
+            {
+              "metric": "transited",
+              "op": "lte",
+              "value": 4
+            },
+            {
+              "metric": "priority_transited",
+              "op": "eq",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BAB-H01",
+      "title": "After Swift",
+      "version": "1.0.0",
+      "type": "historical",
+      "region": "bab-al-mandeb",
+      "mapId": "bab-al-mandeb",
+      "eventDate": "2016-10-01",
+      "status": "authored-unplaytested",
+      "rulesVersion": "maritime-crisis-rules/1.0.0",
+      "rounds": 8,
+      "commandPointsPerSide": 3,
+      "pressureTokens": 4,
+      "readinessRoster": {
+        "blue": 3,
+        "red": 2
+      },
+      "actors": {
+        "blue": "UAE-associated emergency maritime response",
+        "red": "Houthi-linked maritime pressure cell"
+      },
+      "brief": "docs/scenarios/bab-al-mandeb.md#bab-h01-after-swift",
+      "sourceIds": [
+        "SC10",
+        "SC11",
+        "SC12"
+      ],
+      "metrics": {
+        "rescued": {
+          "min": 0,
+          "max": 4,
+          "description": "Unique fictional G1-G4 groups recovered by round 8."
+        },
+        "transited": {
+          "min": 0,
+          "max": 2,
+          "description": "Unique fictional T1-T2 exits by round 8."
+        },
+        "standdown": {
+          "min": 0,
+          "max": 1,
+          "description": "Noninterference proposal from round 5 onward accepted in a later round."
+        },
+        "blue_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "blue_ready": {
+          "min": 0,
+          "max": 3,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "blue_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "blue_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        },
+        "red_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "red_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "red_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "red_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        }
+      },
+      "scorecards": {
+        "blue": [
+          {
+            "label": "Recovery",
+            "metric": "rescued",
+            "points": 40,
+            "invert": false
+          },
+          {
+            "label": "Continuity",
+            "metric": "transited",
+            "points": 20,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "blue_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "blue_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "blue_reports",
+            "points": 10,
+            "invert": false
+          }
+        ],
+        "red": [
+          {
+            "label": "Passage pause",
+            "metric": "transited",
+            "points": 40,
+            "invert": true
+          },
+          {
+            "label": "Noninterference statement",
+            "metric": "standdown",
+            "points": 20,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "red_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "red_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "red_reports",
+            "points": 10,
+            "invert": false
+          }
+        ]
+      },
+      "missions": {
+        "blue": {
+          "metric": "transited",
+          "op": "gte",
+          "value": 1
+        },
+        "red": {
+          "all": [
+            {
+              "metric": "transited",
+              "op": "eq",
+              "value": 0
+            },
+            {
+              "metric": "standdown",
+              "op": "eq",
+              "value": 1
+            }
+          ]
+        }
+      },
+      "sharedRequirement": {
+        "metric": "rescued",
+        "op": "gte",
+        "value": 3
+      },
+      "constraints": []
+    },
+    {
+      "id": "BAB-F01",
+      "title": "Convoy and Mayday",
+      "version": "1.0.0",
+      "type": "fictional",
+      "region": "bab-al-mandeb",
+      "mapId": "bab-al-mandeb",
+      "eventDate": null,
+      "status": "authored-unplaytested",
+      "rulesVersion": "maritime-crisis-rules/1.0.0",
+      "rounds": 8,
+      "commandPointsPerSide": 3,
+      "pressureTokens": 6,
+      "readinessRoster": {
+        "blue": 3,
+        "red": 2
+      },
+      "actors": {
+        "blue": "Merchant continuity and rescue team",
+        "red": "Fictional maritime pressure cell"
+      },
+      "brief": "docs/scenarios/bab-al-mandeb.md#bab-f01-convoy-and-mayday",
+      "sourceIds": [
+        "SC10",
+        "SC13"
+      ],
+      "metrics": {
+        "transited": {
+          "min": 0,
+          "max": 4,
+          "description": "Unique T1-T4 exits by round 8."
+        },
+        "aid_transited": {
+          "min": 0,
+          "max": 1,
+          "description": "Aid vessel T1 is among completed exits."
+        },
+        "rescued_on_time": {
+          "min": 0,
+          "max": 2,
+          "description": "Unique G1/G2 rescue groups recovered by end of round 6."
+        },
+        "blue_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "blue_ready": {
+          "min": 0,
+          "max": 3,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "blue_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "blue_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        },
+        "red_incidents": {
+          "min": 0,
+          "max": 4,
+          "description": "Referee-attributed noncritical incidents, capped at four; retain uncapped events."
+        },
+        "red_ready": {
+          "min": 0,
+          "max": 2,
+          "description": "Available designated response assets at endpoint; excludes neutral merchants and cargo."
+        },
+        "red_reports": {
+          "min": 0,
+          "max": 2,
+          "description": "Distinct scenario Q1/Q2 reports verified by this side."
+        },
+        "red_critical": {
+          "min": 0,
+          "max": 1,
+          "description": "Referee-confirmed intentional critical constraint breach: 0 no, 1 yes."
+        }
+      },
+      "scorecards": {
+        "blue": [
+          {
+            "label": "Passage",
+            "metric": "transited",
+            "points": 40,
+            "invert": false
+          },
+          {
+            "label": "Aid shipment",
+            "metric": "aid_transited",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Rescue",
+            "metric": "rescued_on_time",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "blue_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "blue_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "blue_reports",
+            "points": 10,
+            "invert": false
+          }
+        ],
+        "red": [
+          {
+            "label": "Passage delay",
+            "metric": "transited",
+            "points": 40,
+            "invert": true
+          },
+          {
+            "label": "Rescue",
+            "metric": "rescued_on_time",
+            "points": 20,
+            "invert": false
+          },
+          {
+            "label": "Conduct",
+            "metric": "red_incidents",
+            "points": 20,
+            "invert": true
+          },
+          {
+            "label": "Readiness",
+            "metric": "red_ready",
+            "points": 10,
+            "invert": false
+          },
+          {
+            "label": "Verified reports",
+            "metric": "red_reports",
+            "points": 10,
+            "invert": false
+          }
+        ]
+      },
+      "missions": {
+        "blue": {
+          "all": [
+            {
+              "metric": "transited",
+              "op": "gte",
+              "value": 3
+            },
+            {
+              "metric": "aid_transited",
+              "op": "eq",
+              "value": 1
+            }
+          ]
+        },
+        "red": {
+          "metric": "transited",
+          "op": "lte",
+          "value": 1
+        }
+      },
+      "sharedRequirement": {
+        "metric": "rescued_on_time",
+        "op": "eq",
+        "value": 2
+      },
+      "constraints": [
+        {
+          "metric": "aid_transited",
+          "op": "lte",
+          "otherMetric": "transited"
+        },
+        {
+          "any": [
+            {
+              "metric": "transited",
+              "op": "lte",
+              "value": 3
+            },
+            {
+              "metric": "aid_transited",
+              "op": "eq",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "xriegsspiel-terminal-ledger/1",
+  "scenarioId": "SPR-H01",
+  "scenarioVersion": "1.0.0",
+  "rulesVersion": "maritime-crisis-rules/1.0.0",
+  "status": "completed",
+  "completedRounds": 6,
+  "refereeModified": false,
+  "provenance": "Synthetic worked example, not a played episode or training demonstration.",
+  "metrics": {
+    "delivered": 3,
+    "blue_incidents": 0,
+    "blue_ready": 3,
+    "blue_reports": 2,
+    "blue_critical": 0,
+    "red_incidents": 0,
+    "red_ready": 2,
+    "red_reports": 2,
+    "red_critical": 0
+  }
+}

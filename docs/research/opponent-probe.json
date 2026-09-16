@@ -1,0 +1,291 @@
+{
+  "schema": "xriegsspiel-opponent-probe/1",
+  "measuredAt": "2026-09-16T16:35:11.140Z",
+  "baseCommit": "f25a7a7a02cd4fec40f427db1732da01ab94e829",
+  "probeSha256": "c6b74dcfb4438f2ffcfcf71876a7c683485fe5298f86c0650e27ea55c8699e9e",
+  "host": {
+    "node": "v26.0.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5 Pro",
+    "logicalCpus": 18,
+    "memoryGiB": 48
+  },
+  "manifest": {
+    "scenarioVersion": "geographic-tabletop/0.1.0",
+    "rulesVersion": "geographic-movement/0.1.0",
+    "catalogVersion": "pieces/0.1.0",
+    "equipmentVersion": "odin-catalog/0.1.0",
+    "profileVersion": "piece-lab/0.1.0",
+    "mapId": "taiwan-senkaku/focus",
+    "mapVersion": "pacific-terrain/0.1.0",
+    "geographyVersion": "pacific-geography/0.1.0",
+    "sourceHashes": [
+      "f4d6725971177341fd3dcbc0e12a4ae085b0c38e0d90d899af1d036a53ebd69e"
+    ]
+  },
+  "maps": [
+    {
+      "id": "palawan-spratlys/overview",
+      "tiles": 2257,
+      "sides": {
+        "red": {
+          "pieces": 3,
+          "candidates": 265,
+          "byType": {
+            "move": 261,
+            "load": 1,
+            "unload": 0,
+            "hold": 3
+          }
+        },
+        "blue": {
+          "pieces": 4,
+          "candidates": 294,
+          "byType": {
+            "move": 289,
+            "load": 2,
+            "unload": 0,
+            "hold": 3
+          }
+        }
+      }
+    },
+    {
+      "id": "palawan-spratlys/focus",
+      "tiles": 1947,
+      "sides": {
+        "red": {
+          "pieces": 1,
+          "candidates": 215,
+          "byType": {
+            "move": 214,
+            "load": 0,
+            "unload": 0,
+            "hold": 1
+          }
+        },
+        "blue": {
+          "pieces": 1,
+          "candidates": 215,
+          "byType": {
+            "move": 214,
+            "load": 0,
+            "unload": 0,
+            "hold": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "taiwan-senkaku/overview",
+      "tiles": 2373,
+      "sides": {
+        "red": {
+          "pieces": 3,
+          "candidates": 305,
+          "byType": {
+            "move": 301,
+            "load": 1,
+            "unload": 0,
+            "hold": 3
+          }
+        },
+        "blue": {
+          "pieces": 4,
+          "candidates": 308,
+          "byType": {
+            "move": 303,
+            "load": 2,
+            "unload": 0,
+            "hold": 3
+          }
+        }
+      }
+    },
+    {
+      "id": "taiwan-senkaku/focus",
+      "tiles": 2677,
+      "sides": {
+        "red": {
+          "pieces": 3,
+          "candidates": 287,
+          "byType": {
+            "move": 283,
+            "load": 1,
+            "unload": 0,
+            "hold": 3
+          }
+        },
+        "blue": {
+          "pieces": 4,
+          "candidates": 292,
+          "byType": {
+            "move": 287,
+            "load": 2,
+            "unload": 0,
+            "hold": 3
+          }
+        }
+      }
+    },
+    {
+      "id": "hormuz",
+      "tiles": 6395,
+      "sides": {
+        "red": {
+          "pieces": 3,
+          "candidates": 276,
+          "byType": {
+            "move": 272,
+            "load": 1,
+            "unload": 0,
+            "hold": 3
+          }
+        },
+        "blue": {
+          "pieces": 4,
+          "candidates": 278,
+          "byType": {
+            "move": 273,
+            "load": 2,
+            "unload": 0,
+            "hold": 3
+          }
+        }
+      }
+    },
+    {
+      "id": "bab-al-mandeb",
+      "tiles": 17331,
+      "sides": {
+        "red": {
+          "pieces": 3,
+          "candidates": 286,
+          "byType": {
+            "move": 282,
+            "load": 1,
+            "unload": 0,
+            "hold": 3
+          }
+        },
+        "blue": {
+          "pieces": 4,
+          "candidates": 302,
+          "byType": {
+            "move": 297,
+            "load": 2,
+            "unload": 0,
+            "hold": 3
+          }
+        }
+      }
+    }
+  ],
+  "performanceSamples": [
+    {
+      "historyEvents": 7,
+      "enumerateRed": {
+        "samples": 20,
+        "medianMs": 0.618,
+        "p95Ms": 0.665,
+        "meanMs": 0.632
+      },
+      "applyOneMoveIncludingValidationAndHistoryCopy": {
+        "samples": 48,
+        "medianMs": 0.644,
+        "p95Ms": 0.875,
+        "meanMs": 0.597
+      }
+    },
+    {
+      "historyEvents": 135,
+      "enumerateRed": {
+        "samples": 20,
+        "medianMs": 0.581,
+        "p95Ms": 0.702,
+        "meanMs": 0.595
+      },
+      "applyOneMoveIncludingValidationAndHistoryCopy": {
+        "samples": 48,
+        "medianMs": 0.644,
+        "p95Ms": 0.744,
+        "meanMs": 0.57
+      }
+    }
+  ],
+  "smoke": {
+    "acceptedCommands": 5,
+    "duplicateAndStaleChecks": true,
+    "transportAndIdentityChecks": true,
+    "exactReplay": true,
+    "acceptsBlueCommandWithoutActor": true,
+    "initialHash": "07eb2f2ef9e5fbaf9d8ff06d58d88fdf914c1861a8f4132e9d5bf475d36947e5",
+    "finalHash": "a276bac70632ca623964d0000886b30a068388d32bdf42db1ecac3b92e973086",
+    "decisions": [
+      {
+        "id": "probe-0",
+        "revision": 0,
+        "operation": {
+          "type": "action",
+          "action": {
+            "type": "load",
+            "pieceId": "R-05",
+            "carrierId": "R-06"
+          }
+        }
+      },
+      {
+        "id": "probe-1",
+        "revision": 1,
+        "operation": {
+          "type": "action",
+          "action": {
+            "type": "advance"
+          }
+        }
+      },
+      {
+        "id": "probe-2",
+        "revision": 2,
+        "operation": {
+          "type": "action",
+          "action": {
+            "type": "unload",
+            "pieceId": "R-05",
+            "tileId": "pacific-terrain/0.1.0:taiwan-senkaku/focus:-20,13"
+          }
+        }
+      },
+      {
+        "id": "probe-3",
+        "revision": 3,
+        "operation": {
+          "type": "action",
+          "action": {
+            "type": "move",
+            "pieceId": "R-06",
+            "tileId": "pacific-terrain/0.1.0:taiwan-senkaku/focus:-22,14"
+          }
+        }
+      },
+      {
+        "id": "probe-4",
+        "revision": 4,
+        "operation": {
+          "type": "action",
+          "action": {
+            "type": "hold",
+            "pieceId": "B-03"
+          }
+        }
+      }
+    ]
+  },
+  "limits": [
+    "Full-information small demonstrations only; no competitive objective, agent or training.",
+    "Counts omit setup, advance and redundant zero-budget holds; not complete game-tree sizes.",
+    "Timing is a warm single-process microbenchmark, not episode throughput or a Quest/network test.",
+    "No disk journal, policy inference, observation filter, 200-piece workload or concurrent users measured."
+  ]
+}
