@@ -1,6 +1,6 @@
 # Product requirements and owner clarifications
 
-**Updated: 2026-09-15.** This records the owner's answers in the project conversation. It takes precedence over earlier research assumptions. Acceptance examples below are proposed ways to verify the requirements, not implemented behavior.
+**Updated: 2026-09-16.** This records the owner's answers in the project conversation. It takes precedence over earlier research assumptions. Acceptance examples below are proposed ways to verify the requirements, not implemented behavior.
 
 ## Confirmed direction
 
@@ -113,3 +113,20 @@ The owner selected generated option **01, corner buttons and sliding drawer**, a
 ## Geographic integration milestone — 2026-09-16 UTC
 
 The owner requested a working catalog/geographic tabletop slice: map/year setup, Red/Blue assembly, recognizable pieces, inspectable rules/source evidence, hex movement and transport, save/reopen, browser/Quest paths, and verification. This authorizes the integrated scenario workspace described in [the implementation record](geographic-scenario.md). Western Senkaku / 2026, an untimed budget turn, seven demonstration pieces, conservative coast/reef rules and 200-instance limit are documented implementation defaults. They do not establish real deployments, model fidelity, historical service intervals or a universal cadence for other games. Combat, detection, fog of war, AI and opposing-player permissions remain outside this milestone. Hands-on headset usability remains pending.
+
+## Consolidate play into Pacific and CENTCOM — 2026-09-16
+
+**Confirmed owner direction:** preserve the current project in Git before removing superseded application features. Keep a local `main` baseline, use a feature branch for the consolidation, and begin publishing work to the project's remote repository.
+
+- Retire the Island Coordination mock exercise from the active application. The owner considers its initial immersive interaction experiment successful; this does not establish verification of every later headset feature. Preserve its implementation in the baseline history.
+- Make the existing **Pacific** and **CENTCOM** workspaces, including their regional and focus maps, the primary places for map building and play.
+- Preserve their existing terrain presentation, including coastlines, relief, reef/lagoon features, labels, inspection and display controls. Their authored heights remain illustrative; no measured elevation or bathymetry is implied.
+- Bring catalog selection, individual piece placement, movement, transport and associated bookkeeping into those workspaces, using the existing equipment database and shared validated rules.
+- Make selection, placement and play available in both browser and immersive VR/MR. The current browser-only catalog assembly path does not satisfy this direction.
+- Retire the separate Geographic tabletop entry point after its useful mechanics have been integrated. Do not replace the established maps with another simplified presentation.
+
+**Local observation:** Geographic tabletop already reuses the original geographic datasets and map builders. However, its CENTCOM adapter reduces `upland` to `land` and `coastal-water` to `ocean`, omits original relief and landmark presentation, and uses the Pacific renderer. Preserving the original CENTCOM renderer and terrain detail is a concrete integration requirement, not a request to source replacement geography.
+
+**Implementation sequence:** preserve the baseline; integrate shared piece commands and state with each existing terrain workspace; add controller-accessible catalog selection and placement; remove obsolete application routes and mock-exercise code; then verify terrain preservation, browser workflows, persistence and immersive input separately. The existing browser/VR/MR paths and the new parity requirement must be reported as implemented versus actually tested.
+
+**Open product question:** whether switching maps should retain a separate exercise with its pieces and progress for each map. The existing single-active-exercise behavior is not confirmed as the desired consolidated behavior.
