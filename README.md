@@ -60,3 +60,5 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 - Preserve the owner's long-term AI Sensei vision through agent development, integration, and analytics. The API, headless runner, and teaching roadmap are **proposals**; the reported institutional cloud capacity is not a first-build requirement.
 
 Research baseline: **15 September 2026**. Recheck platform documentation and game editions before implementation. Future contributors should read [AGENTS.md](AGENTS.md).
+
+The VR/MR unit palette now uses miniature tiles grouped by force, domain and role. Hold the controller grip to pick up a miniature; lower it over a valid hex and release to place or move it. Grip the palette handle to reposition it, and use − / Units + to hide or reopen it. Models are stylized classes with real catalog names; exact vehicle/variant artwork and physical Quest usability remain separate verification work. See [the controls and checklist](docs/playable-terrain.md#vr--mr-controller-controls).

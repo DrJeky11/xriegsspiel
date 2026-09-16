@@ -1,7 +1,9 @@
 import * as THREE from 'three';
+import { SpatialPalette, MiniatureGrabber } from '../play/spatial-palette.ts';
+import type { GrabBindings } from '../play/spatial-palette.ts';
 import { PieceLayer } from '../play/piece-layer.ts';
 import type { TablePiece } from '../play/piece-layer.ts';
-import { drawPanel, activatePanel } from '../play/panel.ts';
+import { drawPanel, activatePanel, panelTargetAt } from '../play/panel.ts';
 import type { TablePanel } from '../play/panel.ts';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { project, keyOf } from './terrain.ts';
@@ -26,6 +28,8 @@ export class TerrainTable {
   terrain=new THREE.Group();
   labels=new THREE.Group();
   private pieceLayer=new PieceLayer();
+  private palette:SpatialPalette;
+  private grabber:MiniatureGrabber;
   private scenarioPanel:TablePanel|null=null;
   private guides=new THREE.Group();
   ray=new THREE.Raycaster();
@@ -70,20 +74,23 @@ export class TerrainTable {
     this.panelTexture=new THREE.CanvasTexture(this.panelCanvas);this.panelTexture.colorSpace=THREE.SRGBColorSpace;
     this.panel=new THREE.Mesh(new THREE.PlaneGeometry(.64,.8),new THREE.MeshBasicMaterial({map:this.panelTexture,side:THREE.DoubleSide}));
     this.panel.position.set(1.52,.32,0);this.panel.rotation.y=-.3;this.panel.visible=false;this.board.add(this.panel);
+    this.palette=new SpatialPalette(this.board,this.panel);this.grabber=new MiniatureGrabber(this.scene,this.board,this.pieceLayer,this.palette,()=>this.scenarioPanel);
     for(let i=0;i<2;i++) {
-      const c=this.renderer.xr.getController(i);
+      const c=this.renderer.xr.getController(i),grip=this.renderer.xr.getControllerGrip(i);this.scene.add(grip);
       c.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3(0,0,-3)]),new THREE.LineBasicMaterial({color:'#eace91'})));
       this.scene.add(c);this.controllers.push(c);
       c.addEventListener('connected',e=>this.sources.set(c,e.data));
-      c.addEventListener('disconnected',()=>this.sources.delete(c));
+      c.addEventListener('disconnected',()=>{this.grabber.cancel();this.sources.delete(c);});
+      c.addEventListener('squeezestart',()=>this.grabber.begin(c,grip,this.controllerHit(c)));
+      c.addEventListener('squeezeend',()=>this.grabber.end(c,grip));
       c.addEventListener('select',()=>this.selectHit(this.controllerHit(c)));
     }
     this.renderer.xr.addEventListener('sessionstart',()=>{
-      this.controls.enabled=false;this.panel.visible=true;this.recenter=true;this.stats.xrSessionStarts++;
+      this.controls.enabled=false;this.palette.setActive(true);this.recenter=true;this.stats.xrSessionStarts++;
       this.renderer.setClearColor('#102630',this.xrMode==='immersive-ar'?0:1);callbacks.mode(true);
     });
     this.renderer.xr.addEventListener('sessionend',()=>{
-      this.controls.enabled=true;this.panel.visible=false;this.renderer.setClearColor('#102630',1);this.reset();this.resize();callbacks.mode(false);
+      this.grabber.cancel();this.controls.enabled=true;this.palette.setActive(false);this.renderer.setClearColor('#102630',1);this.reset();this.resize();callbacks.mode(false);
     });
     this.renderer.domElement.addEventListener('pointerdown',e=>{this.start={x:e.clientX,y:e.clientY};});
     this.renderer.domElement.addEventListener('pointerup',e=>{
@@ -91,11 +98,11 @@ export class TerrainTable {
       this.selectHit(this.pointerHit(e));
     });
     this.renderer.domElement.addEventListener('pointermove',e=>{
-      const hit=this.pointerHit(e);const cell=hit?.instanceId!==undefined?this.map?.cells[hit.instanceId]:null;
+      const hit=this.pointerHit(e);this.pieceLayer.hover(hit?.object.userData.pieceId??null);const cell=hit?.instanceId!==undefined?this.map?.cells[hit.instanceId]:null;
       this.hover.visible=!!cell;if(cell)this.placeOutline(this.hover,cell);
       this.renderer.domElement.style.cursor=cell?'crosshair':'grab';
     });
-    this.renderer.domElement.addEventListener('pointerleave',()=>{this.hover.visible=false;});
+    this.renderer.domElement.addEventListener('pointerleave',()=>{this.hover.visible=false;this.pieceLayer.hover(null);});
     this.renderer.domElement.addEventListener('keydown',e=>{
       const delta=({ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1],q:[-1,1],e:[1,-1]} as Record<string,number[]>)[e.key];
       if(!delta||!this.map)return;e.preventDefault();
@@ -159,6 +166,9 @@ export class TerrainTable {
   select(cell:Cell) {this.selected=cell;this.outline.visible=true;this.placeOutline(this.outline,cell);this.drawPanel();}
   setLabels(visible:boolean) {this.labelsShown=visible;this.labels.visible=visible;}
   setScenarioPanel(panel:TablePanel) {this.scenarioPanel=panel;this.drawPanel();}
+  private hoverPanel(hit?:THREE.Intersection){if(!this.scenarioPanel)return;const label=hit?.object===this.panel&&hit.uv?panelTargetAt(this.scenarioPanel,hit.uv.x,hit.uv.y)?.label:undefined;if(this.scenarioPanel.hovered!==label){this.scenarioPanel.hovered=label;this.drawPanel();}}
+  setGrabBindings(bindings:GrabBindings){this.grabber.bindings=bindings;}
+  cancelGrab(){this.grabber.cancel();}
   setScenarioPieces(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void) {this.pieceLayer.set(pieces,reachable,path,select);}
   focusCell(cell:Cell) {
     if(this.renderer.xr.isPresenting)return;
@@ -166,7 +176,7 @@ export class TerrainTable {
     const offset=this.camera.position.clone().sub(this.controls.target).normalize().multiplyScalar(.9);
     this.controls.target.copy(target);this.camera.position.copy(target).add(offset);this.controls.update();
   }
-  private hits() {return [this.tiles,this.panel.visible?this.panel:null,...this.pieceLayer.pieceHits].filter((o):o is THREE.Mesh=>o!==null);}
+  private hits() {return [this.tiles,...this.palette.hits,...this.pieceLayer.pieceHits.filter(m=>m.visible)].filter((o):o is THREE.Mesh=>o!==null);}
   private pointerHit(e:PointerEvent) {
     const r=this.renderer.domElement.getBoundingClientRect();this.ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),this.camera);
     return this.ray.intersectObjects(this.hits(),false)[0];
@@ -176,7 +186,8 @@ export class TerrainTable {
     return this.ray.intersectObjects(this.hits(),false)[0];
   }
   private selectHit(hit?:THREE.Intersection) {
-    if(!hit)return;
+    if(!hit||this.grabber.holding||this.palette.moving)return;
+    if(this.palette.click(hit))return;
     if(hit.object.userData.pieceId&&this.pieceLayer.select){this.pieceLayer.select(hit.object.userData.pieceId);return;}
     if(hit.object===this.panel&&hit.uv) {
       if(this.scenarioPanel){activatePanel(this.scenarioPanel,hit.uv.x,hit.uv.y);return;}
@@ -218,7 +229,7 @@ export class TerrainTable {
   async enter(mode:'immersive-vr'|'immersive-ar') {
     if(!navigator.xr)throw new Error('WebXR is unavailable in this browser.');this.xrMode=mode;
     const session=await navigator.xr.requestSession(mode,{requiredFeatures:['local-floor']});
-    try{await this.renderer.xr.setSession(session);}catch(error){await session.end();throw error;}
+    try{session.addEventListener('visibilitychange',()=>{if(session.visibilityState!=='visible')this.grabber.cancel();});await this.renderer.xr.setSession(session);}catch(error){await session.end();throw error;}
   }
   async exit() {await this.renderer.xr.getSession()?.end();}
   private resize() {if(this.renderer.xr.isPresenting)return;const w=this.container.clientWidth,h=this.container.clientHeight;if(!w||!h)return;this.renderer.setSize(w,h);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
@@ -231,15 +242,19 @@ export class TerrainTable {
         if(pose){const p=pose.transform.position,q=pose.transform.orientation;const f=new THREE.Vector3(0,0,-1).applyQuaternion(new THREE.Quaternion(q.x,q.y,q.z,q.w));f.y=0;f.normalize();this.board.position.set(p.x+f.x*1.2,p.y-.55,p.z+f.z*1.2);this.board.rotation.set(0,Math.atan2(-f.x,-f.z),0);this.board.scale.setScalar(.65);this.recenter=false;}
       }
       this.hover.visible=false;
+      let hoveredPiece:string|null=null,hoveredPanel:THREE.Intersection|undefined;
       for(const controller of this.controllers) {
         const source=this.sources.get(controller);if(!source)continue;
-        const hit=this.controllerHit(controller);if(hit?.instanceId!==undefined&&this.map){this.hover.visible=true;this.placeOutline(this.hover,this.map.cells[hit.instanceId]);}
+        const hit=this.controllerHit(controller);if(hit?.object===this.panel)hoveredPanel=hit;hoveredPiece=hit?.object.userData.pieceId??hoveredPiece;if(hit?.instanceId!==undefined&&this.map){this.hover.visible=true;this.placeOutline(this.hover,this.map.cells[hit.instanceId]);}
+        if(this.grabber.holding||this.palette.moving)continue;
         const axes=source.gamepad?.axes;if(!axes||axes.length<4)continue;
         const x=Math.abs(axes[2])>.2?axes[2]:0,y=Math.abs(axes[3])>.2?axes[3]:0;
         if(source.handedness==='left'){const v=new THREE.Vector3(x,0,y).applyAxisAngle(new THREE.Vector3(0,1,0),this.board.rotation.y);this.board.position.addScaledVector(v,dt*.4);}
         else {this.board.position.y=THREE.MathUtils.clamp(this.board.position.y-y*dt*.3,.2,1.6);this.board.rotation.y-=x*dt*.7;}
       }
+      this.pieceLayer.hover(hoveredPiece);this.hoverPanel(hoveredPanel);
     } else this.controls.update();
+    this.grabber.update();
     this.renderer.render(this.scene,this.camera);this.stats.drawCalls=this.renderer.info.render.calls;this.stats.triangles=this.renderer.info.render.triangles;
   }
 }

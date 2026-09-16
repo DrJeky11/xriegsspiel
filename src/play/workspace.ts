@@ -1,4 +1,8 @@
 import './workspace.css';
+import { unitVisual, UNIT_GROUPS, miniatureThumbnail } from './miniatures.ts';
+import type { Domain, UnitVisual } from './miniatures.ts';
+import { GrabTransaction } from './grab-transaction.ts';
+import type { GrabBindings } from './spatial-palette.ts';
 import { GeographicRules, DEMO, symbol } from '../scenario/rules.ts';
 import type { Action, Preview, Setup } from '../scenario/rules.ts';
 import { neighbors } from '../pacific/terrain.ts';
@@ -6,7 +10,7 @@ import { scenarioMaps } from '../scenario/maps.ts';
 import type { Geography, Cell, TerrainMap } from '../pacific/terrain.ts';
 import { SURFACES } from '../pacific/terrain-table.ts';
 import type { TablePanel, PanelButton } from './panel.ts';
-import { editSearch, panelTargets } from './panel.ts';
+import { editSearch, panelTargets, drawPanel } from './panel.ts';
 import type { TablePiece } from './piece-layer.ts';
 import type { PieceCatalog, PieceRules, Force } from '../pieces.ts';
 import type { ScenarioState, ScenarioCommand, Operation } from '../../server/scenario-session.ts';
@@ -17,14 +21,14 @@ import review from '../scenario/variant-review.json';
 
 export interface WorkspaceOptions {
   mapId: string; mapIds: string[];
-  view: { renderer: { domElement: HTMLCanvasElement }; stats: object; setScenarioPieces:(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void)=>void; setScenarioPanel:(panel:TablePanel)=>void; reset:()=>void; exit:()=>Promise<void>; scale:(factor:number)=>void };
+  view: { renderer: { domElement: HTMLCanvasElement }; stats: object; setGrabBindings:(bindings:GrabBindings)=>void; cancelGrab:()=>void; setScenarioPieces:(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void)=>void; setScenarioPanel:(panel:TablePanel)=>void; reset:()=>void; exit:()=>Promise<void>; scale:(factor:number)=>void };
   showMap:(id:string)=>void; selectTile:(id:string)=>void; focusTile:(id:string)=>void;
   coordinates:(id:string)=>{q:number;r:number}|undefined; tileAt:(q:number,r:number)=>string|undefined;
   openMenu:()=>void; terrainActions:()=>PanelButton[];
 }
 export interface PlayWorkspace { openMap:(id:string)=>Promise<void>; chooseTile:(id:string)=>void; readonly canSwitch:boolean }
 
-interface Equipment { id:string; name:string; sourceUrl:string; origin:string; domain:string; sourceFields:Record<string,{raw:string;value:string|null}> }
+interface Equipment { id:string; name:string; sourceUrl:string; origin:string; domain:string; taxonomy:string[]; sourceFields:Record<string,{raw:string;value:string|null}> }
 export async function initPlayableWorkspace(options:WorkspaceOptions):Promise<PlayWorkspace> {
 const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById('play-'+id) as T;
 const esc=(s:unknown)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -35,8 +39,11 @@ let stream:EventSource|null=null,generation=0,ready=false;
 const api=(action:string,mapId=map.id)=>`/api/maps/${action}?map=${encodeURIComponent(mapId)}`;
 let active:string|null=null, selectedTile:Cell|null=null, draft:Operation|null=null, draftPreview:Preview|null=null, draftRevision=0;
 let definition=DEMO[0].definitionId as string, placement=false, online=false, busy=false, pendingCommand:ScenarioCommand|null=null;
-let page=0, xrPage:'main'|'cargo'|'setup'|'table'|'evidence'|'catalog'|'candidate'|'search'|'maps'|'terrain'|'filters'|'actions'='main', xrCargoPage=0;
+let page=0, xrPage:'main'|'cargo'|'setup'|'table'|'evidence'|'catalog'|'candidate'|'search'|'maps'|'terrain'|'filters'|'actions'|'roster'='catalog', xrCargoPage=0;
 let equipment=new Map<string,Equipment>();
+const visuals=new Map<string,UnitVisual>(),grab=new GrabTransaction();
+let xrDomain:Domain='ground',xrGroup='All';
+const visual=(id:string)=>visuals.get(id)!;
 let setup:Setup={mapId:options.mapId,year:2026,demo:false};
 let message='Loading geographic exercise…';
 const state=()=>envelope.exercise;
@@ -96,6 +103,7 @@ function selectPiece(id:string) {
 }
 function chooseCell(cell:Cell) {
   if(busy||!ready)return;selectedTile=cell;options.selectTile(cell.id);const coordinate=options.coordinates(cell.id)!;$<HTMLInputElement>('q').value=String(coordinate.q);$<HTMLInputElement>('r').value=String(coordinate.r);
+  if(grab.active){const result=grab.preview(rules,envelope,cell.id);status(result.reason);render();return;}
   if(placement)preview({type:'action',action:{type:'deploy',definitionId:definition,force:$<HTMLSelectElement>('force').value as Force,tileId:cell.id,id:`${$<HTMLSelectElement>('force').value==='blue'?'B':'R'}-${crypto.randomUUID().slice(0,8)}`}});
   else if(piece())preview({type:'action',action:{type:piece()!.carrierId?'unload':'move',pieceId:piece()!.id,tileId:cell.id}});
   else {status(`Hex ${locationName(cell.id)}: ${SURFACES[cell.terrain].note}`);render();}
@@ -123,7 +131,7 @@ async function commit() {
     if(result.state)acceptState(result.state);
     if(!response.ok){clearDraft();throw new Error(result.error??'Order rejected.');}
     if(command.operation.type==='action'&&command.operation.action.type==='deploy'){active=command.operation.action.id;switchTab(false);}
-    clearDraft();placement=false;xrPage='main';status(`Saved · ${result.duplicate?'Request already applied': 'Order committed'} · revision ${envelope.revision}`);
+    clearDraft();placement=false;xrPage=command.operation.type==='action'&&command.operation.action.type==='deploy'?'catalog':'main';status(`Saved · ${result.duplicate?'Request already applied': 'Order committed'} · revision ${envelope.revision}`);
   } catch(error) {
     status(`${error instanceof Error?error.message:'Connection failed.'} ${pendingCommand?'Retry uses the same command ID; no duplicate spending.':''}`);
   } finally {busy=false;render();}
@@ -133,15 +141,16 @@ function acceptState(next:ScenarioState) {
   if(envelope&&next.revision<envelope.revision)return;
   const changed=envelope&&next.revision!==envelope.revision;
   rules.assertVersion(next.exercise);envelope=next;ready=true;
-  if(changed&&!busy){clearDraft();placement=false;status('Shared state updated. Review the refreshed pieces before issuing an order.');}
+  if(changed&&!busy){table.cancelGrab();clearDraft();placement=false;status('Shared state updated. Review the refreshed pieces before issuing an order.');}
   if(active&&!piece()){active=null;selectedTile=null;}
   if(active){const p=piece()!,tileId=p.tileId??state().pieces.find(c=>c.id===p.carrierId)?.tileId;selectedTile=map.cells.find(c=>c.id===tileId)??null;if(selectedTile)options.selectTile(selectedTile.id);}
   if(!$('catalog').hidden)renderCatalog();render();
 }
 async function openMap(id:string) {
-  if(busy||pendingCommand)return;
+  if(busy||pendingCommand||grab.active)return;
+  table.cancelGrab();
   $('retry').hidden=true;
-  const ticket=++generation;stream?.close();stream=null;ready=false;online=false;clearDraft();active=null;selectedTile=null;placement=false;xrPage='main';
+  const ticket=++generation;stream?.close();stream=null;ready=false;online=false;clearDraft();active=null;selectedTile=null;placement=false;xrPage='catalog';
   envelope=undefined as unknown as ScenarioState;map=rules.map(id);setup={mapId:id,year:2026,demo:false};
   table.setScenarioPieces([],[],[],selectPiece);$<HTMLFieldSetElement>('controls').disabled=true;$<HTMLSelectElement>('map-select').value=id;bar.hidden=true;
   table.setScenarioPanel({title:'LOADING SAVED MAP',lines:[map.region.name,'Your other maps are kept.'],buttons:[]});status('Loading this map’s saved pieces…');
@@ -150,13 +159,13 @@ async function openMap(id:string) {
     online=true;acceptState(initial);status('Each map saves independently. Add pieces or select a token to begin.');render();
     stream=new EventSource(api('events',id));
     stream.onopen=()=>{if(ticket===generation){online=true;render();}};
-    stream.onerror=()=>{if(ticket===generation){online=false;render();}};
+    stream.onerror=()=>{if(ticket===generation){online=false;table.cancelGrab();render();}};
     stream.onmessage=e=>{if(ticket!==generation)return;try{acceptState(JSON.parse(e.data));}catch(error){online=false;status(String(error));render();}};
   } catch(error){if(ticket!==generation)return;$('retry').hidden=false;status(String(error));table.setScenarioPanel({title:'MAP COULD NOT LOAD',lines:[String(error)],buttons:[{label:'Retry loading map',run:()=>void openMap(id)}]});}
 }
 function candidates() {
   const force=$<HTMLSelectElement>('force').value as Force,query=$<HTMLInputElement>('search').value.trim().toLowerCase(),eligible=$<HTMLSelectElement>('eligible').value;
-  return rules.catalog.pieces.filter(p=>p.name.toLowerCase().includes(query)&&(eligible==='all'||rules.eligibility(p.id,force,state().year).allowed));
+  return rules.catalog.pieces.filter(p=>p.name.toLowerCase().includes(query)&&p.forceEvidence.some(e=>e.force===force)&&(eligible==='all'||rules.eligibility(p.id,force,state().year).allowed));
 }
 function chooseDefinition(id:string){if(busy||!ready)return;active=null;definition=id;placement=false;clearDraft();renderCatalog();render();}
 function beginPlacement(){if(busy||!ready)return;const e=rules.eligibility(definition,$<HTMLSelectElement>('force').value as Force,state().year);if(!e.allowed){status(e.reason);render();return;}active=null;placement=true;clearDraft();xrPage='main';status('Placement active. Point at a hex, preview, then confirm.');render();}
@@ -197,7 +206,7 @@ function render() {
   $<HTMLButtonElement>('confirm').disabled=busy||!draftPreview?.allowed;$<HTMLButtonElement>('cancel').disabled=busy||!draft;
   $('confirm').textContent=busy?'Saving…':pendingCommand?'Retry order':'Confirm order';
   $('history-count').textContent=String(s.events.length);$('history').innerHTML=s.events.slice(-30).reverse().map(e=>`<li><strong>${e.revision} · Turn ${e.turn} · ${esc(e.action.type)}</strong> ${esc('pieceId' in e.action?e.action.pieceId:e.action.type==='deploy'?e.action.id:'')}<p>${esc(e.explanation)}</p></li>`).join('');
-  table.setScenarioPieces(s.pieces.filter(p=>p.tileId!==null).map(p=>{const profile=rules.lab.profile(p);return{id:p.id,tileId:p.tileId!,force:p.force,symbol:symbol(profile.id,profile.layer),selected:p.id===active,cargo:s.pieces.filter(c=>c.carrierId===p.id).length,layer:profile.layer};}),legal,draftPreview?.allowed?draftPreview.path:[],selectPiece);
+  table.setScenarioPieces(s.pieces.filter(p=>p.tileId!==null).map(p=>{const profile=rules.lab.profile(p);return{id:p.id,tileId:p.tileId!,force:p.force,symbol:symbol(profile.id,profile.layer),name:rules.lab.definition(p.definitionId).name,model:visual(p.definitionId).model,selected:p.id===active,cargo:s.pieces.filter(c=>c.carrierId===p.id).length,layer:profile.layer};}),legal,draftPreview?.allowed?draftPreview.path:[],selectPiece);
   bar.hidden=!active&&!placement&&!draft;
   $('quick-status').textContent=draftPreview?.reason??(placement?'Place '+short(definition):p?short(p.definitionId)+' · '+p.movement+' MP · choose a gold-ring hex':'');
   $<HTMLButtonElement>('quick-confirm').disabled=busy||!draftPreview?.allowed;
@@ -206,7 +215,7 @@ function render() {
 }
 let lastPanel:TablePanel|null=null,xrCatalogPage=0;
 const panelPreview=new URL(location.href).searchParams.has('controller-preview')?document.createElement('section'):null;
-if(panelPreview){panelPreview.className='controller-preview';panelPreview.setAttribute('aria-label','Controller panel preview');root.append(panelPreview);}
+if(panelPreview){panelPreview.className='controller-preview'+(new URL(location.href).searchParams.has('palette-review')?' palette-review':'');panelPreview.setAttribute('aria-label','Controller panel preview');(new URL(location.href).searchParams.has('palette-review')?document.body:root).append(panelPreview);}
 function renderXR() {
   if(!ready)return;
   const p=piece(),profile=p?rules.lab.profile(p):null;
@@ -214,7 +223,7 @@ function renderXR() {
   const go=(page:typeof xrPage)=>{xrPage=page;renderXR();};
   const name=(id:string)=>{const m=rules.map(id);return m.view.id==='focus'?m.region.focusName:m.region.name;};
   const wrap=(text:string)=>text.match(/.{1,60}(?:\s|$)|.{1,60}/g)??[];
-  const back=button('Back to pieces',()=>go('main'));
+  const back=button('Back to units',()=>go('catalog'));
   let panel:TablePanel={title:'PIECES & ORDERS',lines:[name(map.id),`${state().year} · Turn ${state().turn} · ${state().pieces.length} pieces`,p?`${p.id} · ${forceName(p.force)}`:'Select a token or add a catalog piece',...(p?wrap(rules.lab.definition(p.definitionId).name).slice(0,2):[]),p?`${p.movement} MP · Cargo ${rules.cargoUsed(state(),p.id)} / ${profile!.cargoSlots}`:'Each map keeps its own progress',...wrap(message).slice(0,2)],buttons:[]};
   if(draft) {
     panel.title=draftPreview?.allowed?'ORDER PREVIEW':'ACTION BLOCKED';panel.lines=[name(map.id),...wrap(draftPreview?.reason??'').slice(0,5),draftPreview?.path.length?`${draftPreview.cost} MP · ${draftPreview.path.length-1} hex steps`:'Preview spends nothing'];
@@ -222,20 +231,31 @@ function renderXR() {
   } else if(placement) {
     panel.title='PLACE A PIECE';panel.lines=[name(map.id),...wrap(rules.lab.definition(definition).name).slice(0,3),forceName($<HTMLSelectElement>('force').value as Force),'Point at a map hex and pull the trigger.','Review the placement, then confirm.',...wrap(message).slice(0,1)];panel.buttons=[button('Cancel placement',cancel)];
   } else if(xrPage==='search') {
-    panel.title='SEARCH EQUIPMENT';panel.lines=['Search all catalog records',`Search: ${$<HTMLInputElement>('search').value || '(empty)'}`,'Point at a letter and pull the trigger.','Choose Done to browse matching pieces.'];
-    panel.keyboard={value:$<HTMLInputElement>('search').value,key:key=>{if(busy)return;$<HTMLInputElement>('search').value=editSearch($<HTMLInputElement>('search').value,key);page=0;renderCatalog();renderXR();},done:()=>{xrCatalogPage=0;go('catalog');}};
+    panel.title='SEARCH EQUIPMENT';panel.lines=[`Search ${xrDomain} units by name`,`Search: ${$<HTMLInputElement>('search').value || '(empty)'}`,'Point at a letter and pull the trigger.','Choose Done to browse matching pieces.'];
+    panel.keyboard={value:$<HTMLInputElement>('search').value,key:key=>{if(busy)return;$<HTMLInputElement>('search').value=editSearch($<HTMLInputElement>('search').value,key);page=0;renderCatalog();renderXR();},done:()=>{xrCatalogPage=0;xrGroup='All';go('catalog');}};
   } else if(xrPage==='filters') {
     panel.title='CATALOG FILTERS';panel.lines=[forceName($<HTMLSelectElement>('force').value as Force),`Year ${state().year}`,`Search: ${$<HTMLInputElement>('search').value||'All names'}`,$<HTMLSelectElement>('eligible').value==='all'?'Showing all records, including unavailable':'Showing eligible records only'];
     panel.buttons=[button('Search with keyboard',()=>go('search')),button('Switch Red / Blue',()=>{$<HTMLSelectElement>('force').value=$<HTMLSelectElement>('force').value==='blue'?'red':'blue';page=0;xrCatalogPage=0;renderCatalog();renderXR();}),button('Toggle eligible / all records',()=>{$<HTMLSelectElement>('eligible').value=$<HTMLSelectElement>('eligible').value==='all'?'eligible':'all';page=0;xrCatalogPage=0;renderCatalog();renderXR();}),button('Clear search',()=>{$<HTMLInputElement>('search').value='';page=0;xrCatalogPage=0;renderCatalog();renderXR();}),button('Browse results',()=>go('catalog')),back];
-  } else if(xrPage==='catalog') {
-    const list=candidates();xrCatalogPage=Math.max(0,Math.min(xrCatalogPage,Math.ceil(list.length/3)-1));
-    panel.title='ADD CATALOG PIECES';panel.lines=[forceName($<HTMLSelectElement>('force').value as Force),`${list.length} records · page ${xrCatalogPage+1} of ${Math.max(1,Math.ceil(list.length/3))}`,`Search: ${$<HTMLInputElement>('search').value||'All names'}`,'Select a record to inspect and place it.'];
-    panel.buttons=list.slice(xrCatalogPage*3,xrCatalogPage*3+3).map(d=>button(d.name,()=>{xrPage='candidate';chooseDefinition(d.id);}));
-    panel.buttons.push(button('Previous results',()=>{xrCatalogPage--;renderXR();},xrCatalogPage>0),button('Next results',()=>{xrCatalogPage++;renderXR();},(xrCatalogPage+1)*3<list.length),button('Search & filters',()=>go('filters')),back);
+  } else if(xrPage==='catalog'||xrPage==='roster') {
+    const roster=xrPage==='roster',force=$<HTMLSelectElement>('force').value as Force;
+    const list=roster?state().pieces.filter(p=>p.force===force).map(p=>({definition:rules.lab.definition(p.definitionId),instance:p})):candidates().filter(d=>visual(d.id).domain===xrDomain&&(xrGroup==='All'?d.kind==='platform'&&visual(d.id).group!=='Equipment':visual(d.id).group===xrGroup)).sort((a,b)=>a.name.localeCompare(b.name)).map(d=>({definition:d,instance:null}));
+    xrCatalogPage=Math.max(0,Math.min(xrCatalogPage,Math.ceil(list.length/6)-1));
+    panel.title=roster?'ON THE MAP':'UNITS';panel.lines=[`${forceName(force)} · ${state().year} · ${list.length} ${roster?'pieces':'choices'} · ${xrCatalogPage+1}/${Math.max(1,Math.ceil(list.length/6))}`,message.startsWith('Saved')?message:'Stylized class miniatures · select for the full unit name'];
+    const resetBrowse=()=>{xrCatalogPage=0;renderXR();};
+    panel.catalog={
+      toolbar:[button(force==='blue'?'United States ▾':'China ▾',()=>{$<HTMLSelectElement>('force').value=force==='blue'?'red':'blue';renderCatalog();resetBrowse();}),button('Search: '+($<HTMLInputElement>('search').value||'unit name'),()=>go('search'))],
+      tabs:(['ground','air','sea'] as Domain[]).map(domain=>({...button(domain[0].toUpperCase()+domain.slice(1),()=>{xrDomain=domain;xrGroup='All';xrPage='catalog';resetBrowse();}),selected:!roster&&domain===xrDomain})),
+      groups:roster?[]:['All',...UNIT_GROUPS[xrDomain]].map(group=>({...button(group,()=>{xrGroup=group;resetBrowse();}),selected:group===xrGroup})),
+      cards:list.slice(xrCatalogPage*6,xrCatalogPage*6+6).map(({definition:d,instance})=>{
+        const eligible=rules.eligibility(d.id,instance?.force??force,state().year).allowed;
+        return {...button((instance?instance.id+' · ':'')+d.name,()=>{if(instance){selectPiece(instance.id);return;}xrPage='candidate';chooseDefinition(d.id);}),model:visual(d.id).model,force:instance?.force??force,available:eligible,grab:eligible?(instance?{pieceId:instance.id}:{definitionId:d.id}):undefined};
+      }),
+    };
+    panel.buttons=[button('← Previous',()=>{xrCatalogPage--;renderXR();},xrCatalogPage>0),button('Next →',()=>{xrCatalogPage++;renderXR();},(xrCatalogPage+1)*6<list.length),button(roster?'Add units':'On map',()=>{xrCatalogPage=0;go(roster?'catalog':'roster');}),button('Settings',()=>go('main')),button('Clear search',()=>{$<HTMLInputElement>('search').value='';xrGroup='All';resetBrowse();}),button($<HTMLSelectElement>('eligible').value==='all'?'Show eligible':'Show all records',()=>{$<HTMLSelectElement>('eligible').value=$<HTMLSelectElement>('eligible').value==='all'?'eligible':'all';resetBrowse();})];
   } else if(xrPage==='candidate') {
     const d=rules.lab.definition(definition),pr=rules.lab.profiles.get(d.profileId)!,eligible=rules.eligibility(d.id,$<HTMLSelectElement>('force').value as Force,state().year);
-    panel.title='CATALOG SELECTION';panel.lines=[...wrap(d.name).slice(0,3),forceName($<HTMLSelectElement>('force').value as Force),`${pr.movement} MP · ${pr.label}`,`Cargo ${pr.cargoSlots} slots · Load size ${d.loadSlots}`,...wrap(eligible.reason).slice(0,2)];
-    panel.buttons=[button('Place this piece',beginPlacement,eligible.allowed),button('Source evidence',()=>go('evidence')),button('Back to catalog',()=>go('catalog'))];
+    panel.title='UNIT DETAILS';panel.lines=[...wrap(d.name).slice(0,3),forceName($<HTMLSelectElement>('force').value as Force),`${pr.movement} MP · Stylized ${visual(d.id).model} model`,`Cargo ${pr.cargoSlots} slots · Load size ${d.loadSlots}`,...wrap(eligible.reason).slice(0,2)];
+    panel.buttons=[{...button('Grip here to pick up',()=>status('Hold the grip on the unit tile, carry it over a hex and release.'),eligible.allowed),grab:eligible.allowed?{definitionId:d.id}:undefined},button('Place with pointer',beginPlacement,eligible.allowed),button('Source evidence',()=>go('evidence')),button('Back to catalog',()=>go('catalog'))];
   } else if(xrPage==='maps') {
     panel.title='MAPS & TERRAIN';panel.lines=[name(map.id),'Switching maps keeps their pieces and progress.','Regions in this workspace open inside VR/MR.','The other workspace opens after exiting immersion.'];
     panel.buttons=options.mapIds.map(id=>button(name(id),()=>{if(id===map.id){go('main');return;}options.showMap(id);}));
@@ -260,14 +280,52 @@ function renderXR() {
     else if(!p.carrierId)for(const c of state().pieces.filter(c=>c.force===p.force&&rules.lab.profile(c).cargoSlots>0&&!c.carrierId))actions.push({label:`Load into ${short(c.definitionId)} / ${c.id}`,action:{type:'load',pieceId:p.id,carrierId:c.id}});
     panel.title='CARGO / PREVIEW TRANSFER';panel.buttons=actions.slice(xrCargoPage*4,xrCargoPage*4+4).map(a=>button(a.label,()=>a.id?selectPiece(a.id):preview({type:'action',action:a.action!})));
     if(actions.length>4)panel.buttons.push(button('More cargo choices',()=>{xrCargoPage=(xrCargoPage+1)%Math.ceil(actions.length/4);renderXR();}));panel.buttons.push(back);
-  } else panel.buttons=[button('Add pieces',()=>{switchTab(true);active=null;xrPage='catalog';render();}),button('Select next piece',()=>{const pieces=state().pieces;if(pieces.length)selectPiece(pieces[(pieces.findIndex(p=>p.id===active)+1)%pieces.length].id);},state().pieces.length>0),button('Cargo / load / unload',()=>{xrCargoPage=0;go('cargo');},!!p),button('Actions & next turn',()=>go('actions')),button('Maps & terrain',()=>go('maps')),button('Table & exercise',()=>go('table'))];
+  } else {
+    panel.title=p?'SELECTED UNIT':'TABLE SETTINGS';
+    if(!p)panel.lines=[name(map.id),`${state().year} · Turn ${state().turn}`,'The unit palette is beside the table.','Grip its top handle to move it; − hides it.'];
+    panel.buttons=[button('Unit palette',()=>{xrCatalogPage=0;go('catalog');}),...(p?[button('Cargo / load / unload',()=>{xrCargoPage=0;go('cargo');}),button('More unit actions',()=>go('actions'))]:[]),button('Preview next turn',()=>preview({type:'action',action:{type:'advance'}})),button('Maps & terrain',()=>go('maps')),button('Table & exercise',()=>go('table'))];
+  }
   lastPanel=panel;table.setScenarioPanel(panel);
-  if(panelPreview){panelPreview.innerHTML=`<h3>Controller panel preview</h3><strong>${esc(panel.title)}</strong><p>${panel.lines.map(esc).join('<br>')}</p>`;for(const target of panelTargets(panel)){const b=document.createElement('button');b.textContent=target.label;b.disabled=target.enabled===false;b.onclick=target.run;panelPreview.append(b);}}
+  if(panelPreview){
+    panelPreview.innerHTML=`<h3>Controller panel preview</h3><strong>${esc(panel.title)}</strong><p>${panel.lines.map(esc).join('<br>')}</p>`;
+    const surface=document.createElement('div');surface.className='spatial-preview-surface';panelPreview.append(surface);const canvas=document.createElement('canvas');drawPanel(canvas,panel);surface.append(canvas);
+    for(const target of panelTargets(panel)){const b=document.createElement('button');b.textContent=target.label;b.setAttribute('aria-label',target.label);b.disabled=target.enabled===false;b.onclick=target.run;b.style.cssText=`left:${target.x/10.24}%;top:${target.y/12.8}%;width:${target.width/10.24}%;height:${target.height/12.8}%`;if(target.selected)b.setAttribute('aria-pressed','true');
+      const card=panel.catalog?.cards.find(c=>c.run===target.run);if(card){const img=document.createElement('img');img.src=miniatureThumbnail(card.model,card.force).toDataURL();img.alt='';b.prepend(img);}surface.append(b);
+      if(target.grab){const grip=document.createElement('button');grip.textContent='Pick up '+target.label;grip.onclick=()=>{grabBindings.begin(target.grab!);};panelPreview.append(grip);}
+    }
+    if(grab.active){const release=document.createElement('button');release.textContent='Release over chosen hex';release.onclick=()=>grabBindings.release(selectedTile?.id??null);panelPreview.append(release);}
+  }
 }
 
-function cancel() {if(busy||!ready)return;clearDraft();placement=false;status('Preview cancelled. No movement or cargo was spent.');render();}
+const grabBindings:GrabBindings={
+  version:()=>ready?map.id+':'+envelope.revision:'loading',
+  begin:source=>{
+    if(!ready||busy||pendingCommand||grab.active||!online)return null;
+    let id=source.definitionId,instance=source.pieceId?state().pieces.find(p=>p.id===source.pieceId):undefined;
+    if(source.pieceId&&!instance)return null;if(instance)id=instance.definitionId;if(!id||!rules.lab.definitions.has(id))return null;
+    const d=rules.lab.definition(id),force=instance?.force??$<HTMLSelectElement>('force').value as Force;
+    if(!rules.eligibility(id,force,state().year).allowed){status('This unit is unavailable for the selected force/year.');render();return null;}
+    if(instance)selectPiece(instance.id);else{chooseDefinition(id);active=null;}
+    const action=instance?{type:instance.carrierId?'unload' as const:'move' as const,pieceId:instance.id,tileId:''}:{type:'deploy' as const,id:`${force==='blue'?'B':'R'}-${crypto.randomUUID().slice(0,8)}`,definitionId:id,force,tileId:''};
+    if(!grab.begin(envelope,action))return null;status('Holding '+d.name+'. Release over a valid hex to place.');render();
+    return{name:d.name,model:visual(id).model,force,pieceId:instance?.id};
+  },
+  preview:tileId=>!ready||!online?{allowed:false,reason:'Connection unavailable; release to cancel.'}:grab.preview(rules,envelope,tileId),
+  release:tileId=>{
+    if(!grab.active)return;
+    if(!ready||!online||busy){grab.cancel();status('Placement cancelled. The saved pieces are unchanged.');render();return;}
+    const result=grab.take(rules,envelope,tileId);
+    if(result.action){preview({type:'action',action:result.action});void commit();}
+    else{clearDraft();status(result.preview.reason+' Returned without spending.');render();}
+  },
+  cancel:()=>{grab.cancel();if(ready){status('Pickup cancelled. No changes were saved.');render();}},
+};
+
+function cancel() {if(busy||!ready)return;table.cancelGrab();grab.cancel();clearDraft();placement=false;status('Preview cancelled. No movement or cargo was spent.');render();}
   const [catalog,profiles,research,regional,shoal,senkaku]=await Promise.all([json<PieceCatalog>(piecesUrl),json<PieceRules>(rulesUrl),json<{equipment:Equipment[]}>(equipmentUrl),json<Geography>('/terrain/pacific/regional-land.json'),json<Geography>('/terrain/pacific/shoal-detail.json'),json<Geography>('/terrain/pacific/senkaku-detail.json')]);
   rules=new GeographicRules(catalog,profiles,scenarioMaps({regional,shoal,senkaku}));equipment=new Map(research.equipment.map(e=>[e.id,e]));
+  for(const d of catalog.pieces)visuals.set(d.id,unitVisual(d,equipment.get(d.equipmentId)));
+  table.setGrabBindings(grabBindings);
   const mapName=(id:string)=>{const m=rules.map(id);return m.view.id==='focus'?m.region.focusName:m.region.name;};
   $('map-select').innerHTML=options.mapIds.map(id=>`<option value="${id}">${esc(mapName(id))}</option>`).join('');
   $('map-select').onchange=()=>{if(busy||pendingCommand){$<HTMLSelectElement>('map-select').value=map.id;status('Resolve the pending order before switching maps.');return;}options.showMap($<HTMLSelectElement>('map-select').value);};
@@ -290,5 +348,5 @@ function cancel() {if(busy||!ready)return;clearDraft();placement=false;status('P
   const requestedForce=new URL(location.href).searchParams.get('force');
   if(requestedForce==='red'||requestedForce==='blue')$<HTMLSelectElement>('force').value=requestedForce;
   if(ready&&requested&&rules.catalog.pieces.some(p=>p.id===requested)){switchTab(true);chooseDefinition(requested);showPieces();}
-  return {openMap,chooseTile:(id:string)=>{if(!ready)return;const cell=map.cells.find(c=>c.id===id);if(cell)chooseCell(cell);},get canSwitch(){return !busy&&!pendingCommand;}};
+  return {openMap,chooseTile:(id:string)=>{if(!ready)return;const cell=map.cells.find(c=>c.id===id);if(cell)chooseCell(cell);},get canSwitch(){return !busy&&!pendingCommand&&!grab.active;}};
 }

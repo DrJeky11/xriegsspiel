@@ -1,7 +1,9 @@
 import * as THREE from 'three';
+import { SpatialPalette, MiniatureGrabber } from '../play/spatial-palette.ts';
+import type { GrabBindings } from '../play/spatial-palette.ts';
 import { PieceLayer } from '../play/piece-layer.ts';
 import type { TablePiece } from '../play/piece-layer.ts';
-import { drawPanel, activatePanel } from '../play/panel.ts';
+import { drawPanel, activatePanel, panelTargetAt } from '../play/panel.ts';
 import type { TablePanel } from '../play/panel.ts';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import coastlines from './coastlines.json';
@@ -22,6 +24,8 @@ export class TerrainView {
   readonly controls: OrbitControls;
   readonly stats = { frames: 0, xrFrames: 0, drawCalls: 0, triangles: 0 };
   private pieceLayer = new PieceLayer();
+  private palette:SpatialPalette;
+  private grabber:MiniatureGrabber;
   private scenarioPanel: TablePanel | null = null;
   private terrain = new THREE.Group();
   private labels = new THREE.Group();
@@ -81,6 +85,7 @@ export class TerrainView {
     this.panel = new THREE.Mesh(new THREE.PlaneGeometry(.43, .516), new THREE.MeshBasicMaterial({ map: this.texture, side: THREE.DoubleSide }));
     this.panel.position.set(1.16, .25, 0); this.panel.rotation.x = -Math.PI / 3;
     this.panel.visible = false; this.board.add(this.panel);
+    this.palette=new SpatialPalette(this.board,this.panel);this.grabber=new MiniatureGrabber(this.scene,this.board,this.pieceLayer,this.palette,()=>this.scenarioPanel);
     this.renderer.domElement.addEventListener('pointerdown', event => { this.pointerStart = [event.clientX, event.clientY]; });
     this.renderer.domElement.addEventListener('pointerup', event => {
       if (event.button !== 0 || Math.hypot(event.clientX - this.pointerStart[0], event.clientY - this.pointerStart[1]) > 6 || this.renderer.xr.isPresenting) return;
@@ -88,10 +93,14 @@ export class TerrainView {
       this.ray.setFromCamera(new THREE.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, 1 - (event.clientY - rect.top) / rect.height * 2), this.camera);
       this.pick();
     });
+    this.renderer.domElement.addEventListener('pointermove',event=>{if(this.renderer.xr.isPresenting)return;const r=this.renderer.domElement.getBoundingClientRect();this.ray.setFromCamera(new THREE.Vector2((event.clientX-r.left)/r.width*2-1,1-(event.clientY-r.top)/r.height*2),this.camera);this.pieceLayer.hover(this.hit()?.object.userData.pieceId??null);});
+    this.renderer.domElement.addEventListener('pointerleave',()=>this.pieceLayer.hover(null));
     for (let i = 0; i < 2; i++) {
-      const controller = this.renderer.xr.getController(i);
+      const controller = this.renderer.xr.getController(i), grip=this.renderer.xr.getControllerGrip(i);this.scene.add(grip);
       controller.addEventListener('connected', event => this.inputSources.set(controller, event.data));
-      controller.addEventListener('disconnected', () => this.inputSources.delete(controller));
+      controller.addEventListener('disconnected', () => {this.grabber.cancel();this.inputSources.delete(controller);});
+      controller.addEventListener('squeezestart',()=>{this.controllerRay(controller);this.grabber.begin(controller,grip,this.hit());});
+      controller.addEventListener('squeezeend',()=>this.grabber.end(controller,grip));
       controller.addEventListener('select', () => {
         this.ray.ray.origin.setFromMatrixPosition(controller.matrixWorld);
         this.ray.ray.direction.set(0, 0, -1).transformDirection(controller.matrixWorld);
@@ -100,9 +109,9 @@ export class TerrainView {
       const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -4)]), new THREE.LineBasicMaterial({ color: '#f4c86d' }));
       controller.add(line); this.scene.add(controller); this.controllers.push(controller);
     }
-    this.renderer.xr.addEventListener('sessionstart', () => { this.panel.visible = true; this.recenterNeeded = true; this.controls.enabled = false; this.onMode(true); });
+    this.renderer.xr.addEventListener('sessionstart', () => { this.palette.setActive(true); this.recenterNeeded = true; this.controls.enabled = false; this.onMode(true); });
     this.renderer.xr.addEventListener('sessionend', () => {
-      this.panel.visible = false; this.renderer.setClearColor('#122b34', 1); this.controls.enabled = true;
+      this.grabber.cancel();this.palette.setActive(false); this.renderer.setClearColor('#122b34', 1); this.controls.enabled = true;
       this.reset(); this.resize(container); this.onMode(false);
     });
     this.resizeObserver = new ResizeObserver(() => this.resize(container));
@@ -171,9 +180,12 @@ export class TerrainView {
     if (!this.map) return;
     this.pieceLayer.configure(this.map.tiles.map(tile=>({id:tile.id,x:tile.xKm*this.unitScale,z:-tile.yKm*this.unitScale,y:this.height(tile)})),this.map.region.spacingKm/Math.sqrt(3)*this.unitScale);
   }
+  private hoverPanel(hit?:THREE.Intersection){if(!this.scenarioPanel)return;const label=hit?.object===this.panel&&hit.uv?panelTargetAt(this.scenarioPanel,hit.uv.x,hit.uv.y)?.label:undefined;if(this.scenarioPanel.hovered!==label){this.scenarioPanel.hovered=label;this.drawPanel();}}
+  setGrabBindings(bindings:GrabBindings){this.grabber.bindings=bindings;}
+  cancelGrab(){this.grabber.cancel();}
   setScenarioPieces(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void) { this.pieceLayer.set(pieces,reachable,path,select); }
   setScenarioPanel(panel:TablePanel) {
-    if (!this.scenarioPanel) { this.panel.geometry.dispose();this.panel.geometry=new THREE.PlaneGeometry(.64,.8);this.panel.position.set(1.24,.32,0);this.panel.rotation.set(0,-.3,0); }
+    if (!this.scenarioPanel) { this.panel.geometry.dispose();this.panel.geometry=new THREE.PlaneGeometry(.64,.8);this.palette.root.position.set(1.24,.32,0);this.palette.root.rotation.set(0,-.3,0);this.panel.rotation.set(0,0,0); }
     this.scenarioPanel=panel;this.drawPanel();
   }
   async exit() { await this.renderer.xr.getSession()?.end(); }
@@ -250,12 +262,15 @@ export class TerrainView {
   async enter(mode: 'immersive-vr' | 'immersive-ar') {
     if (!navigator.xr) throw new Error('WebXR is unavailable in this browser.');
     const session = await navigator.xr.requestSession(mode, { requiredFeatures: ['local-floor'] });
-    try { this.renderer.setClearColor('#122b34', mode === 'immersive-ar' ? 0 : 1); await this.renderer.xr.setSession(session); }
+    try { this.renderer.setClearColor('#122b34', mode === 'immersive-ar' ? 0 : 1); session.addEventListener('visibilitychange',()=>{if(session.visibilityState!=='visible')this.grabber.cancel();});await this.renderer.xr.setSession(session); }
     catch (error) { this.renderer.setClearColor('#122b34', 1); await session.end(); throw error; }
   }
+  private controllerRay(controller:THREE.Group){this.ray.ray.origin.setFromMatrixPosition(controller.matrixWorld);this.ray.ray.direction.set(0,0,-1).transformDirection(controller.matrixWorld);}
+  private hit(){return this.mesh?this.ray.intersectObjects([this.mesh,...this.palette.hits,...this.pieceLayer.pieceHits.filter(m=>m.visible)],false)[0]:undefined;}
   private pick() {
     if (!this.mesh || !this.map) return;
-    const hit = this.ray.intersectObjects([this.mesh,...(this.panel.visible?[this.panel]:[]),...this.pieceLayer.pieceHits], false)[0];
+    if(this.grabber.holding||this.palette.moving)return;
+    const hit = this.hit();if(hit&&this.palette.click(hit))return;
     if (hit?.object.userData.pieceId && this.pieceLayer.select) {this.pieceLayer.select(hit.object.userData.pieceId);return;}
     if (hit?.object === this.panel && hit.uv) {
       if (this.scenarioPanel) {activatePanel(this.scenarioPanel,hit.uv.x,hit.uv.y);return;}
@@ -312,7 +327,10 @@ export class TerrainView {
           this.board.rotation.set(0, Math.atan2(-forward.x, -forward.z), 0); this.board.scale.setScalar(.8); this.recenterNeeded = false;
         }
       }
+      let hoveredPiece:string|null=null,hoveredPanel:THREE.Intersection|undefined;
       for (const controller of this.controllers) {
+        this.controllerRay(controller);const hit=this.hit();if(hit?.object===this.panel)hoveredPanel=hit;hoveredPiece=hit?.object.userData.pieceId??hoveredPiece;
+        if(this.grabber.holding||this.palette.moving)continue;
         const source = this.inputSources.get(controller), axes = source?.gamepad?.axes;
         if (axes && axes.length >= 4) {
           const x = Math.abs(axes[2]) > .2 ? axes[2] : 0, y = Math.abs(axes[3]) > .2 ? axes[3] : 0;
@@ -320,6 +338,7 @@ export class TerrainView {
           else { this.board.position.y = THREE.MathUtils.clamp(this.board.position.y - y * dt * .3, .2, 1.5); this.board.rotation.y -= x * dt * .7; }
         }
       }
+      this.pieceLayer.hover(hoveredPiece);this.hoverPanel(hoveredPanel);
     } else {
       this.controls.update();
       if (this.northArrow) {
@@ -329,6 +348,7 @@ export class TerrainView {
         this.northArrow.style.transform = `rotate(${angle}rad)`;
       }
     }
+    this.grabber.update();
     this.renderer.render(this.scene, this.camera);
     this.stats.drawCalls = this.renderer.info.render.calls; this.stats.triangles = this.renderer.info.render.triangles;
   }

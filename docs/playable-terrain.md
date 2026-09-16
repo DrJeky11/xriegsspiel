@@ -18,18 +18,29 @@ Implemented 2026-09-16 on `codex/playable-terrain-workspaces`. The original geog
 5. **New exercise** previews replacement of the current map only, with a year from 1980–2026 and an optional demonstration roster. New map sessions start empty in 2026. **Preview next turn** restores budgets after confirmation.
 6. Accepted commands autosave. **Export save** creates a replay-verified portable JSON file. **Import save** validates it before replacement; open the matching map first. A save for another map is rejected rather than changing either map.
 
-The existing authored movement, terrain, stacking, transport and era rules are unchanged; their detailed record is in [the original geographic runbook](geographic-scenario.md). Source capabilities are not converted into speeds, weapon effects or cargo weights. This consolidation adds no combat, detection, fog of war, opposing-player authority or 3D equipment models.
+The existing authored movement, terrain, stacking, transport and era rules are unchanged; their detailed record is in [the original geographic runbook](geographic-scenario.md). Source capabilities are not converted into speeds, weapon effects or cargo weights. This consolidation adds no combat, detection, fog of war, opposing-player authority or accurate equipment/variant models. The later VR palette pass adds stylized 3D class miniatures, as described below.
 
 ## VR / MR controller controls
 
-The same controller panel is drawn and hit-tested in both original renderers. Trigger selects pieces, tiles and panel buttons. All placement and movement commits use the same evaluator and server commands as browser controls.
+Updated on `codex/vr-miniature-palette` after the owner found the text menu too complicated in the headset. The visual direction is a calm matte palette beside the tabletop, recognizable miniature silhouettes, exact unit names and small force-colored bases. The board remains the primary workspace. Browsing, selected-unit actions and exercise settings have separate jobs.
 
-- **Add pieces:** browse catalog results; **Search & filters** changes Red/Blue, eligible/all records and the search query. The spatial keyboard supports letters, digits, hyphen, spaces, backspace and clear. Select a result, inspect its eligibility, choose **Place this piece**, point at a map hex, then confirm or cancel the preview.
-- **Select next piece:** cycles all placed and carried instances, so overlapping layers and cargo remain selectable.
-- **Cargo / load / unload:** provides paged transfer choices. A carried item previews unloading by selecting a hex.
-- **Actions & next turn:** hold, next turn, evidence and clear selection.
-- **Maps & terrain:** switches regions/focus views in the current workspace while keeping the immersive session and each map's saved state. Terrain controls toggle labels and, for CENTCOM, source coastline and illustrative relief. Opening the other major workspace exits immersion and navigates to it; enter VR/MR again there.
-- **Table & exercise:** resize/recenter, set up a new exercise for this map, and exit immersion. Left stick moves the table; right stick adjusts height/rotation.
+- **Unit palette:** six miniature tiles per page. United States/China filters force eligibility; Ground/Air/Sea and role groups narrow the catalog. All shows whole units; Equipment is a separate group for parts and unmodeled records. Search uses the existing spatial keyboard and the selected domain. Tap a tile for the complete catalog name, eligibility and source evidence. Cards may wrap/ellipsize long source titles; their identity is never changed.
+- **Pick up and set down:** point at a unit tile and hold the controller's **grip** (side button). A miniature appears by the controller. Carry it above the map; a translucent miniature marks the candidate hex. The feedback says whether the release is valid. **Release the grip to place**. Bring it within roughly 13 cm of the board surface; releasing high above or outside the map cancels. Picking up an existing map miniature uses the same interaction for movement. On map also offers visual selection of placed/carried instances.
+- **Move the palette:** point at **Grip to move**, hold the grip, reposition it and release. This changes only its local spatial pose. **−** hides it; the remaining **Units +** tab reopens it. It stays beside the board during play and follows board repositioning; no physical anchor is required.
+- **Selection feedback:** names appear on pointing/selection, the base retains Red/Blue identity, and legal destinations retain their existing gold rings. Tiles highlight under the controller ray. The ghost and release label provide feedback while a unit is held.
+- **Pointer fallback:** tap a unit for details and choose Place with pointer, or select an existing map piece and point at a hex. Preview and confirm work as before. This preserves a seated path for users who cannot comfortably reach the board. Hand tracking is not implemented.
+- **Cargo:** select a piece, then Cargo / load / unload. Carried items can be picked up from On map to unload through the same validated drop path. Loading remains an explicit cargo action; dropping onto a carrier does not implicitly load it.
+- **Settings:** contains turn advancement, map/terrain controls, table sizing/recentering, new exercise and exit. Region switches in one workspace retain immersion and saved map progress. Opening the other workspace exits immersion before navigation.
+
+The client treats a held piece as an uncommitted draft. A release validates the original map/revision and the current destination, then submits at most one command. Invalid drops, cancellation, controller disconnection, lost XR visibility, session end, lost connection and another participant's committed changes restore the original saved position. Board stick movement is suspended while a miniature or palette is held. Network-uncertain commits retain the existing explicit retry/idempotency behavior.
+
+### Miniature artwork and rendering
+
+The first set contains **18 original low-poly class miniatures**: tanks, tracked/wheeled armored vehicles, engineering vehicles, launchers, trucks, artillery, radar, ground robots, helicopters, jets, transport aircraft, drones, surface ships, flat-deck ships, landing craft, submarines and equipment crates. These are stylized class representations, **not accurate models of every named vehicle or variant**. The palette and unit details identify the class-art scope. Exact artwork remains a separate task.
+
+Both maps show these same 3D miniatures on their original terrain heights. Catalog IDs, source names, source terrain, movement profiles and eligibility data are unchanged. Presentation grouping is independent of the movement model. Equipment components are still individual records; no implicit fitting, weapon effects or physical capacity simulation was added.
+
+Each model merges its parts into one mesh with vertex colors. Geometry/materials are shared by class/force and the thumbnail cache is bounded to class/force combinations. The visual tile uses a render of the same miniature shown on the board. A separate thumbnail renderer is reused rather than allocating a WebGL context per catalog entry. Selected/hover labels and the held preview are local presentation.
 
 Autosave applies in both modes. Portable file import/export remains on the browser menu. No room scan, physical anchoring or hand tracking is required.
 
@@ -66,17 +77,24 @@ Journals are flushed before acknowledgment in `data/maps/<map-id>.jsonl`; `/` in
 - Visited all four Pacific map views in the browser. The three untouched views remained empty and Western Senkaku restored its seven pieces and revision 3. CENTCOM's original relief/coastline and Pacific's token/highlight composition were visually inspected. A 390 × 844 browser check showed document dimensions 390 × 844, a reachable scrolling menu and readable action controls without horizontal overflow.
 - Local handoff at port 5174: the owner's legacy Western Senkaku exercise at revision 16 migrated to its map journal at revision 1. A deep equality check confirmed the entire exercise matched, including seven instances, turn 2, budgets and history. SHA-256 checks confirmed both original journals remained byte-for-byte unchanged. The browser displayed the restored roster and connected/autosaved status; the native CENTCOM workspace also loaded successfully.
 
-For desktop verification only, `?controller-preview=1` shows a textual mirror of the exact controller panel buttons/keyboard callbacks inside the menu. This is not WebXR emulation. `window.__playableTerrain.diagnostics` is a read-only record of the current state, selection, preview and controller panel labels; it is not a mutation API. The native terrain diagnostics remain available.
+For desktop verification only, `?controller-preview=1` shows the exact drawn panel with accessible button/keyboard callbacks and explicit pickup/release controls inside the browser menu. Add `&palette-review=1` to put that preview outside the drawer for visual inspection. These diagnostics are absent from ordinary URLs. This is not WebXR emulation. `window.__playableTerrain.diagnostics` is a read-only record of the current state, selection, preview and controller panel labels; it is not a mutation API. The native terrain diagnostics remain available.
+
+### Miniature palette verification — 2026-09-16
+
+- Build/TypeScript checking passed; 43 automated tests passed. The eight added tests cover all catalog classifications without data mutation, finite shared miniature geometry, native drop height/radius, independent deployment/movement on every map, invalid/stale/cancelled releases, nonoverlapping six-tile panel targets, palette hide/reopen/reparent transforms, and controller grip release/cancel cleanup. The last two use Three.js with stubbed canvas drawing, not headset emulation.
+- Isolated production preview on port 5175 with `DATA_DIR=output/palette-verification-data`: browsed Air → Helicopters, picked up the AH-1J record, released outside a selected hex (revision stayed 0), picked it up again and released onto Western Senkaku `-18,12` (one instance, 8 MP, revision 1), then picked up that exact instance and moved to `-17,12` (7 MP, revision 2). A second browser participant displayed the saved same ID and budget. The model, base, route rings and name were visually inspected on the original map.
+- CENTCOM: searched LCM with the spatial keyboard, picked up the LCM-8 record and released onto native Hormuz hex `-6,14` (one instance, 5 MP, revision 1). No browser runtime errors were reported in that check. These verification pieces are isolated from the owner's saves.
+- The existing bundle-size warning remains. No dependencies were added. Desktop rendering and geometry size do not establish sustained Quest frame rate.
 
 **Actual headset verification remains pending.** Browser tests, controller callback tests and ray hit geometry tests do not prove Quest controller targeting, text readability, passthrough contrast or sustained performance. The owner's earlier successful immersive trial remains distinct evidence.
 
 ### Hands-on Quest checklist
 
 1. On each workspace, enter VR seated, then MR separately if offered. Verify the original terrain appearance and readable controller panel.
-2. Search for a unit with the spatial keyboard, change force, inspect an unavailable record, then place an eligible instance using the ray, preview and confirm. Verify the browser sees the same ID and map.
-3. Select the piece with a ray and with the roster cycle. Preview/cancel/repeat a legal move; attempt an invalid one. Check map highlights, native coordinates and budgets.
+2. Browse picture tiles by domain/role, change force, search an exact name, and inspect an unavailable record. Grip an eligible miniature, lower it over a hex and release. Verify the browser sees exactly one new ID on that map. Repeat placement, invalid/off-map release, controller disconnection and headset-menu interruption.
+3. Grip a placed miniature and move it to a legal hex; attempt an invalid drop. Check map highlights, native coordinates, identity and budgets. Test the pointer preview/confirm fallback separately.
 4. Load and unload cargo; verify exact IDs, slots, remaining points and next-turn behavior in a companion browser.
 5. Switch every region/focus in the current workspace and return to verify saved pieces. Open the other major workspace, reenter immersion and repeat.
-6. Toggle labels, coastline/relief where available; move, rotate, raise/lower, resize and recenter the table. Check that tokens sit above the correct native terrain and game positions do not change.
+6. Grip and move the palette, hide/reopen it, then toggle labels, coastline/relief where available; move, rotate, raise/lower, resize and recenter the table. Check that tokens sit above the correct native terrain and game positions do not change.
 7. Exit/reenter twice, remove/wear the headset, and reconnect USB. Check state and input recovery.
 8. Run at least ten minutes with representative pieces/routes and record frame timing, readability, missed input, contrast and comfort.

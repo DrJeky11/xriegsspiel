@@ -47,3 +47,7 @@
 .menu-open .play-command-bar,.xr-active .play-command-bar { display:none; }
 .controller-preview { border-top:1px solid #748582;margin-top:24px;padding-top:12px; }.controller-preview button { display:block;width:100%;margin:6px 0;text-align:left; }
 @media(max-width:740px){ .play-command-bar { left:16px;bottom:146px;max-width:none;width:calc(100% - 66px); }.play-commit{bottom:-20px;} }
+
+.spatial-preview-surface{position:relative;aspect-ratio:1024/1280;background:#142e37;margin:.6rem 0;border-radius:8px;overflow:hidden}.spatial-preview-surface button{position:absolute;margin:0;padding:3px!important;font-size:9px!important;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2!important}.spatial-preview-surface button img{display:block;width:100%;height:65%;object-fit:contain}.spatial-preview-surface button[aria-pressed=true]{border-color:#e5cf98;background:#466865}
+
+.spatial-preview-surface canvas{width:100%;height:100%;position:absolute;inset:0}.spatial-preview-surface button{opacity:0}.controller-preview.palette-review{position:fixed;top:70px;left:24px;bottom:20px;width:min(560px,85vw);background:#142e37;z-index:50;overflow-y:auto;padding:16px;border-radius:10px}.controller-preview.palette-review>button{font-size:11px}

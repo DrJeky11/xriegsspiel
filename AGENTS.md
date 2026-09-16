@@ -12,7 +12,7 @@ The owner highlighted agent development, integration, and analytics toward an AI
 
 ## Before work
 
-Pacific and CENTCOM are now the primary playable workspaces. Read `docs/playable-terrain.md` before application work. Preserve their original terrain rendering and keep source terrain distinct from movement-policy categories. Each of the six maps has an independent saved exercise; region switches must not reset or replace another map's pieces. Browser and VR/MR use shared catalog, placement, movement and transport commands. Shared full-information control remains deliberate. Real headset usability still needs the recorded checklist.
+Pacific and CENTCOM are now the primary playable workspaces. Read `docs/playable-terrain.md` before application work. Preserve their original terrain rendering and keep source terrain distinct from movement-policy categories. Each of the six maps has an independent saved exercise; region switches must not reset or replace another map's pieces. Browser and VR/MR use shared catalog, placement, movement and transport commands. The owner selected a movable/hideable picture palette, controller grip pickup/release, and 3D miniatures on the board. Initial models represent stylized classes; do not imply accurate vehicle/variant artwork. Shared full-information control remains deliberate. Real headset usability still needs the recorded checklist.
 
 The Island trial, catalog test board and standalone Geographic tabletop UI are retired. Their source is preserved in Git baseline `f25a7a7`; `docs/prototype.md` and `docs/geographic-scenario.md` are historical records, not current entry-point instructions.
 

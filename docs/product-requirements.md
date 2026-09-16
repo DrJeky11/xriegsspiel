@@ -139,10 +139,16 @@ The owner requested a working catalog/geographic tabletop slice: map/year setup,
 
 - The unit palette sits beside the tabletop, can be repositioned, and can be hidden.
 - Unit choices use miniature-style rendered images, with their actual unit names visible. Retain the underlying catalog identities and distinguish variants; category labels are not replacements for unit names.
-- Group the catalog in a way that is easy to understand. A specific hierarchy has not yet been confirmed.
+- Group the catalog in a way that is easy to understand. Ground, Air and Sea with role subgroups were proposed; the specific subgroup taxonomy is an implementation choice.
+- Pick up and set down feels more natural to the owner than point-and-click placement. Use controller grip pickup and release onto a valid hex.
+- Placed pieces remain 3D miniatures on the map. The owner accepted the proposed colored bases and names on pointing/selection with that direction.
 
 **Local observation:** the catalog has 1,607 records classified as land, air or sea, with more detailed source taxonomy. It contains both platforms and individual weapons/components. The current spatial catalog shows three text-only results per page and places search/filters on a separate menu.
 
 **Proposed organization for discussion:** use a persistent United States/Blue or China/Red selector, then Ground, Air and Sea tabs with role-based subgroups. Keep weapons/components distinct from complete platforms. Provide search and recent/favorite choices as shortcuts. A small Units handle could reopen the hidden palette. These are UX proposals, not implemented behavior or changes to eligibility/game rules.
 
-**Still to decide:** placement interaction, the initial visible layout, and how unit selection behaves during repeated placement. Artwork coverage, variant recognition, controller targeting and readability need separate verification; the current working app remains unchanged during this discussion.
+**First implementation, `codex/vr-miniature-palette`:** a six-tile visual palette, force/domain/role filters, a grip handle and hide/reopen tab, and grip/release placement and movement on both original maps. The palette stays available for repeated pickups. Invalid or interrupted drops preserve saved state; a valid release submits the shared validated command. Pointer preview/confirm remains available.
+
+**Art scope:** the initial implementation uses 18 original low-poly class miniatures with exact catalog names/IDs, not 1,607 accurate vehicle/variant models. Weapons and unmodeled equipment use an explicit equipment-crate representation. No new source dimensions or equipment capabilities were inferred from the visuals. Exact model artwork and variant recognition remain a separate art pass.
+
+**Still to verify on the headset:** physical grip targeting, palette reach/placement, name readability, release feedback, passthrough contrast and sustained performance. Browser callback and Three.js transform tests are separate evidence from a Quest trial.
