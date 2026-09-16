@@ -57,6 +57,7 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 | MCU cloud context, game-playing AI, APIs, analytics, and an AI Sensei | [Cloud and AI Sensei study](docs/research/ai-sensei-and-wargaming-cloud.md) |
 | Adjustable Red opposition, search versus trained models, current gaps and measured feasibility | [Opponent research](docs/research/opponent-ai.md) |
 | How Command and other wargames define victory; proposed first opposed scenario | [Objectives and victory](docs/research/objectives-and-victory.md) |
+| Capturing decisions, comparing exercises, and preparing future AI datasets | [Data-capture design](docs/design/data-capture.md) |
 | Supplied tactics references, red-team methods, and empirical education research | [Dataset review](docs/research/dataset-review.md), [original documents](docs/datasets/README.md) |
 | Learning objectives, adjudication, and after-action review | [Learning and adjudication](docs/research/learning-and-adjudication.md) |
 | Prototype sequence and acceptance criteria | [Prototype plan](docs/research/prototype-plan.md) |
@@ -74,6 +75,7 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 - Start with 2–4 players using headsets or browsers and work through the headset tabletop experience first. Passthrough versus fully virtual surroundings remains open.
 - Preserve the owner's long-term AI Sensei vision through agent development, integration, and analytics. The API, headless runner, and teaching roadmap are **proposals**; the reported institutional cloud capacity is not a first-build requirement.
 - Research an adjustable Red opponent. The [opponent study](docs/research/opponent-ai.md) recommends authored planning and bounded search first, then a compact learned policy if evaluation warrants it. `npm run research:opponent` runs a read-only in-memory mechanics probe; a competitive opponent and trained model are not implemented yet.
+- Treat data capture as a core pillar for trends, analysis, and future AI training. The [data-capture proposal](docs/design/data-capture.md) recommends a replayable decision record, historical observations, local transactional storage, and purpose-specific exports. The collector and analytics pipeline remain unimplemented.
 
 Research baseline: **15 September 2026**. Recheck platform documentation and game editions before implementation. Future contributors should read [AGENTS.md](AGENTS.md).
 

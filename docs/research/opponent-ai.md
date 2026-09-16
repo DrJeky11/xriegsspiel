@@ -14,6 +14,8 @@ We do not need a new general AI algorithm or a foundation model trained from scr
 
 **Observed in code at base commit `f25a7a7a02cd4fec40f427db1732da01ab94e829`:**
 
+**Integration update, 2026-09-16:** Pacific and CENTCOM now host these geographic mechanics through independent [map sessions](../../server/map-sessions.ts) and a [shared workspace](../../src/play/workspace.ts). The Island trial and standalone Geographic UI are retired; references to those interfaces below describe the audited baseline. The probe still exercises the shared geographic rules/session directly in memory. The consolidation adds no competitive rules or opponent.
+
 | Foundation | Actual implementation | Consequence |
 | --- | --- | --- |
 | Executable game model | [`src/pieces.ts`](../../src/pieces.ts), [`src/scenario/rules.ts`](../../src/scenario/rules.ts): deterministic movement, layered occupancy, cargo, costs, hold and budget refresh | A bot can use the real rules without a browser or headset. |

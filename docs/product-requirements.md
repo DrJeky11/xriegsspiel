@@ -18,6 +18,7 @@
 | R10 | Start with 2–4 players, each joining through a headset or computer browser | Support mixed-device sessions. The exact headset/browser split and room arrangement remain open. |
 | R11 | Work through the headset tabletop experience first | Develop the shared board's appearance and spatial interaction before exploring the owner's other experience idea. |
 | R12 | Study CPE to build our own substantially improved platform | Use public documentation as a design reference. The owner has no CPE access and explicitly does not want us to obtain or use it; CPE integration is not the implementation goal. |
+| R13 | Make data capture a major pillar for learning trends, analysis, and future AI model training | Preserve useful decision evidence and design for analysis and dataset reuse; specific capture fields, storage, permissions, and implementation sequence remain proposals. |
 
 The owner's central problem is the friction of operating a wargame: learning mechanics, checking legality, and maintaining records. The platform should leave students more time to reason and discuss their plans.
 
@@ -166,3 +167,9 @@ The owner requested a working catalog/geographic tabletop slice: map/year setup,
 **Art scope:** the initial implementation uses 18 original low-poly class miniatures with exact catalog names/IDs, not 1,607 accurate vehicle/variant models. Weapons and unmodeled equipment use an explicit equipment-crate representation. No new source dimensions or equipment capabilities were inferred from the visuals. Exact model artwork and variant recognition remain a separate art pass.
 
 **Still to verify on the headset:** physical grip targeting, palette reach/placement, name readability, release feedback, passthrough contrast and sustained performance. Browser callback and Three.js transform tests are separate evidence from a Quest trial.
+
+## Data-capture direction — 2026-09-16
+
+The owner emphasized data capture for discovering trends, conducting analysis, and training future AI models, and requested a data-capture branch with ideas for accomplishing this. The work was developed on **`codex/data-capture`** in an isolated sibling worktree and merged into `main` during branch consolidation. The [data-capture design](design/data-capture.md) audits the baseline journals and proposes a replayable decision record, historical player observations, selected rationales, separate outcomes/assessments, and controlled dataset exports. Its implementation targets the active Pacific/CENTCOM map sessions.
+
+Local SQLite storage, the event contract, metrics, retention/reuse policy, and phased implementation are recommendations. The initial scope remains 2–4 players. Human learning, game performance, and referee authority remain distinct; no training dataset or analytics service has been implemented by this research task.

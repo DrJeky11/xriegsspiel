@@ -473,3 +473,27 @@ The initial pass could not read digital Littoral Commander help. The follow-up r
 OWS and War at Sea reading assignments establish use, not access to complete rules or redistribution rights. Obtain the authorized edition from its owner/instructor before implementing either. Commercial artwork, cards, scenario data, and software are not included in this repository. Public availability is not a reuse license.
 
 The later owner-supplied collection contains the four research PDFs D01–D04. This review preserves those originals and adds research notes only. Their presence does not supply rights to unrelated games or convert descriptive doctrine into validated simulation data. The journal article's stated CC BY 4.0 terms and the Army documents' public-distribution statements are recorded separately above.
+
+## Data-capture follow-up
+
+Accessed **2026-09-16** for the [data-capture design](../design/data-capture.md). These primary references support technology properties; the application architecture and collection policy are our proposals.
+
+### DC01
+
+[SQLite: Appropriate Uses for SQLite](https://sqlite.org/whentouse.html) — consulted §1, Application file format, Data analysis and Server-side database; §2, Client/Server Applications and High Concurrency; §3, checklist. Documents embedded/server use and one writer per database at a time. Supports considering SQLite for the present single-service prototype, not an XRiegsspiel load-capacity claim. No client/server database was installed or benchmarked.
+
+### DC02
+
+[SQLite: Atomic Commit](https://sqlite.org/atomiccommit.html) — consulted §1, Introduction, §2, Hardware Assumptions, and the failure topics in §9. Describes all-or-none transaction commits and storage/flush assumptions; the detailed mechanism described is rollback mode, with WAL explicitly distinguished. No power-loss or filesystem fault test was performed. Our proposed transaction/outbox boundary is not a feature supplied automatically by this document.
+
+### DC03
+
+[Node.js: SQLite](https://nodejs.org/api/sqlite.html) — living documentation, displayed v26.9.0 when accessed. Consulted `DatabaseSync`, its synchronous execution, `:memory:` path, `exec`, `prepare`, and `StatementSync` parameter binding. The actual local smoke check used **Node v26.0.0 / SQLite 3.53.3**, successfully imported `node:sqlite` and rolled back one synthetic insert in memory. The version-specific v26.0.0 documentation URL failed retrieval. The live reference does not prove every listed API exists on the local version or the project's declared Node 22.18.0 minimum. No dependency installation or file-backed integration occurred.
+
+### DC04
+
+[Apache Parquet: Overview](https://parquet.apache.org/docs/overview/) — consulted Overview, parquet-format, and Other Clients / Libraries / Tools. Establishes column-oriented storage, compression, analytics support and feature differences between implementations. Supports a later derived-data export candidate, not a live event-ingestion implementation or measured compression ratio. No reader/writer library was selected or installed.
+
+### DC05
+
+[ADL: xAPI Specification repository](https://github.com/adlnet/xAPI-Spec) — consulted README introduction and Specification versions. Describes interoperability for learner activity/experience, labels this repository's specification 1.0.3 as historical, and directs readers to xAPI 2.0. The linked IEEE specification and full conformance requirements were not reviewed. An optional future learning-system adapter is a proposal; no compatible institutional endpoint, receiving profile, or tested integration was established.

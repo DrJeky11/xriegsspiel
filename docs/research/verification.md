@@ -2,6 +2,16 @@
 
 Research baseline: **2026-09-15**, with dated follow-ups below. This file records work performed, not future prototype acceptance results.
 
+## Branch integration — 2026-09-16
+
+- Consolidated playable terrain (`07047f7`), its VR miniature palette follow-up (`9f3b9c5`), opponent/scenario research (`58b694d`) and previously uncommitted data-capture documentation (preserved as `2c06ab7`) into `main`, retaining their commit history. No runtime-code merge conflicts occurred. Resolved overlapping navigation/requirements additions and reconciled research references with the retired Island and standalone Geographic interfaces.
+- **`npm test`: 54 passed, 0 failed.** **`npm run build` passed**, including TypeScript checking, with the existing large-chunk warning. Installed dependency versions matched the manifest; no packages were added or upgraded.
+- All eight scenario definitions validated. The example ledger still returned Blue 85 / Red 55 and a Blue mission win. The opponent probe passed across all six map demonstrations, including replay, transport, duplicate/stale checks and its documented shared-control limitation. Original research measurements remain preserved; the fresh probe output is in gitignored `output/branch-integration/opponent-probe.json`.
+- A temporary production service on port 5186 served Pacific, CENTCOM, catalog and nine referenced built assets; all three legacy/root redirects pointed to Pacific. Verified all six map state/command APIs, exact retries, stale rejection, unknown/retired endpoint rejection and state equality after a server restart. The isolated temporary save directory was removed; owner saves and the existing preview service were untouched. Summary: `output/branch-integration/production-smoke.json`.
+- Checked 270 relative Markdown file links across integrated changes; all resolved. Requirements R1–R13 remained unique. Merge-marker and whitespace checks passed.
+
+These are automated and HTTP checks, not a new visual browser or physical Quest trial. Headset grip targeting, comfort, readability and sustained performance remain pending. Scenario balance, competitive authority, trained opponents and the proposed capture collector remain outside this integration.
+
 ## Eight-scenario library — 2026-09-16
 
 - Researched the June 17, 2024 Second Thomas resupply confrontation, September 7, 2010 Senkaku collision, July 19, 2019 Stena Impero seizure and October 1, 2016 Swift attack. The [SC01–SC13 register](../scenarios/sources.md) identifies article/official-statement coverage, dates, conflicting accounts, and direct-retrieval limitations. Fictional companions use documented patterns, not quantified forecasts.
@@ -184,3 +194,16 @@ On **2026-09-15**, added the [unit catalog and sourcing review](unit-catalog-and
 - `git diff --check` passed; explicit Markdown checks covered untracked content. No application build or game tests apply to this documentation-only change.
 
 The transient check summary is `/private/tmp/xriegsspiel-research/unit-doc-check.json`. The detailed equipment sample was verified as published information, not as real-world measured performance. Model validation, instructor review, and headset/classroom trials remain future work.
+
+## Data-capture design follow-up — 2026-09-16
+
+- Created `codex/data-capture` at baseline `f25a7a7`. Concurrent work switched the original checkout back to `oppoenent-research`, so this task moved into `/Users/fgq321/code_projects/xriegsspiel-data-capture`, an isolated worktree. Existing opponent-research changes remain in the original checkout and are not part of this branch's changes.
+- Added the [capture design](../design/data-capture.md), recorded the owner's requirement and linked the proposal from project/research navigation. Inspected existing session handlers, HTTP transport, rules/save types and client callbacks. Distinguished full-information cooperative journals from historical participant observations, learning evidence and training datasets that are not yet captured.
+- Consulted primary SQLite, Node.js, Apache Parquet and ADL references; reading limits and access details are recorded under DC01–DC05. No dependency or service was installed.
+- Used a temporary synthetic geographic journal for 100 `advance` commands. Observed 1,370,146 bytes, record sizes of 4,300 and 23,118 bytes at the first/last command, 107 final events and 5,750 repeated event entries. Reopening reproduced the final state exactly. Removed the temporary directory. No active journal or participant data was inspected or modified.
+- Verified `node:sqlite` import and an in-memory insert/rollback on Node v26.0.0 / SQLite 3.53.3; zero rows remained after rollback. This does not establish file durability, minimum-version compatibility, capture performance or a working collector.
+- Ran `npm test`: **37 passed, 0 failed**. Existing journal/replay and duplicate/stale checks passed. No new application behavior was introduced, so no application build, browser test, headset trial, model training or educational evaluation was performed for this proposal.
+
+- Documentation checks passed for all six changed/new Markdown files: 117 local links/anchors resolved, fences/whitespace/final newlines passed, the illustrative JSON parsed, requirement IDs R1–R13 were unique, and DC01–DC05 were unique. `git diff --check` passed. The 37-test suite also passed in the isolated data-capture checkout.
+
+The proposed schemas, transactions, exports, dataset split checks and operational failure tests remain implementation work. No staging or commit was performed.
