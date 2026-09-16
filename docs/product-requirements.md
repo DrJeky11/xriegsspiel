@@ -18,6 +18,7 @@
 | R10 | Start with 2–4 players, each joining through a headset or computer browser | Support mixed-device sessions. The exact headset/browser split and room arrangement remain open. |
 | R11 | Work through the headset tabletop experience first | Develop the shared board's appearance and spatial interaction before exploring the owner's other experience idea. |
 | R12 | Study CPE to build our own substantially improved platform | Use public documentation as a design reference. The owner has no CPE access and explicitly does not want us to obtain or use it; CPE integration is not the implementation goal. |
+| R13 | Make data capture a major pillar for learning trends, analysis, and future AI model training | Preserve useful decision evidence and design for analysis and dataset reuse; specific capture fields, storage, permissions, and implementation sequence remain proposals. |
 
 The owner's central problem is the friction of operating a wargame: learning mechanics, checking legality, and maintaining records. The platform should leave students more time to reason and discuss their plans.
 
@@ -113,3 +114,9 @@ The owner selected generated option **01, corner buttons and sliding drawer**, a
 ## Geographic integration milestone — 2026-09-16 UTC
 
 The owner requested a working catalog/geographic tabletop slice: map/year setup, Red/Blue assembly, recognizable pieces, inspectable rules/source evidence, hex movement and transport, save/reopen, browser/Quest paths, and verification. This authorizes the integrated scenario workspace described in [the implementation record](geographic-scenario.md). Western Senkaku / 2026, an untimed budget turn, seven demonstration pieces, conservative coast/reef rules and 200-instance limit are documented implementation defaults. They do not establish real deployments, model fidelity, historical service intervals or a universal cadence for other games. Combat, detection, fog of war, AI and opposing-player permissions remain outside this milestone. Hands-on headset usability remains pending.
+
+## Data-capture direction — 2026-09-16
+
+The owner emphasized data capture for discovering trends, conducting analysis, and training future AI models, and requested a data-capture branch with ideas for accomplishing this. The branch is **`codex/data-capture`**, in an isolated sibling worktree to allow concurrent research in the original checkout. The [data-capture design](design/data-capture.md) audits the existing journals and proposes a replayable decision record, historical player observations, selected rationales, separate outcomes/assessments, and controlled dataset exports.
+
+Local SQLite storage, the event contract, metrics, retention/reuse policy, and phased implementation are recommendations. The initial scope remains 2–4 players. Human learning, game performance, and referee authority remain distinct; no training dataset or analytics service has been implemented by this research task.

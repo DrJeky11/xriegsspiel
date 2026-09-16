@@ -151,3 +151,16 @@ On **2026-09-15**, added the [unit catalog and sourcing review](unit-catalog-and
 - `git diff --check` passed; explicit Markdown checks covered untracked content. No application build or game tests apply to this documentation-only change.
 
 The transient check summary is `/private/tmp/xriegsspiel-research/unit-doc-check.json`. The detailed equipment sample was verified as published information, not as real-world measured performance. Model validation, instructor review, and headset/classroom trials remain future work.
+
+## Data-capture design follow-up — 2026-09-16
+
+- Created `codex/data-capture` at baseline `f25a7a7`. Concurrent work switched the original checkout back to `oppoenent-research`, so this task moved into `/Users/fgq321/code_projects/xriegsspiel-data-capture`, an isolated worktree. Existing opponent-research changes remain in the original checkout and are not part of this branch's changes.
+- Added the [capture design](../design/data-capture.md), recorded the owner's requirement and linked the proposal from project/research navigation. Inspected existing session handlers, HTTP transport, rules/save types and client callbacks. Distinguished full-information cooperative journals from historical participant observations, learning evidence and training datasets that are not yet captured.
+- Consulted primary SQLite, Node.js, Apache Parquet and ADL references; reading limits and access details are recorded under DC01–DC05. No dependency or service was installed.
+- Used a temporary synthetic geographic journal for 100 `advance` commands. Observed 1,370,146 bytes, record sizes of 4,300 and 23,118 bytes at the first/last command, 107 final events and 5,750 repeated event entries. Reopening reproduced the final state exactly. Removed the temporary directory. No active journal or participant data was inspected or modified.
+- Verified `node:sqlite` import and an in-memory insert/rollback on Node v26.0.0 / SQLite 3.53.3; zero rows remained after rollback. This does not establish file durability, minimum-version compatibility, capture performance or a working collector.
+- Ran `npm test`: **37 passed, 0 failed**. Existing journal/replay and duplicate/stale checks passed. No new application behavior was introduced, so no application build, browser test, headset trial, model training or educational evaluation was performed for this proposal.
+
+- Documentation checks passed for all six changed/new Markdown files: 117 local links/anchors resolved, fences/whitespace/final newlines passed, the illustrative JSON parsed, requirement IDs R1–R13 were unique, and DC01–DC05 were unique. `git diff --check` passed. The 37-test suite also passed in the isolated data-capture checkout.
+
+The proposed schemas, transactions, exports, dataset split checks and operational failure tests remain implementation work. No staging or commit was performed.

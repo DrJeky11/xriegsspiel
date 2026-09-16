@@ -46,6 +46,7 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 | Candidate unit families, movement behavior, equipment facts, and source gaps | [Unit catalog and data sources](docs/research/unit-catalog-and-data-sources.md) |
 | Our own simulation, orders, resources, information, and referee design | [Simulation blueprint](docs/design/simulation-blueprint.md) |
 | MCU cloud context, game-playing AI, APIs, analytics, and an AI Sensei | [Cloud and AI Sensei study](docs/research/ai-sensei-and-wargaming-cloud.md) |
+| Capturing decisions, comparing exercises, and preparing future AI datasets | [Data-capture design](docs/design/data-capture.md) |
 | Supplied tactics references, red-team methods, and empirical education research | [Dataset review](docs/research/dataset-review.md), [original documents](docs/datasets/README.md) |
 | Learning objectives, adjudication, and after-action review | [Learning and adjudication](docs/research/learning-and-adjudication.md) |
 | Prototype sequence and acceptance criteria | [Prototype plan](docs/research/prototype-plan.md) |
@@ -62,5 +63,6 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 - Build our own platform, using CPE as a reference. CPE software access and integration are outside the requested direction.
 - Start with 2–4 players using headsets or browsers and work through the headset tabletop experience first. Passthrough versus fully virtual surroundings remains open.
 - Preserve the owner's long-term AI Sensei vision through agent development, integration, and analytics. The API, headless runner, and teaching roadmap are **proposals**; the reported institutional cloud capacity is not a first-build requirement.
+- Treat data capture as a core pillar for trends, analysis, and future AI training. The [data-capture proposal](docs/design/data-capture.md) recommends a replayable decision record, historical observations, local transactional storage, and purpose-specific exports. The collector and analytics pipeline remain unimplemented.
 
 Research baseline: **15 September 2026**. Recheck platform documentation and game editions before implementation. Future contributors should read [AGENTS.md](AGENTS.md).

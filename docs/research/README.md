@@ -10,6 +10,8 @@ The [unit catalog and data-source review](unit-catalog-and-data-sources.md) loca
 
 ## Main findings
 
+**Data-capture follow-up, 2026-09-16:** the owner confirmed capture as a major pillar for trends, analysis, and future model training. The [design](../design/data-capture.md) audits current journals, records a synthetic serialization/replay check, compares storage approaches, and proposes decision/observation capture, analysis and dataset exports. The collector is not implemented; sources DC01–DC05 document storage and interoperability references.
+
 **Equipment implementation follow-up:** the owner subsequently authorized a Chinese Red / US Blue catalog for 1980 onward. The [catalog guide](../../catalog/README.md) records the four-export ODIN import, SQLite database, versioned playable laboratory definitions, component evidence and browser tests. This supersedes the earlier fictional-only catalog proposal; source facts and authored game rules remain separate.
 
 1. **Treat learning and interface as separate choices.** A tactical decision exercise can use a tabletop; an operational game can include first-person observation. Neither echelon determines the renderer.
@@ -32,6 +34,7 @@ The [unit catalog and data-source review](unit-catalog-and-data-sources.md) loca
 | Build our original operational simulation | [CPE study](command-professional-edition.md), then [simulation blueprint](../design/simulation-blueprint.md) |
 | Choose units and source their behavior or equipment data | [Unit catalog and data sources](unit-catalog-and-data-sources.md) |
 | Design agents, analytics, or an AI tutor | [Cloud and AI Sensei study](ai-sensei-and-wargaming-cloud.md), then [learning evaluation](learning-and-adjudication.md) |
+| Capture decisions, compare exercises, or prepare training datasets | [Data-capture design and implementation sequence](../design/data-capture.md) |
 | Build or evaluate Quest support | [Quest guide](quest3-development.md), then [prior project](prior-project-audit.md) |
 | Design a scenario or rules engine | [Manual review](manual-review.md), [games](wargames-and-rules.md), then [learning](learning-and-adjudication.md) |
 | Verify a claim or refresh research | [Sources](sources.md), then [verification](verification.md) |
