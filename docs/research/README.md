@@ -1,0 +1,51 @@
+# Research overview
+
+**Baseline, manual follow-ups, and dataset review:** 2026-09-15. **Status:** research foundation and original simulation proposal available; some manual access, hardware, and classroom validation remain open.
+
+Start with the [owner requirements](../product-requirements.md). The [manual review](manual-review.md) and later [CPE study](command-professional-edition.md) cover eight MCU-linked documents plus publisher references, with explicit coverage and gaps. CPE is a reference for our own platform; obtaining or integrating its software is outside the owner's requested direction.
+
+The [dataset review](dataset-review.md) evaluates four owner-supplied PDFs: two dated tactics references, the Red Team Handbook, and a 2026 review of educational wargaming research. The [dataset catalog](../datasets/README.md) links the originals; D01–D04 in the source register pin editions and hashes.
+
+The [unit catalog and data-source review](unit-catalog-and-data-sources.md) locates named Command units, explains the boundary between manuals and equipment databases, verifies public WEG and service references, and proposes six initial unit families plus six later candidates. Source specifications remain separate from authored game movement and adjudication rules.
+
+## Main findings
+
+**Equipment implementation follow-up:** the owner subsequently authorized a Chinese Red / US Blue catalog for 1980 onward. The [catalog guide](../../catalog/README.md) records the four-export ODIN import, SQLite database, versioned playable laboratory definitions, component evidence and browser tests. This supersedes the earlier fictional-only catalog proposal; source facts and authored game rules remain separate.
+
+1. **Treat learning and interface as separate choices.** A tactical decision exercise can use a tabletop; an operational game can include first-person observation. Neither echelon determines the renderer.
+2. **Prototype a headset-first tabletop for 2–4 players.** That starting experience is confirmed. Our recommendation is a small fictional scenario, human opposition, referee control, limited information, and an after-action review. Passthrough versus fully virtual surroundings remains open; first-person observation can be explored later.
+3. **Keep two viable technical paths.** Meta currently recommends IWSDK for immersive web development. Unity provides a mature native OpenXR route, and the owner's prior project already uses it. Unity does not directly support WebXR export without additional tooling. [Q03](sources.md#q03), [Q04](sources.md#q04), [Q12](sources.md#q12)
+4. **The prior repository is useful but narrower than this product.** It contains native passthrough/room-understanding work and a separate camera-overlay website. Read the [audit](prior-project-audit.md) before reuse.
+5. **Use actual rules as design references.** The [game survey](wargames-and-rules.md) distinguishes downloadable rules, documented institutional use, vendor descriptions, and access gaps. It does not propose cloning a commercial game.
+6. **Make the review of decisions a core feature.** Preserve orders, assumptions, information available, outcomes, and facilitator explanations. This is our product recommendation, informed by the educational sources in [learning and adjudication](learning-and-adjudication.md).
+7. **Use the new documents to improve facilitation and assessment first.** Trial explicit assumption checks and record learning conditions, decision processes, and outcomes. Treat the tactics publications as dated background for authored scenarios. The [dataset review](dataset-review.md) explains the evidence and proposed adaptations. [D01](sources.md#d01), [D02](sources.md#d02), [D03](sources.md#d03), [D04](sources.md#d04)
+8. **Use CPE as a serious benchmark.** It already provides automation, planning, multiplayer, umpire controls, and diagnostics. The [study](command-professional-edition.md) checks the 2024 MCU manual against later releases. The [blueprint](../design/simulation-blueprint.md) proposes our own contextual guidance, shared order ownership, resource accounting, and referee history; their benefits still need testing.
+9. **Build foundations for the AI Sensei before advanced agents.** The owner's three lines of effort connect executable practice, integration, and useful decision data. The [cloud and AI study](ai-sensei-and-wargaming-cloud.md) distinguishes reported institutional context from public evidence and proposes an API/headless baseline, historical observations, and separate evaluations of opponents and tutors.
+
+## Reading order
+
+| Reader's task | Read |
+| --- | --- |
+| Understand confirmed product scope | [Owner requirements](../product-requirements.md) |
+| Use the owner-supplied PDFs | [Dataset review](dataset-review.md), then [local catalog](../datasets/README.md) |
+| Choose the first implementation | [Architecture](architecture-options.md), then [prototype plan](prototype-plan.md) |
+| Build our original operational simulation | [CPE study](command-professional-edition.md), then [simulation blueprint](../design/simulation-blueprint.md) |
+| Choose units and source their behavior or equipment data | [Unit catalog and data sources](unit-catalog-and-data-sources.md) |
+| Design agents, analytics, or an AI tutor | [Cloud and AI Sensei study](ai-sensei-and-wargaming-cloud.md), then [learning evaluation](learning-and-adjudication.md) |
+| Build or evaluate Quest support | [Quest guide](quest3-development.md), then [prior project](prior-project-audit.md) |
+| Design a scenario or rules engine | [Manual review](manual-review.md), [games](wargames-and-rules.md), then [learning](learning-and-adjudication.md) |
+| Verify a claim or refresh research | [Sources](sources.md), then [verification](verification.md) |
+
+## Evidence conventions
+
+- **Observed:** inspected in the local project during this research.
+- **Documented:** supported by the linked publication; its scope and date still matter.
+- **Owner-reported context:** information supplied in the conversation; distinguish confirmed product preferences from institutional claims awaiting independent evidence.
+- **Proposed:** an XRiegsspiel design choice to test.
+- **Unknown:** unavailable, not tested, or not established by the retrieved evidence.
+
+“Currently listed” means listed on a page accessed on the research date. It does not prove an active installation, an exact software build, or use by every Marine or joint organization. Publication dates take precedence over search-engine crawl dates.
+
+## Unresolved product questions
+
+The audience, team planning scope, hybrid adjudication, usability needs, original-platform direction, initial 2–4 players, and tabletop-first experience are confirmed in the [requirements](../product-requirements.md). Still unknown: first rules/scenario, model detail, passthrough versus fully virtual surroundings, stack, hackathon duration/rubric, team skills, device/room arrangement, network restrictions, instructor availability, and session length. Ask about these one at a time as needed.

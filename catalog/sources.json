@@ -1,0 +1,66 @@
+[
+  {
+    "id": "china-origin",
+    "publisher": "U.S. Army ODIN / Worldwide Equipment Guide",
+    "url": "https://odin.t2com.army.mil/WEG/List",
+    "accessed": "2026-09-15",
+    "filter": {
+      "Origin": "China, People's Republic of"
+    },
+    "exportFormat": "CSV Spreadsheet",
+    "originalFilename": "3d4a16952ce709a03cbd5899f6013e50845d69b0.csv",
+    "localFile": "data/odin/china-origin.csv",
+    "rowCount": 922,
+    "columnCount": 4101,
+    "sha256": "53d313682350ec03ab540cfcc8ba0baee47cde91030a6d3b2ee7de1a2835b468",
+    "method": "Public catalog filter \u2192 Download \u2192 CSV Spreadsheet \u2192 Generate Download; actual row counts checked against selected-item counts."
+  },
+  {
+    "id": "china-operator",
+    "publisher": "U.S. Army ODIN / Worldwide Equipment Guide",
+    "url": "https://odin.t2com.army.mil/WEG/List",
+    "accessed": "2026-09-15",
+    "filter": {
+      "Proliferation": "China"
+    },
+    "exportFormat": "CSV Spreadsheet",
+    "originalFilename": "dc0c098bd599af0e2bb6adaf23e8b2903b05f05f.csv",
+    "localFile": "data/odin/china-operator.csv",
+    "rowCount": 1114,
+    "columnCount": 5059,
+    "sha256": "d29ac1d42b270b6a69d3879903d1f05b773474fd319170bdd6866509fa4a6c88",
+    "method": "Public catalog filter \u2192 Download \u2192 CSV Spreadsheet \u2192 Generate Download; actual row counts checked against selected-item counts."
+  },
+  {
+    "id": "us-operator",
+    "publisher": "U.S. Army ODIN / Worldwide Equipment Guide",
+    "url": "https://odin.t2com.army.mil/WEG/List",
+    "accessed": "2026-09-15",
+    "filter": {
+      "Proliferation": "United States of America"
+    },
+    "exportFormat": "CSV Spreadsheet",
+    "originalFilename": "5617cc133d624dae68509b854f1ce3f98bd8692d.csv",
+    "localFile": "data/odin/us-operator.csv",
+    "rowCount": 459,
+    "columnCount": 2724,
+    "sha256": "9cf40043904ff57ef852242bd9af2c2a05ada86437a94a3654e17e5820336182",
+    "method": "Public catalog filter \u2192 Download \u2192 CSV Spreadsheet \u2192 Generate Download; actual row counts checked against selected-item counts."
+  },
+  {
+    "id": "us-origin",
+    "publisher": "U.S. Army ODIN / Worldwide Equipment Guide",
+    "url": "https://odin.t2com.army.mil/WEG/List",
+    "accessed": "2026-09-15",
+    "filter": {
+      "Origin": "United States"
+    },
+    "exportFormat": "CSV Spreadsheet",
+    "originalFilename": "880d8fb9de28cff5b16af1a7e88ffae5dbd0512c.csv",
+    "localFile": "data/odin/us-origin.csv",
+    "rowCount": 396,
+    "columnCount": 2205,
+    "sha256": "26f4b7dea97e335ccaca52d03f9c5fd8d9965f7f8f4f4f5cb45ecb8823f24ad3",
+    "method": "Public catalog filter \u2192 Download \u2192 CSV Spreadsheet \u2192 Generate Download; actual row counts checked against selected-item counts."
+  }
+]

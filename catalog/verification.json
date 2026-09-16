@@ -1,0 +1,25 @@
+{
+  "version": "catalog-verification/0.1.0",
+  "verifiedAt": "2026-09-15",
+  "equipmentRecords": 1607,
+  "sourceFacts": 49290,
+  "playableDefinitions": 1607,
+  "definitionKinds": {
+    "platform": 1084,
+    "part": 523
+  },
+  "eligibleDistinctPieces2026": 1522,
+  "eligibleByForce2026": {
+    "blue": 459,
+    "red": 1112
+  },
+  "componentRecords": 1073,
+  "componentReview": {
+    "needs-section-review": 1066,
+    "section-inspected-not-independently-verified": 7
+  },
+  "integrity": "ok",
+  "foreignKeys": "ok",
+  "canonicalHashes": "match",
+  "scope": "Data integrity and original laboratory behavior only. Historical force composition, component compatibility and real-world performance are not validated."
+}

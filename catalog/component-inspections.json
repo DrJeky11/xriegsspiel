@@ -1,0 +1,14 @@
+{
+  "version": "component-inspections/0.1.0",
+  "accessed": "2026-09-15",
+  "method": "Read the named sections in the public ODIN asset dialog. These are source assertions, not independent equipment verification.",
+  "records": [
+    {"id":"m1a2-engine","equipmentId":"odin-318957732468f616f5ad6c99ddeeaa0f","parentComponentId":null,"kind":"engine","name":"AGT-1500","quantity":null,"locator":"Automotive / Engine Name, Road Speed, Range","fields":{"Road Speed":"66 km/h","Range":"426 km"},"note":"Automotive range is distinct from the main gun range."},
+    {"id":"m1a2-main-gun","equipmentId":"odin-318957732468f616f5ad6c99ddeeaa0f","parentComponentId":null,"kind":"weapon","name":"M256 smoothbore","quantity":null,"locator":"Main Gun / System / Name, Caliber, Maximum Range","fields":{"Caliber":"120 mm","Maximum Range":"4,000 m"},"note":"Source claim; no weapon effects model is implemented."},
+    {"id":"m1a2-ammunition-option-1","equipmentId":"odin-318957732468f616f5ad6c99ddeeaa0f","parentComponentId":"m1a2-main-gun","kind":"ammunition-option","name":"M829A2","quantity":null,"locator":"Main Gun / Ammunition (Option 1) / Name, Basic Load","fields":{"Basic Load":"40 rounds"},"note":"An option, not 40 additional rounds per ammunition type. No starting loadout is inferred."},
+    {"id":"m1a2-ammunition-option-2","equipmentId":"odin-318957732468f616f5ad6c99ddeeaa0f","parentComponentId":"m1a2-main-gun","kind":"ammunition-option","name":"M829A3","quantity":null,"locator":"Main Gun / Ammunition (Option 2) / Name, Basic Load","fields":{"Basic Load":"40 Rounds"},"note":"An option, not an additive ammunition inventory."},
+    {"id":"m1a2-coaxial","equipmentId":"odin-318957732468f616f5ad6c99ddeeaa0f","parentComponentId":null,"kind":"weapon","name":"M240 (variant unspecified)","quantity":1,"locator":"Coaxial Weapon System / System / Name and Caliber; Ammunition / Caliber","fields":{"Name":"1 x 7.26-mm M240 machine gun","Caliber":"7.72mm","Ammunition Caliber":"7.62 mm"},"note":"The source contains inconsistent caliber labels. Preserve them for review; do not silently correct or infer a specific M240 variant."},
+    {"id":"ztz96-engine","equipmentId":"odin-b5fb02473e4ecb7afe98d40264f66a3f","parentComponentId":null,"kind":"engine","name":"Unnamed diesel engine","quantity":null,"locator":"Automotive / Engine Name, Engine Type, Cruising Range, Speed Maximum Road","fields":{"Engine Name":null,"Engine Name (raw)":"INA","Engine Type":"Water cooled, diesel","Cruising Range":"400 km","Speed, Maximum Road":"65 km/h"},"note":"The engine name is unknown in the inspected source."},
+    {"id":"ztz96-main-gun","equipmentId":"odin-b5fb02473e4ecb7afe98d40264f66a3f","parentComponentId":null,"kind":"weapon","name":"L50 ZPT-98","quantity":1,"locator":"Main Gun / System / Name and Caliber","fields":{"Caliber":"125 mm"},"note":"Source-section assertion only. Listed ammunition options need variant compatibility review and are not approved loadouts."}
+  ]
+}

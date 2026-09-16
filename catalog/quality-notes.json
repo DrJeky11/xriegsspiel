@@ -1,0 +1,49 @@
+{
+  "version": "catalog-quality/0.1.0",
+  "reviewedAt": "2026-09-15",
+  "global": [
+    "ODIN is a training reference. Imported assertions have not been independently verified as current service inventories.",
+    "Country of origin and operator-filter membership are distinct. Neither supplies an operator-specific service interval.",
+    "The flat CSV collapses fields from different sections. It can overwrite repeated names, notes, type and range fields. Raw values must retain their field names and export provenance.",
+    "The dateOfIntroduction field can describe a family, prototype or production milestone rather than a specific variant's operational service entry.",
+    "A numeric value without a unit is not normalized into a speed, range, mass or capacity.",
+    "The Data Only export was attempted but no download event or completed file was observed. CSV exports succeeded. Structured component context requires further source inspection."
+  ],
+  "records": [
+    {
+      "equipmentId": "odin-318957732468f616f5ad6c99ddeeaa0f",
+      "issue": "Generic maximum range is not automotive range.",
+      "evidence": "Browser inspection of the Automotive section on 2026-09-15 displayed Road Speed 66 km/h and Range 426 km. The CSV also contains maximum range 4,000 m from a different section.",
+      "locator": "Automotive / Road Speed and Range",
+      "status": "automotive-fields-inspected"
+    },
+    {
+      "equipmentId": "odin-b504264e2b050a081bc37259c6cc8e01",
+      "issue": "AH-64E origin-only membership; ambiguous flattened speed fields.",
+      "evidence": "US-origin export contains the record; US-operator export does not. CSV maximum speed is 739 without units, while speed, maximum is 293 km/h. Do not infer operator absence or adopt the generic speed.",
+      "locator": "us-origin CSV / identifier, maximum speed, speed, maximum",
+      "status": "needs-section-and-operator-review"
+    },
+    {
+      "equipmentId": "odin-eb860584b7180c3f7ad08f5d0824ed96",
+      "issue": "Variant-specific date needs review.",
+      "evidence": "The title specifies F-16C Block 52, while dateOfIntroduction is 1984. Preserve the source assertion; do not use it as a verified Block 52 availability date.",
+      "locator": "us-operator CSV / name and dateOfIntroduction",
+      "status": "needs-variant-date-review"
+    },
+    {
+      "equipmentId": "odin-4b76fcea503d968f44080ab99098a96e",
+      "issue": "PLZ-05 date and missing numeric units need review.",
+      "evidence": "CSV dateOfIntroduction is 1991. Several movement/range fields contain bare numbers. Keep the assertions as source data until checked in context.",
+      "locator": "china-operator CSV / dateOfIntroduction, speed, maximum road, maximum firing range",
+      "status": "needs-variant-date-and-unit-review"
+    },
+    {
+      "equipmentId": "odin-55b3c2f25e937237b37628305ba31f9c",
+      "issue": "UH-60 family/variant and operator mapping need review.",
+      "evidence": "The UH-60L record reports 1979 and appears in both operator exports. These assertions do not establish that both forces operated that exact variant in 1979 or since 1980.",
+      "locator": "china-operator and us-operator CSV / name, dateOfIntroduction, filter membership",
+      "status": "needs-variant-and-operator-review"
+    }
+  ]
+}

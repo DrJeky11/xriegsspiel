@@ -1,0 +1,239 @@
+{
+  "version": "piece-lab/0.1.0",
+  "purpose": "Executable movement and inventory rules for testing catalog pieces on a fictional tabletop.",
+  "scale": "One platform per platform piece; one equipment item per part. Movement points and cargo slots are authored game quantities, not kilometers, minutes, seats or kilograms.",
+  "limits": [
+    "Full information equipment laboratory; force colors do not grant player authority.",
+    "Weapon, sensor, protection and communications entries are reference data. Combat, detection, electronic warfare and damage are not resolved by these rules.",
+    "Aircraft move in an abstract air layer. Takeoff, landing, endurance and basing are outside this laboratory.",
+    "Transport slots test conserved bookkeeping; they do not establish real loading or mounting compatibility.",
+    "A source introduction year is a catalog claim, not verified service availability. Historical scenarios require a reviewed service interval.",
+    "Landing craft may enter plain cells directly beside water; all other inland cells are blocked."
+  ],
+  "profiles": [
+    {
+      "id": "tracked",
+      "label": "Tracked ground platform",
+      "layer": "surface",
+      "movement": 4,
+      "costs": {
+        "plain": 1,
+        "road": 1,
+        "forest": 2,
+        "ridge": 3,
+        "water": null
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "wheeled",
+      "label": "Wheeled ground platform",
+      "layer": "surface",
+      "movement": 6,
+      "costs": {
+        "plain": 2,
+        "road": 1,
+        "forest": 3,
+        "ridge": null,
+        "water": null
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "ground-system",
+      "label": "Abstract ground system",
+      "layer": "surface",
+      "movement": 3,
+      "costs": {
+        "plain": 2,
+        "road": 1,
+        "forest": 3,
+        "ridge": null,
+        "water": null
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "amphibious-tracked",
+      "label": "Amphibious tracked platform",
+      "layer": "surface",
+      "movement": 4,
+      "costs": {
+        "plain": 1,
+        "road": 1,
+        "forest": 2,
+        "ridge": 3,
+        "water": 3
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "amphibious-wheeled",
+      "label": "Amphibious wheeled platform",
+      "layer": "surface",
+      "movement": 6,
+      "costs": {
+        "plain": 2,
+        "road": 1,
+        "forest": 3,
+        "ridge": null,
+        "water": 3
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "truck",
+      "label": "Ground cargo transport",
+      "layer": "surface",
+      "movement": 6,
+      "costs": {
+        "plain": 2,
+        "road": 1,
+        "forest": 3,
+        "ridge": null,
+        "water": null
+      },
+      "cargoSlots": 8
+    },
+    {
+      "id": "rotary-wing",
+      "label": "Rotary-wing aircraft",
+      "layer": "air",
+      "movement": 8,
+      "costs": {
+        "plain": 1,
+        "road": 1,
+        "forest": 1,
+        "ridge": 1,
+        "water": 1
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "air-transport",
+      "label": "Air cargo transport",
+      "layer": "air",
+      "movement": 8,
+      "costs": {
+        "plain": 1,
+        "road": 1,
+        "forest": 1,
+        "ridge": 1,
+        "water": 1
+      },
+      "cargoSlots": 8
+    },
+    {
+      "id": "fixed-wing",
+      "label": "Fixed-wing aircraft / UAV",
+      "layer": "air",
+      "movement": 12,
+      "costs": {
+        "plain": 1,
+        "road": 1,
+        "forest": 1,
+        "ridge": 1,
+        "water": 1
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "surface-vessel",
+      "label": "Surface vessel",
+      "layer": "surface",
+      "movement": 5,
+      "costs": {
+        "plain": null,
+        "road": null,
+        "forest": null,
+        "ridge": null,
+        "water": 1
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "sea-transport",
+      "label": "Sea cargo transport",
+      "layer": "surface",
+      "movement": 5,
+      "costs": {
+        "plain": null,
+        "road": null,
+        "forest": null,
+        "ridge": null,
+        "water": 1
+      },
+      "cargoSlots": 12
+    },
+    {
+      "id": "landing-craft",
+      "label": "Abstract amphibious transport",
+      "layer": "surface",
+      "movement": 5,
+      "costs": {
+        "plain": 2,
+        "road": null,
+        "forest": null,
+        "ridge": null,
+        "water": 1
+      },
+      "cargoSlots": 12
+    },
+    {
+      "id": "submarine",
+      "label": "Submarine / underwater vehicle",
+      "layer": "subsurface",
+      "movement": 4,
+      "costs": {
+        "plain": null,
+        "road": null,
+        "forest": null,
+        "ridge": null,
+        "water": 1
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "ground-robot",
+      "label": "Ground robot",
+      "layer": "surface",
+      "movement": 3,
+      "costs": {
+        "plain": 1,
+        "road": 1,
+        "forest": 2,
+        "ridge": null,
+        "water": null
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "towed",
+      "label": "Towed equipment",
+      "layer": "surface",
+      "movement": 0,
+      "costs": {
+        "plain": 1,
+        "road": 1,
+        "forest": 2,
+        "ridge": null,
+        "water": null
+      },
+      "cargoSlots": 0
+    },
+    {
+      "id": "equipment",
+      "label": "Equipment item / component",
+      "layer": "inventory",
+      "movement": 0,
+      "costs": {
+        "plain": 1,
+        "road": 1,
+        "forest": 1,
+        "ridge": 1,
+        "water": null
+      },
+      "cargoSlots": 0
+    }
+  ]
+}

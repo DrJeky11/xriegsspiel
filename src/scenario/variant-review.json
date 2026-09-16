@@ -1,0 +1,178 @@
+{
+  "version": "geographic-variant-review/0.1.0",
+  "accessed": "2026-09-16",
+  "records": [
+    {
+      "definitionId": "piece-318957732468f616f5ad6c99ddeeaa0f",
+      "name": "M1A2 Abrams American Main Battle Tank (MBT)",
+      "reportedYear": 1992,
+      "forceEvidence": [
+        {
+          "force": "blue",
+          "basis": "odin-operator-filter",
+          "sourceId": "us-operator"
+        }
+      ],
+      "status": "provisional; exact historical service interval unknown",
+      "note": "ODIN reports 1992. ARMOR (May\u2013June 1993) dates the first production M1A2 to December 1992 and describes fielding as future. This supports a production milestone, not universal service in 1992. This is the base M1A2, not SEP; exact retirement and continued service remain unknown.",
+      "sources": [
+        {
+          "label": "ODIN pinned catalog record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/318957732468f616f5ad6c99ddeeaa0f",
+          "locator": "catalog/pieces.json: forceEvidence and eraEvidence; catalog/equipment.json: sourceFields; four-export provenance in catalog/sources.json"
+        },
+        {
+          "label": "Army ARMOR, May\u2013June 1993",
+          "url": "https://www.benning.army.mil/Armor/eARMOR/content/issues/1993/MAY_JUN/ArmorMayJune1993web.pdf",
+          "locator": "M1A2 Abrams Tank Trials in Southwest Asia, printed p. 16"
+        }
+      ]
+    },
+    {
+      "definitionId": "piece-a233a164a7e4be4d8b13515744a6c4e3",
+      "name": "LCM-8 (Mike Boat) American Landing Craft Mechanized (LCM)",
+      "reportedYear": 1959,
+      "forceEvidence": [
+        {
+          "force": "blue",
+          "basis": "odin-operator-filter",
+          "sourceId": "us-operator"
+        }
+      ],
+      "status": "provisional; exact historical service interval unknown",
+      "note": "ODIN reports 1959. Navy ACU TWO history says it began shifting to LCM-8 in 1957, while 1959 refers to an organizational merger. US operation is supported; the first introduction milestone conflicts. Continued service and exact variant fit remain unknown. The game permits slot-based cargo, not a real assertion that an M1A2 fits this craft.",
+      "sources": [
+        {
+          "label": "ODIN pinned catalog record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/a233a164a7e4be4d8b13515744a6c4e3",
+          "locator": "catalog/pieces.json: forceEvidence and eraEvidence; catalog/equipment.json: sourceFields; four-export provenance in catalog/sources.json"
+        },
+        {
+          "label": "US Navy ACU TWO history",
+          "url": "https://www.surflant.usff.navy.mil/Organization/Supporting-Commands/Commander-Naval-Beach-Group-Two/Commander-Assault-Craft-Unit-TWO/About-Us/History/",
+          "locator": "Boat Unit TWO / LCM-8 paragraphs"
+        }
+      ]
+    },
+    {
+      "definitionId": "piece-55b3c2f25e937237b37628305ba31f9c",
+      "name": "UH-60L Black Hawk American Utility Helicopter",
+      "reportedYear": 1979,
+      "forceEvidence": [
+        {
+          "force": "red",
+          "basis": "odin-operator-filter",
+          "sourceId": "china-operator"
+        },
+        {
+          "force": "blue",
+          "basis": "odin-operator-filter",
+          "sourceId": "us-operator"
+        }
+      ],
+      "status": "provisional; exact historical service interval unknown",
+      "note": "ODIN labels UH-60L but reports 1979. Army history associates 1979 with the Black Hawk family/A model and dates L-model production to 1989. The geographic rules reject this variant before 1989; the catalog source remains unchanged. Exact entry into service and retirement remain unknown. Rotary-wing cargo is not enabled by this authored profile.",
+      "sources": [
+        {
+          "label": "ODIN pinned catalog record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/55b3c2f25e937237b37628305ba31f9c",
+          "locator": "catalog/pieces.json: forceEvidence and eraEvidence; catalog/equipment.json: sourceFields; four-export provenance in catalog/sources.json"
+        },
+        {
+          "label": "US Army: AMC-developed weapons remain vital",
+          "url": "https://www.army.mil/article-amp/86839/amc_developed_weapons_remain_vital_to_army",
+          "locator": "UH-60 Black Hawk Helicopter section"
+        }
+      ]
+    },
+    {
+      "definitionId": "piece-5cbf63b6529babac54a1b1ae41463e0b",
+      "name": "M2 Browning American 12.7mm Heavy Machine Gun",
+      "reportedYear": 1933,
+      "forceEvidence": [
+        {
+          "force": "blue",
+          "basis": "odin-operator-filter",
+          "sourceId": "us-operator"
+        }
+      ],
+      "status": "provisional; exact historical service interval unknown",
+      "note": "ODIN reports 1933 and US operator membership. This record combines the broad M2 Browning family and component fields, including a misleading Rifle type. No exact variant-specific service or retirement interval was verified. It is one loose equipment item, not an automatically mounted weapon; combat is absent.",
+      "sources": [
+        {
+          "label": "ODIN pinned catalog record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/5cbf63b6529babac54a1b1ae41463e0b",
+          "locator": "catalog/pieces.json: forceEvidence and eraEvidence; catalog/equipment.json: sourceFields; four-export provenance in catalog/sources.json"
+        }
+      ]
+    },
+    {
+      "definitionId": "piece-b5fb02473e4ecb7afe98d40264f66a3f",
+      "name": "ZTZ-96 (Type 96) Chinese Main Battle Tank (MBT)",
+      "reportedYear": 1997,
+      "forceEvidence": [
+        {
+          "force": "red",
+          "basis": "odin-operator-filter",
+          "sourceId": "china-operator"
+        }
+      ],
+      "status": "provisional; exact historical service interval unknown",
+      "note": "ODIN reports 1997 and China operator membership. The PRC Ministry of National Defense describes Type 96 appearing in the 1999 parade; this corroborates a dated appearance, not first service in 1997. Exact baseline/upgrade attribution, component fields and retirement remain unresolved.",
+      "sources": [
+        {
+          "label": "ODIN pinned catalog record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/b5fb02473e4ecb7afe98d40264f66a3f",
+          "locator": "catalog/pieces.json: forceEvidence and eraEvidence; catalog/equipment.json: sourceFields; four-export provenance in catalog/sources.json"
+        },
+        {
+          "label": "PRC Ministry of National Defense: parade armor retrospective",
+          "url": "https://www.mod.gov.cn/gfbw/tp_214132/jskj/4827567_4.html",
+          "locator": "Type 96 / Type 99 paragraph on 1999 parade"
+        }
+      ]
+    },
+    {
+      "definitionId": "piece-e28eda08341b5085d5d9cda38c500907",
+      "name": "Type 072A Class (Yuting II Class) Chinese Landing Ship",
+      "reportedYear": 2003,
+      "forceEvidence": [
+        {
+          "force": "red",
+          "basis": "odin-operator-filter",
+          "sourceId": "china-operator"
+        }
+      ],
+      "status": "provisional; exact historical service interval unknown",
+      "note": "ODIN reports 2003, China operator membership and an In service field of 2003\u2013Present. Present belongs to that source snapshot and is not a verified service end. Yuting II / Type 072A naming and exact class/variant correspondence remain provisional; independent first-service corroboration was not established. Sea-transport slots are authored.",
+      "sources": [
+        {
+          "label": "ODIN pinned catalog record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/e28eda08341b5085d5d9cda38c500907",
+          "locator": "catalog/pieces.json: forceEvidence and eraEvidence; catalog/equipment.json: sourceFields; four-export provenance in catalog/sources.json"
+        }
+      ]
+    },
+    {
+      "definitionId": "piece-665e08f1f03808795b6e98d30b9eac5d",
+      "name": "Z-9 Harbin (WZ-9) Chinese Medium Multi-Role Helicopter",
+      "reportedYear": 1981,
+      "forceEvidence": [
+        {
+          "force": "red",
+          "basis": "odin-operator-filter",
+          "sourceId": "china-operator"
+        }
+      ],
+      "status": "provisional; exact historical service interval unknown",
+      "note": "ODIN reports 1981 and China operator membership, with a combined Z-9/WZ-9 title and variant-dependent crew fields. The exact civil/military and armed-variant introduction interval was not independently established. Treat the date as a family-level assertion; do not infer WZ-9 service in 1981 or current availability. Cargo and weapon fields do not create game capabilities.",
+      "sources": [
+        {
+          "label": "ODIN pinned catalog record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/665e08f1f03808795b6e98d30b9eac5d",
+          "locator": "catalog/pieces.json: forceEvidence and eraEvidence; catalog/equipment.json: sourceFields; four-export provenance in catalog/sources.json"
+        }
+      ]
+    }
+  ]
+}

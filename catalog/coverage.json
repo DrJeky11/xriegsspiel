@@ -1,0 +1,31 @@
+{
+  "uniqueEquipment": 1607,
+  "sourceRows": {
+    "china-origin": 922,
+    "china-operator": 1114,
+    "us-operator": 459,
+    "us-origin": 396
+  },
+  "domains": {
+    "sea": 137,
+    "land": 913,
+    "air": 557
+  },
+  "candidateKinds": {
+    "platform": 1075,
+    "part": 532
+  },
+  "eraStatus": {
+    "introduced-1980-onward": 1265,
+    "legacy-service-review": 340,
+    "unknown-date": 2
+  },
+  "membershipEvidence": {
+    "red:odin-operator-filter": 1114,
+    "blue:odin-operator-filter": 459,
+    "red:origin-only-needs-operator-review": 15,
+    "blue:origin-only-needs-operator-review": 72
+  },
+  "recordsWithExportConflicts": 0,
+  "note": "Import coverage, not independent verification, a current order of battle, or a count of playable definitions. Source field grouping is lost by ODIN's flat CSV export; review before using quantities in rules."
+}
