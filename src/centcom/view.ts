@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import { PieceLayer } from '../play/piece-layer.ts';
+import type { TablePiece } from '../play/piece-layer.ts';
+import { drawPanel, activatePanel } from '../play/panel.ts';
+import type { TablePanel } from '../play/panel.ts';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import coastlines from './coastlines.json';
 import { project, tileAt } from './terrain.ts';
@@ -17,6 +21,8 @@ export class TerrainView {
   readonly board = new THREE.Group();
   readonly controls: OrbitControls;
   readonly stats = { frames: 0, xrFrames: 0, drawCalls: 0, triangles: 0 };
+  private pieceLayer = new PieceLayer();
+  private scenarioPanel: TablePanel | null = null;
   private terrain = new THREE.Group();
   private labels = new THREE.Group();
   private coastline = new THREE.LineSegments();
@@ -48,6 +54,15 @@ export class TerrainView {
     this.renderer.setClearColor('#122b34');
     this.renderer.xr.enabled = true;
     this.renderer.xr.setReferenceSpaceType('local-floor');
+    this.renderer.domElement.tabIndex = 0;
+    this.renderer.domElement.addEventListener('keydown', event => {
+      const delta = ({ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,1],ArrowDown:[0,-1],q:[-1,1],e:[1,-1]} as Record<string,number[]>)[event.key];
+      if (!delta || !this.map) return;
+      event.preventDefault();
+      const from = this.selected ?? this.map.tiles[0];
+      const tile = this.map.byAxial.get(`${from.q+delta[0]},${from.r+delta[1]}`);
+      if (tile) this.onSelect(tile);
+    });
     this.renderer.domElement.setAttribute('aria-label', 'CENTCOM hex terrain. Click a tile to inspect it, or use the landmark selector and hex coordinate fields.');
     container.append(this.renderer.domElement);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -59,7 +74,7 @@ export class TerrainView {
     this.controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN };
     this.scene.add(this.board, new THREE.HemisphereLight('#fff9ed', '#667b87', 2.7));
     const sun = new THREE.DirectionalLight('#fff2d1', 2.1); sun.position.set(-2, 4, -1); this.scene.add(sun);
-    this.board.add(this.terrain, this.labels, this.marker);
+    this.board.add(this.terrain, this.labels, this.marker, this.pieceLayer.pieces, this.pieceLayer.routes);
     this.marker.visible = false; this.marker.renderOrder = 5;
     this.canvas.width = 800; this.canvas.height = 960;
     this.texture = new THREE.CanvasTexture(this.canvas); this.texture.colorSpace = THREE.SRGBColorSpace;
@@ -148,8 +163,25 @@ export class TerrainView {
         dot.position.set(x * this.unitScale, .04, -y * this.unitScale); this.labels.add(dot);
       }
     }
+    this.configurePieces();
     this.drawPanel();
     if (!this.renderer.xr.isPresenting) this.reset();
+  }
+  private configurePieces() {
+    if (!this.map) return;
+    this.pieceLayer.configure(this.map.tiles.map(tile=>({id:tile.id,x:tile.xKm*this.unitScale,z:-tile.yKm*this.unitScale,y:this.height(tile)})),this.map.region.spacingKm/Math.sqrt(3)*this.unitScale);
+  }
+  setScenarioPieces(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void) { this.pieceLayer.set(pieces,reachable,path,select); }
+  setScenarioPanel(panel:TablePanel) {
+    if (!this.scenarioPanel) { this.panel.geometry.dispose();this.panel.geometry=new THREE.PlaneGeometry(.64,.8);this.panel.position.set(1.24,.32,0);this.panel.rotation.set(0,-.3,0); }
+    this.scenarioPanel=panel;this.drawPanel();
+  }
+  async exit() { await this.renderer.xr.getSession()?.end(); }
+  focusTile(tile:Tile) {
+    this.select(tile);
+    if (this.renderer.xr.isPresenting) return;
+    this.controls.target.set(tile.xKm*this.unitScale,this.height(tile),-tile.yKm*this.unitScale);
+    this.camera.position.copy(this.controls.target).add(new THREE.Vector3(0,.68,.48));this.controls.update();
   }
   private height(tile: Tile) {
     if (!this.relief) return .009;
@@ -167,6 +199,7 @@ export class TerrainView {
     });
     this.mesh.instanceMatrix.needsUpdate = true; this.mesh.computeBoundingSphere();
     if (this.selected) this.marker.position.y = this.height(this.selected) + .005;
+    this.configurePieces();
   }
   setLabels(enabled: boolean) { this.labels.visible = enabled; }
   setCoastline(enabled: boolean) { this.coastline.visible = enabled; }
@@ -222,14 +255,17 @@ export class TerrainView {
   }
   private pick() {
     if (!this.mesh || !this.map) return;
-    const hit = this.ray.intersectObjects(this.panel.visible ? [this.mesh, this.panel] : [this.mesh], false)[0];
+    const hit = this.ray.intersectObjects([this.mesh,...(this.panel.visible?[this.panel]:[]),...this.pieceLayer.pieceHits], false)[0];
+    if (hit?.object.userData.pieceId && this.pieceLayer.select) {this.pieceLayer.select(hit.object.userData.pieceId);return;}
     if (hit?.object === this.panel && hit.uv) {
+      if (this.scenarioPanel) {activatePanel(this.scenarioPanel,hit.uv.x,hit.uv.y);return;}
       const y = (1 - hit.uv.y) * 960, index = Math.floor((y - 420) / 86);
       if (y >= 420 && y <= 420 + this.panelActions.length * 86 && (y - 420) % 86 < 72) this.panelActions[index]?.action();
     } else if (hit?.instanceId !== undefined) this.onSelect(this.map.tiles[hit.instanceId]);
   }
   private drawPanel(name?: string) {
     if (!this.map) return;
+    if (this.scenarioPanel) {drawPanel(this.canvas,this.scenarioPanel);this.texture.needsUpdate=true;return;}
     const ctx = this.canvas.getContext('2d')!;
     ctx.fillStyle = '#152d35'; ctx.fillRect(0, 0, 800, 960);
     ctx.fillStyle = '#f6efdc'; ctx.font = '600 38px system-ui'; ctx.fillText(this.map.region.title, 36, 66);

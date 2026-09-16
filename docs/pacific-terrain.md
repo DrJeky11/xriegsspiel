@@ -1,5 +1,6 @@
 # Pacific hex terrain workspace
 
+**2026-09-16 integration:** this original terrain workspace now includes catalog selection, placement, movement and transport in browser and VR/MR controller panels. Each map has its own saved exercise. See [current controls and verification](playable-terrain.md); the terrain/data record below remains applicable.
 **Implemented: 2026-09-16 UTC / 2026-09-15 America/New_York.** Owner requested geographic terrain near the Philippines/South China Sea around Sierra Madre and near Taiwan/Senkaku, represented with hexagonal tiles. This is terrain preparation, independent of the concurrently developed playable-piece database and CENTCOM terrain work.
 
 Open [Pacific terrain](http://127.0.0.1:5173/pacific.html) after `npm run dev`, or after `npm run build` and `npm start`. The existing cooperative exercise links to this page. The page links back to the exercise and to CENTCOM. The original square-grid logistics exercise and its saved journal remain unchanged.

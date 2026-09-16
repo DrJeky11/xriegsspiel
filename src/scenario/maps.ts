@@ -1,4 +1,4 @@
-/** Adapt existing cartographic maps without replacing their IDs or classifications. */
+/** Adapt native geometry for movement policy without changing source terrain data or tile IDs. */
 import { buildMap, REGIONS, keyOf } from '../pacific/terrain.ts';
 import type { Geography, TerrainMap, Cell } from '../pacific/terrain.ts';
 import { buildTerrain, SOURCE } from '../centcom/terrain.ts';

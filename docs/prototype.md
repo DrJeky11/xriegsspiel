@@ -1,5 +1,6 @@
 # First tabletop prototype
 
+**Historical record:** this standalone UI was retired on 2026-09-16. Use the original Pacific/CENTCOM workspaces; see [current controls and verification](playable-terrain.md). Source is preserved in Git baseline `f25a7a7`.
 **Implementation and checks: 2026-09-15.** The owner authorized building a small first prototype before expanding it. This implements the selected-piece interaction slice in the [prototype plan](research/prototype-plan.md). It is not completion of the full wargaming platform or all four checkpoints.
 
 ## Launch

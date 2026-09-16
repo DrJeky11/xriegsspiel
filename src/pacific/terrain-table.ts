@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import { PieceLayer } from '../play/piece-layer.ts';
+import type { TablePiece } from '../play/piece-layer.ts';
+import { drawPanel, activatePanel } from '../play/panel.ts';
+import type { TablePanel } from '../play/panel.ts';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { project, keyOf } from './terrain.ts';
 import type { TerrainMap, Cell, Surface } from './terrain.ts';
@@ -11,8 +15,8 @@ export const SURFACES: Record<Surface,{name:string;color:string;note:string}> = 
   lagoon:{name:'Lagoon',color:'#3d8584',note:'Interior water ring in the mapped reef. Depth and navigable passages are unknown.'},
 };
 interface Callbacks { select:(cell:Cell)=>void; nextRegion:()=>void; toggleFocus:()=>void; mode:(active:boolean)=>void }
-export interface TablePiece { id:string; tileId:string; force:'red'|'blue'; symbol:string; selected:boolean; cargo:number; layer:string }
-export interface TablePanel { title:string; lines:string[]; buttons:{label:string; run:()=>void}[] }
+export type { TablePiece } from '../play/piece-layer.ts';
+export type { TablePanel } from '../play/panel.ts';
 export class TerrainTable {
   scene=new THREE.Scene();
   camera=new THREE.PerspectiveCamera(43,1,.01,40);
@@ -21,10 +25,7 @@ export class TerrainTable {
   board=new THREE.Group();
   terrain=new THREE.Group();
   labels=new THREE.Group();
-  private pieces=new THREE.Group();
-  private routes=new THREE.Group();
-  private pieceHits:THREE.Mesh[]=[];
-  private pieceSelect:((id:string)=>void)|null=null;
+  private pieceLayer=new PieceLayer();
   private scenarioPanel:TablePanel|null=null;
   private guides=new THREE.Group();
   ray=new THREE.Raycaster();
@@ -63,7 +64,7 @@ export class TerrainTable {
     this.controls.touches={ONE:THREE.TOUCH.PAN,TWO:THREE.TOUCH.DOLLY_PAN};
     this.scene.add(new THREE.HemisphereLight('#e1f0e7','#203942',2.2));
     const sun=new THREE.DirectionalLight('#fff4cf',2.2);sun.position.set(-2,4,-1);this.scene.add(sun);
-    this.scene.add(this.board);this.board.add(this.terrain,this.labels,this.guides,this.outline,this.hover,this.pieces,this.routes);
+    this.scene.add(this.board);this.board.add(this.terrain,this.labels,this.guides,this.outline,this.hover,this.pieceLayer.pieces,this.pieceLayer.routes);
     this.outline.visible=false;this.hover.visible=false;
     this.panelCanvas.width=1024;this.panelCanvas.height=1280;
     this.panelTexture=new THREE.CanvasTexture(this.panelCanvas);this.panelTexture.colorSpace=THREE.SRGBColorSpace;
@@ -124,6 +125,7 @@ export class TerrainTable {
       color.multiplyScalar(.97+((Math.abs(c.q*17+c.r*29)%7)/100));this.tiles.setColorAt(i,color);
     }
     this.tiles.computeBoundingSphere();this.terrain.add(this.tiles);
+    this.pieceLayer.configure(map.cells.map(c=>({id:c.id,x:c.x*this.unit,z:c.z*this.unit,y:c.terrain==='land'?.030:c.terrain==='coast'?.017:c.terrain==='reef'?.012:.007})),this.radius);
     const base=new THREE.Mesh(new THREE.BoxGeometry(2.24,.04,map.view.heightKm*this.unit+.02),new THREE.MeshStandardMaterial({color:'#112d36',roughness:1}));
     base.position.y=-.026;this.terrain.add(base);
     const points=Array.from({length:6},(_,i)=>new THREE.Vector3(this.radius*Math.cos((30+i*60)*Math.PI/180),0,this.radius*Math.sin((30+i*60)*Math.PI/180)));
@@ -157,50 +159,14 @@ export class TerrainTable {
   select(cell:Cell) {this.selected=cell;this.outline.visible=true;this.placeOutline(this.outline,cell);this.drawPanel();}
   setLabels(visible:boolean) {this.labelsShown=visible;this.labels.visible=visible;}
   setScenarioPanel(panel:TablePanel) {this.scenarioPanel=panel;this.drawPanel();}
-  setScenarioPieces(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void) {
-    if(!this.map)return;
-    this.disposeGroup(this.pieces);this.disposeGroup(this.routes);this.pieceHits=[];this.pieceSelect=select;
-    const byId=new Map(this.map.cells.map(c=>[c.id,c]));
-    const highlights=reachable.map(id=>byId.get(id)).filter((c):c is Cell=>!!c);
-    if(highlights.length) {
-      const geometry=new THREE.RingGeometry(this.radius*.76,this.radius*.86,6);geometry.rotateX(-Math.PI/2);geometry.rotateY(Math.PI/6);
-      const mesh=new THREE.InstancedMesh(geometry,new THREE.MeshBasicMaterial({color:'#e7d29a',transparent:true,opacity:.7,depthTest:false,side:THREE.DoubleSide}),highlights.length);
-      highlights.forEach((c,i)=>mesh.setMatrixAt(i,new THREE.Matrix4().makeTranslation(c.x*this.unit,.052,c.z*this.unit)));mesh.renderOrder=4;this.routes.add(mesh);
-    }
-    const points=path.map(id=>byId.get(id)).filter((c):c is Cell=>!!c).map(c=>new THREE.Vector3(c.x*this.unit,.080,c.z*this.unit));
-    if(points.length>1){const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:'#fff0bd',depthTest:false}));line.renderOrder=7;this.routes.add(line);}
-    for(const p of pieces) {
-      const cell=byId.get(p.tileId);if(!cell)continue;
-      const canvas=document.createElement('canvas');canvas.width=256;canvas.height=256;const c=canvas.getContext('2d')!;
-      c.fillStyle=p.force==='blue'?'#346c8a':'#995b51';c.strokeStyle=p.selected?'#fff0ac':'#f5f0db';c.lineWidth=p.selected?15:7;
-      c.beginPath();if(p.force==='blue')c.roundRect(12,12,232,232,27);else{c.moveTo(128,5);c.lineTo(251,128);c.lineTo(128,251);c.lineTo(5,128);c.closePath();}c.fill();c.stroke();
-      // Original silhouettes, drawn as geometry rather than platform-dependent emoji.
-      c.fillStyle='#fff9e9';c.strokeStyle='#fff9e9';c.lineWidth=7;c.lineJoin='round';
-      if(p.symbol==='✈') {
-        c.beginPath();c.moveTo(128,32);c.lineTo(140,75);c.lineTo(198,105);c.lineTo(198,117);c.lineTo(140,102);c.lineTo(137,127);c.lineTo(157,138);c.lineTo(99,138);c.lineTo(119,127);c.lineTo(116,102);c.lineTo(58,117);c.lineTo(58,105);c.lineTo(116,75);c.closePath();c.fill();
-      } else if(p.symbol==='⚓') {
-        c.beginPath();c.moveTo(55,102);c.lineTo(203,102);c.lineTo(177,136);c.lineTo(77,136);c.closePath();c.fill();c.fillRect(95,70,62,26);c.fillRect(120,35,8,35);c.fillRect(128,45,37,8);
-      } else if(p.symbol==='▰') {
-        c.beginPath();c.roundRect(62,81,135,52,16);c.stroke();c.fillRect(83,87,86,31);c.fillRect(106,66,39,29);c.fillRect(123,42,8,30);
-      } else {c.strokeRect(85,48,88,88);c.beginPath();c.moveTo(85,48);c.lineTo(173,136);c.moveTo(173,48);c.lineTo(85,136);c.stroke();}
-      c.textAlign='center';
-      c.font='bold 35px sans-serif';c.fillText(p.id.length>10?`${p.force==='blue'?'B':'R'}·${p.id.slice(-5)}`:p.id,128,172,178);
-      if(p.cargo){c.font='bold 29px sans-serif';c.fillText(`CARGO ${p.cargo}`,128,210);}
-      const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
-      const size=Math.max(this.radius*1.7,.032);
-      const mesh=new THREE.Mesh(new THREE.PlaneGeometry(size,size),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthTest:false,side:THREE.DoubleSide}));
-      const offset=p.layer==='air'?-size*.65:p.layer==='inventory'?size*.65:0;
-      mesh.rotation.x=-Math.PI/2;mesh.position.set(cell.x*this.unit+offset,.085+(p.layer==='air'?.025:0),cell.z*this.unit+offset);mesh.renderOrder=p.selected?10:p.layer==='surface'?9:8;
-      mesh.userData.pieceId=p.id;this.pieces.add(mesh);this.pieceHits.push(mesh);
-    }
-  }
+  setScenarioPieces(pieces:TablePiece[],reachable:string[],path:string[],select:(id:string)=>void) {this.pieceLayer.set(pieces,reachable,path,select);}
   focusCell(cell:Cell) {
     if(this.renderer.xr.isPresenting)return;
     const target=this.board.localToWorld(new THREE.Vector3(cell.x*this.unit,0,cell.z*this.unit));
     const offset=this.camera.position.clone().sub(this.controls.target).normalize().multiplyScalar(.9);
     this.controls.target.copy(target);this.camera.position.copy(target).add(offset);this.controls.update();
   }
-  private hits() {return [this.tiles,this.panel.visible?this.panel:null,...this.pieceHits].filter((o):o is THREE.Mesh=>o!==null);}
+  private hits() {return [this.tiles,this.panel.visible?this.panel:null,...this.pieceLayer.pieceHits].filter((o):o is THREE.Mesh=>o!==null);}
   private pointerHit(e:PointerEvent) {
     const r=this.renderer.domElement.getBoundingClientRect();this.ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),this.camera);
     return this.ray.intersectObjects(this.hits(),false)[0];
@@ -211,23 +177,16 @@ export class TerrainTable {
   }
   private selectHit(hit?:THREE.Intersection) {
     if(!hit)return;
-    if(hit.object.userData.pieceId&&this.pieceSelect){this.pieceSelect(hit.object.userData.pieceId);return;}
+    if(hit.object.userData.pieceId&&this.pieceLayer.select){this.pieceLayer.select(hit.object.userData.pieceId);return;}
     if(hit.object===this.panel&&hit.uv) {
+      if(this.scenarioPanel){activatePanel(this.scenarioPanel,hit.uv.x,hit.uv.y);return;}
       const y=(1-hit.uv.y)*1280,start=this.scenarioPanel?480:475,spacing=this.scenarioPanel?94:104;const i=Math.floor((y-start)/spacing);
       if(i>=0&&i<this.panelActions.length&&((y-start)%spacing)<84)this.panelActions[i]();
     } else if(hit.instanceId!==undefined&&this.map) this.callbacks.select(this.map.cells[hit.instanceId]);
   }
   private drawPanel() {
     if(!this.map)return;const c=this.panelCanvas.getContext('2d')!;const map=this.map;
-    if(this.scenarioPanel) {
-      c.fillStyle='#142e37';c.fillRect(0,0,1024,1280);c.fillStyle='#eed5a4';c.font='bold 42px sans-serif';c.fillText(this.scenarioPanel.title,38,64,945);
-      c.fillStyle='#f0ecdf';c.font='30px sans-serif';
-      this.scenarioPanel.lines.slice(0,8).forEach((line,i)=>c.fillText(line,38,125+i*43,945));
-      this.panelActions=this.scenarioPanel.buttons.slice(0,7).map(b=>b.run);
-      this.scenarioPanel.buttons.slice(0,7).forEach((b,i)=>{c.fillStyle='#304d53';c.fillRect(38,480+i*94,948,84);c.fillStyle='#f1ead6';c.font='33px sans-serif';c.fillText(b.label,60,534+i*94,900);});
-      c.fillStyle='#c1d3cc';c.font='24px sans-serif';c.fillText('Left stick: move table · Right stick: height / rotation',38,1180);c.fillText('Authored training setup · Depth / elevation unknown',38,1230);
-      this.panelTexture.needsUpdate=true;return;
-    }
+    if(this.scenarioPanel){drawPanel(this.panelCanvas,this.scenarioPanel);this.panelTexture.needsUpdate=true;return;}
     c.fillStyle='#142e37';c.fillRect(0,0,1024,1280);c.fillStyle='#eed5a4';c.font='bold 44px sans-serif';c.fillText('XRIEGSSPIEL / TERRAIN',42,68);
     c.fillStyle='#ebeee3';c.font='38px sans-serif';c.fillText(map.region.name,42,130);c.font='29px sans-serif';c.fillStyle='#a8c3c0';c.fillText(`${map.view.id==='focus'?map.region.focusName:'Regional overview'} · ${map.view.hexKm} km / hex`,42,185);
     c.fillStyle='#f1e5c9';c.font='38px sans-serif';c.fillText(this.selected?`HEX ${this.selected.q}, ${this.selected.r} · ${SURFACES[this.selected.terrain].name}`:'Point at a hex to inspect',42,270);

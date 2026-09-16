@@ -22,12 +22,13 @@ function validCommand(v: unknown): v is ScenarioCommand {
     : c.operation.type === 'new' ? !!c.operation.setup && typeof c.operation.setup.mapId === 'string' && typeof c.operation.setup.demo === 'boolean' && Number.isInteger(c.operation.setup.year)
     : c.operation.type === 'import' && !!c.operation.save;
 }
-export function createScenarioSession(rules: GeographicRules, journal?: string) {
-  let state: ScenarioState = { revision: 0, exercise: rules.create() };
+export function createScenarioSession(rules: GeographicRules, journal?: string, mapId?: string) {
+  let state: ScenarioState = { revision: 0, exercise: rules.create(mapId ? { mapId, year: 2026, demo: false } : undefined) };
   const accepted = new Map<string, string>();
   const nextState = (command: ScenarioCommand): ScenarioState => {
     const op = command.operation;
     const exercise = op.type === 'new' ? rules.create(op.setup) : op.type === 'import' ? rules.import(op.save) : rules.apply(state.exercise, op.action);
+    if (mapId && exercise.manifest.mapId !== mapId) throw new Error('This save or setup belongs to another map. Open that map before restoring it.');
     return { revision: state.revision + 1, exercise };
   };
   if (journal && existsSync(journal)) {

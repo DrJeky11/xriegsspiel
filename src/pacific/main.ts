@@ -1,4 +1,6 @@
 import './style.css';
+import { initPlayableWorkspace } from '../play/workspace.ts';
+import type { PlayWorkspace } from '../play/workspace.ts';
 import { initTerrainMenu, terrainMenuControls, terrainMenuHeading } from '../terrain-menu.ts';
 import { REGIONS, buildMap, cellAt, exportMap, neighbors, TERRAIN_VERSION } from './terrain.ts';
 import type { Geography, TerrainMap, Cell } from './terrain.ts';
@@ -8,9 +10,9 @@ const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(
 const app=document.getElementById('app')!;
 document.body.classList.add('terrain-atlas');
 app.innerHTML=`
-<header><a class="brand" href="/">⌖ <span>XRiegsspiel</span></a><nav aria-label="Workspace"><a href="/">Exercise</a><a href="/pacific.html" aria-current="page">Pacific terrain</a><a href="/centcom.html">CENTCOM</a></nav><div class="immersive"><button id="mr" disabled>Enter MR</button><button id="vr" disabled>Enter VR ↗</button></div></header>
+<header><a class="brand" href="/">⌖ <span>XRiegsspiel</span></a><nav aria-label="Workspace"><a href="/catalog.html">Equipment</a><a href="/pacific.html" aria-current="page">Pacific terrain</a><a href="/centcom.html">CENTCOM</a></nav><div class="immersive"><button id="mr" disabled>Enter MR</button><button id="vr" disabled>Enter VR ↗</button></div></header>
 <main class="terrain-layout"><section class="workspace" aria-label="Pacific terrain workspace">
-  <div class="map-heading"><div class="eyebrow">Terrain atlas / Western Pacific</div><h1 id="map-title">Palawan & the Spratlys</h1><p id="map-subtitle">Philippines · South China Sea</p></div>
+  <div class="map-heading"><div class="eyebrow">Pacific / Map workspace</div><h1 id="map-title">Palawan & the Spratlys</h1><p id="map-subtitle">Philippines · South China Sea</p></div>
   <div id="viewport"></div>
   <div class="map-tools" aria-label="Map controls"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="top-view">Top view</button><button id="reset-view">Reset</button></div>
   <div class="map-footer"><div class="legend">${Object.entries(SURFACES).map(([key,s])=>`<span><i style="--swatch:${s.color}"></i>${key==='coast'?'Coast':s.name}</span>`).join('')}</div><div class="attribution"><a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noreferrer">Natural Earth</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors · ODbL</a></div></div>
@@ -25,13 +27,14 @@ app.innerHTML=`
   <p id="status" role="status" aria-live="polite">Loading local geography…</p>
   <button id="export-map" class="export" disabled>Export terrain JSON <span>↓</span></button>
   <details><summary>Map sources & controls</summary><p>Click a hex to inspect. Right-drag rotates; wheel zooms; middle-drag pans. Touch: drag to pan, pinch to zoom. With the map focused, arrow keys and Q/E select six neighbors.</p><p>Quest: trigger inspects. Left stick moves the table; right stick changes height and rotation. The spatial panel switches regions and map scale.</p><p>Regional coastlines: Natural Earth 1:10 million. Focus geometry: OpenStreetMap. Hex spacing is local projected distance; each view has an independent grid.</p><p>Coast and reef colors indicate feature presence within a hex. Plate heights are symbolic; elevation, water depth, tides, and land cover are not modeled.</p><p>Names identify geographic features; sovereignty boundaries are not drawn. BRP Sierra Madre is a reference landmark.</p><a href="/terrain/pacific/README.md" target="_blank" rel="noreferrer">Download provenance & reuse terms ↓</a></details>
-  <p class="footnote">Terrain preparation · ${TERRAIN_VERSION}<br>No pieces, movement rules, or deployments assigned.</p>
+  <p class="footnote">Terrain preparation · ${TERRAIN_VERSION}<br>Each map retains its own pieces and progress.</p>
 </div></aside></main>`;
 let regionIndex=0,focused=false,map:TerrainMap|null=null,selected:Cell|null=null;
 let data:{regional:Geography;shoal:Geography;senkaku:Geography}|null=null;
 const cache=new Map<string,TerrainMap>();
-const table=new TerrainTable($('viewport'),{select:inspect,nextRegion:()=>loadMap((regionIndex+1)%REGIONS.length,focused),toggleFocus:()=>loadMap(regionIndex,!focused),mode:active=>document.body.classList.toggle('xr-active',active)});
-initTerrainMenu(visible=>table.setLabels(visible));
+let play:PlayWorkspace|undefined;
+const table=new TerrainTable($('viewport'),{select:cell=>{inspect(cell);play?.chooseTile(cell.id);},nextRegion:()=>loadMap((regionIndex+1)%REGIONS.length,focused),toggleFocus:()=>loadMap(regionIndex,!focused),mode:active=>document.body.classList.toggle('xr-active',active)});
+const menu=initTerrainMenu(visible=>table.setLabels(visible));
 
 function inspect(cell:Cell) {
   if(!map)return;selected=cell;table.select(cell);
@@ -43,7 +46,7 @@ function inspect(cell:Cell) {
   document.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(b=>b.classList.toggle('selected',cell.landmarkIds.includes(b.dataset.place!)));
 }
 function loadMap(index:number,focus:boolean) {
-  if(!data)return;regionIndex=index;focused=focus;const region=REGIONS[index];const key=`${index}/${focus}`;
+  if(!data||play&&!play.canSwitch)return;regionIndex=index;focused=focus;const region=REGIONS[index];const key=`${index}/${focus}`;
   map=cache.get(key)??buildMap(region,focus?region.focus:region.overview,focus?(index===0?data.shoal:data.senkaku):data.regional,!focus?[index===0?data.shoal:data.senkaku]:[]);
   cache.set(key,map);selected=null;table.setMap(map);table.reset();
   $('map-title').textContent=focus?region.focusName:region.name;
@@ -58,6 +61,7 @@ function loadMap(index:number,focus:boolean) {
   $('status').textContent=focus?'Focus view · sourced geometry, unknown depth and elevation.':'Regional view · generalized coastline and reference locations.';
   $('export-map').removeAttribute('disabled');
   const url=new URL(location.href);url.searchParams.set('region',region.id);url.searchParams.set('scale',focus?'focus':'overview');history.replaceState(null,'',url);
+  void play?.openMap(map.id);
 }
 document.querySelectorAll<HTMLButtonElement>('[data-region]').forEach(b=>b.onclick=()=>loadMap(Number(b.dataset.region),false));
 $('overview').onclick=()=>loadMap(regionIndex,false);$('focus').onclick=()=>loadMap(regionIndex,true);
@@ -77,6 +81,14 @@ async function start() {
     const [regional,shoal,senkaku]=await Promise.all([fetchGeo('regional-land'),fetchGeo('shoal-detail'),fetchGeo('senkaku-detail')]);data={regional,shoal,senkaku};
     const params=new URLSearchParams(location.search);const index=REGIONS.findIndex(r=>r.id===params.get('region'));
     loadMap(index<0?0:index,params.get('scale')==='focus');
+    play=await initPlayableWorkspace({
+      mapId:map!.id,mapIds:REGIONS.flatMap(r=>[`${r.id}/overview`,`${r.id}/focus`]),view:table,
+      showMap:id=>{const [region,scale]=id.split('/');loadMap(REGIONS.findIndex(r=>r.id===region),scale==='focus');},
+      selectTile:id=>{const cell=map!.cells.find(c=>c.id===id);if(cell)inspect(cell);},
+      focusTile:id=>{const cell=map!.cells.find(c=>c.id===id);if(cell)table.focusCell(cell);},
+      coordinates:id=>map!.cells.find(c=>c.id===id),tileAt:(q,r)=>map!.byKey.get(`${q},${r}`)?.id,openMenu:()=>menu.setOpen(true),
+      terrainActions:()=>[{label:menu.labelsVisible?'Hide place labels':'Show place labels',run:()=>{$('map-labels').click();}},{label:'Recenter map',run:()=>table.reset()}],
+    });
   } catch(error) {$('status').textContent=error instanceof Error?error.message:'Could not load terrain.';}
 }
 void start();

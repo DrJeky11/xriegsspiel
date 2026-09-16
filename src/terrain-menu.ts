@@ -46,5 +46,5 @@ export function initTerrainMenu(onLabelsChange: (visible: boolean) => void) {
     onLabelsChange(labelsVisible);
   };
   onLabelsChange(labelsVisible);
-  return { get labelsVisible() { return labelsVisible; } };
+  return { setOpen, get labelsVisible() { return labelsVisible; } };
 }

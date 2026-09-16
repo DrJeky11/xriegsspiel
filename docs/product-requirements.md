@@ -129,4 +129,4 @@ The owner requested a working catalog/geographic tabletop slice: map/year setup,
 
 **Implementation sequence:** preserve the baseline; integrate shared piece commands and state with each existing terrain workspace; add controller-accessible catalog selection and placement; remove obsolete application routes and mock-exercise code; then verify terrain preservation, browser workflows, persistence and immersive input separately. The existing browser/VR/MR paths and the new parity requirement must be reported as implemented versus actually tested.
 
-**Open product question:** whether switching maps should retain a separate exercise with its pieces and progress for each map. The existing single-active-exercise behavior is not confirmed as the desired consolidated behavior.
+**Confirmed follow-up:** each map retains its own pieces and progress when switching regions or workspaces. Starting a new exercise replaces only that map. The owner also explicitly approved pushing the complete existing baseline, including catalogs, PDFs and source datasets, to `https://github.com/DrJeky11/xriegsspiel`.

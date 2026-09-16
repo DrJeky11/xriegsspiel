@@ -1,4 +1,6 @@
 import './style.css';
+import { initPlayableWorkspace } from '../play/workspace.ts';
+import type { PlayWorkspace } from '../play/workspace.ts';
 import { initTerrainMenu, terrainMenuControls, terrainMenuHeading } from '../terrain-menu.ts';
 import { REGIONS } from './regions.ts';
 import { axialKey, buildTerrain, exportTerrain, neighbors, SOURCE, tileAt } from './terrain.ts';
@@ -10,12 +12,12 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 document.body.classList.add('terrain-atlas');
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <header class="topbar"><a class="brand" href="/">⌖ <span>XRiegsspiel</span></a>
-    <nav aria-label="Workspaces"><a href="/">Exercise</a><a href="/pacific.html">Pacific terrain</a><a class="current" href="/centcom.html" aria-current="page">CENTCOM</a></nav>
+    <nav aria-label="Workspaces"><a href="/catalog.html">Equipment</a><a href="/pacific.html">Pacific terrain</a><a class="current" href="/centcom.html" aria-current="page">CENTCOM</a></nav>
     <div class="immersive"><button id="enter-mr" disabled>Enter MR</button><button id="enter-vr" disabled>Enter VR ↗</button></div>
   </header>
   <main class="terrain-layout">
     <section class="map-workspace" aria-label="Regional terrain">
-      <div class="map-heading"><div><p class="eyebrow">CENTCOM / Maritime terrain</p><h1 id="title">Strait of Hormuz</h1><p id="subtitle">Persian Gulf / Gulf of Oman</p></div></div>
+      <div class="map-heading"><div><p class="eyebrow">CENTCOM / Map workspace</p><h1 id="title">Strait of Hormuz</h1><p id="subtitle">Persian Gulf / Gulf of Oman</p></div></div>
       <div id="viewport"></div>
       <div class="north" aria-label="North direction"><b id="north-arrow">↑</b><span>N</span></div>
       <div class="view-tools" aria-label="Map view"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="plan" aria-pressed="false">Plan view</button><button id="reset">Fit region</button></div>
@@ -30,15 +32,16 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <section><p class="eyebrow">Map layers</p><div class="toggles"><label><input id="coastline" type="checkbox" checked>Source coastline</label><label><input id="relief" type="checkbox" checked>Illustrative relief</label></div><p class="muted">Relief shows authored terrain bands. It is not measured elevation. Coastal water indicates adjacency, not depth.</p></section>
       <details><summary>Coordinates & data</summary><p>Drag to pan, right-drag to orbit, and scroll to zoom.</p><p>Pointy-top hexes use axial coordinates. Use q and r to select a tile without pointing.</p><form id="hex-form"><label for="q">q</label><input id="q" type="number" step="1" required value="0"><label for="r">r</label><input id="r" type="number" step="1" required value="0"><button type="submit">Inspect</button></form><button id="export">Export terrain JSON ↓</button><p class="muted">Exports geographic centers, six-neighbor coordinates, terrain classes, provenance, and limitations. Movement rules are supplied by the scenario.</p></details>
       <p id="status" class="status" role="status">Loading regional terrain…</p>
-      <footer><span id="tile-count"></span><br>Natural Earth ${SOURCE.version} · Public domain<br><a href="https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-land/" target="_blank" rel="noreferrer">Coastline source ↗</a><p>Generalized geography for scenario development. Elevation and depth are unknown. No forces or territorial claims are shown.</p></footer>
+      <footer><span id="tile-count"></span><br>Natural Earth ${SOURCE.version} · Public domain<br><a href="https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-land/" target="_blank" rel="noreferrer">Coastline source ↗</a><p>Generalized geography for scenario development. Elevation and depth are unknown. Forces are authored exercise placements; territorial claims are not drawn.</p></footer>
     </div></aside>
   </main>`;
 
 const maps = new Map<string, TerrainMap>();
-let map: TerrainMap;
+let map!: TerrainMap;
 let view: TerrainView;
 let flat = false;
 let selection: Tile | null = null;
+let play:PlayWorkspace|undefined;
 const menu = initTerrainMenu(visible => view?.setLabels(visible));
 function select(tile: Tile) {
   selection = tile; view.select(tile);
@@ -54,6 +57,7 @@ function select(tile: Tile) {
   $('status').textContent = `Selected hex ${tile.q}, ${tile.r}.`;
 }
 function loadRegion(id: string) {
+  if(play&&!play.canSwitch)return;
   const region = REGIONS.find(r => r.id === id) || REGIONS[0];
   if (!maps.has(region.id)) maps.set(region.id, buildTerrain(region));
   map = maps.get(region.id)!; selection = null;
@@ -71,10 +75,11 @@ function loadRegion(id: string) {
   document.title = `XRiegsspiel · ${region.title} terrain`;
   const focus = tileAt(map, region.focus); if (focus) select(focus);
   $('status').textContent = `${region.title} loaded. Select a hex to inspect it.`;
+  void play?.openMap(region.id);
 }
 
 try {
-  view = new TerrainView($('viewport'), select, active => document.body.classList.toggle('xr-active', active), () => loadRegion(map.region.id === 'hormuz' ? 'bab-al-mandeb' : 'hormuz'));
+  view = new TerrainView($('viewport'), tile=>{select(tile);play?.chooseTile(tile.id);}, active => document.body.classList.toggle('xr-active', active), () => loadRegion(map.region.id === 'hormuz' ? 'bab-al-mandeb' : 'hormuz'));
   loadRegion(new URL(location.href).searchParams.get('region') || 'hormuz');
   document.querySelectorAll<HTMLButtonElement>('[data-region]').forEach(button => button.onclick = () => loadRegion(button.dataset.region!));
   $('landmark').onchange = () => {
@@ -110,6 +115,14 @@ try {
     void navigator.xr?.isSessionSupported(mode).then(supported => { button.disabled = !supported; }).catch(() => {});
     button.onclick = async () => { try { await view.enter(mode); } catch (error) { $('status').textContent = error instanceof Error ? error.message : 'Unable to enter immersive view.'; } };
   }
+  void initPlayableWorkspace({
+    mapId:map.region.id,mapIds:REGIONS.map(r=>r.id),
+    view:{renderer:view.renderer,stats:view.stats,setScenarioPieces:(...args)=>view.setScenarioPieces(...args),setScenarioPanel:p=>view.setScenarioPanel(p),reset:()=>view.reset(),exit:()=>view.exit(),scale:f=>view.zoom(f)},
+    showMap:loadRegion,selectTile:id=>{const tile=map.tiles.find(t=>t.id===id);if(tile)select(tile);},
+    focusTile:id=>{const tile=map.tiles.find(t=>t.id===id);if(tile)view.focusTile(tile);},
+    coordinates:id=>map.tiles.find(t=>t.id===id),tileAt:(q,r)=>map.byAxial.get(axialKey({q,r}))?.id,openMenu:()=>menu.setOpen(true),
+    terrainActions:()=>[{label:menu.labelsVisible?'Hide place labels':'Show place labels',run:()=>{$('map-labels').click();}},{label:'Toggle source coastline',run:()=>{$('coastline').click();}},{label:'Toggle illustrative relief',run:()=>{$('relief').click();}}],
+  }).then(workspace=>{play=workspace;}).catch(error=>{$('status').textContent=String(error);});
   Object.defineProperty(window, '__centcomTerrain', { value: {
     get diagnostics() { return { region: map.region.id, tileCount: map.tiles.length, selected: selection?.id, ...view.stats }; },
   } });

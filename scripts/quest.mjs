@@ -10,10 +10,10 @@ if (!serial) {
 const model = adb('-s', serial, 'shell', 'getprop', 'ro.product.model');
 if (!model.includes('Quest')) throw new Error(`Selected device is ${model}, not a Quest.`);
 const port = Number(process.env.PORT || 5173);
-const path = process.env.QUEST_PATH || '/';
+const path = process.env.QUEST_PATH || '/pacific.html';
 if (!Number.isInteger(port) || port < 1024 || port > 65535 || !path.startsWith('/') || path.startsWith('//')) throw new Error('Use a valid local PORT and an absolute application QUEST_PATH.');
-const response = await fetch(`http://127.0.0.1:${port}${path === '/scenario.html' ? '/api/scenario/state' : '/api/state'}`).catch(() => null);
-if (!response?.ok) throw new Error('Start the prototype with npm run dev or npm start before opening it on Quest.');
+const response = await fetch(`http://127.0.0.1:${port}/api/maps/state?map=hormuz`).catch(() => null);
+if (!response?.ok) throw new Error('Start the map workspaces with npm run dev or npm start before opening it on Quest.');
 adb('-s', serial, 'reverse', `tcp:${port}`, `tcp:${port}`);
 const url = `http://localhost:${port}${path}`;
 adb('-s', serial, 'shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', url, '-p', 'com.oculus.browser');

@@ -1,5 +1,6 @@
 # Red and Blue equipment catalog
 
+**2026-09-16 update:** the catalog now serves as the equipment reference and links records into the original Pacific/CENTCOM playable workspaces. The fictional browser test board was retired. Catalog data and pure piece rules are preserved; see [current controls](../docs/playable-terrain.md). Earlier laboratory UI instructions below are historical.
 **Version 0.1.0 · 2026-09-15.** A source-backed database and executable equipment laboratory for XRiegsspiel. The owner requested Chinese Red and US Blue equipment for 1980 onward using Army ODIN / Worldwide Equipment Guide. Command's public documentation informs the design; its database, software and artwork are not included.
 
 Open the [equipment browser](http://127.0.0.1:5173/catalog.html) with the local server running. Search by name, force, domain, piece type and reference year. Inspect source fields, components and original game rules; place pieces on the fictional board, preview/commit movement, load/unload items, advance turns and export a replayable journal.

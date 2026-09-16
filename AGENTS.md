@@ -12,7 +12,9 @@ The owner highlighted agent development, integration, and analytics toward an AI
 
 ## Before work
 
-The first cooperative interaction prototype is implemented. Read `docs/prototype.md` before application work for its original rules, provisional Three.js/WebXR stack, commands, limits, and verification evidence. Shared full-information control is deliberate in this slice; future role, fog-of-war, and referee work must introduce the corresponding authority boundaries. Real headset usability remains pending until the recorded checklist is performed.
+Pacific and CENTCOM are now the primary playable workspaces. Read `docs/playable-terrain.md` before application work. Preserve their original terrain rendering and keep source terrain distinct from movement-policy categories. Each of the six maps has an independent saved exercise; region switches must not reset or replace another map's pieces. Browser and VR/MR use shared catalog, placement, movement and transport commands. Shared full-information control remains deliberate. Real headset usability still needs the recorded checklist.
+
+The Island trial, catalog test board and standalone Geographic tabletop UI are retired. Their source is preserved in Git baseline `f25a7a7`; `docs/prototype.md` and `docs/geographic-scenario.md` are historical records, not current entry-point instructions.
 
 1. Read `README.md`, `docs/product-requirements.md`, and `docs/research/README.md`.
 2. For platform work, read `quest3-development.md` and `prior-project-audit.md` in that directory.

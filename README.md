@@ -4,7 +4,7 @@ A military wargaming platform for training and education, with **Meta Quest 3 as
 
 The name plays on *Kriegsspiel*. The project is being developed for a Marine Corps University / Naval Postgraduate School hackathon, as described by the project owner. The repository contains research and a first original cooperative tabletop prototype. It does not imply institutional endorsement.
 
-## Run the first prototype
+## Run the map workspaces
 
 Requires Node 22.18+ (tested with Node 26.0.0).
 
@@ -13,31 +13,27 @@ npm ci
 npm run dev
 ```
 
-Open [the local tabletop](http://127.0.0.1:5173). With an authorized Quest connected over USB, run `npm run quest`, put on the headset, and choose **Enter VR** or **Enter MR** in Quest Browser. Keep the USB cable connected. Headset operation still needs the user's first hands-on test.
+Open [Pacific](http://127.0.0.1:5173/pacific.html) or [CENTCOM](http://127.0.0.1:5173/centcom.html). These are the original terrain workspaces with catalog assembly, movement and transport integrated into their browser menus and controller panels. The root address opens Pacific; the old standalone Geographic tabletop address redirects there.
 
-**Island Coordination:** select a transport, see legal movement, preview and confirm an order, then deliver supplies to two outposts. Browser clients share the same authoritative exercise and decision log. This first slice has shared cooperative control and full information; opposing roles, fog of war, and referee contests remain future work.
+Open **Menu → Pieces & orders → Add pieces** to search the catalog, choose Red/China or Blue/United States, select a record and place an instance. Preview a destination, then confirm. **Terrain & regions** retains the original geographic inspection, labels, layer controls and exports.
 
-See the [prototype runbook and verification record](docs/prototype.md) for controls, original rules, architecture, and the headset test checklist. Run `npm test` and `npm run build` to verify rules and build the client. `npm start` serves the production build with the same session service.
+All six maps retain their own pieces, year, turn, budgets and history. Switching maps resumes that map's exercise. New maps start empty in 2026; **New exercise** resets only the current map after a preview and confirmation. Existing Geographic tabletop saves migrate to their matching map without modifying the old journal.
 
-## Integrated geographic tabletop
+With an authorized Quest connected by USB, run `npm run quest` (Pacific), or `QUEST_PATH=/centcom.html npm run quest`. Choose **Enter VR** or **Enter MR** in Quest Browser. Controller panels provide catalog search with a spatial keyboard, Red/Blue assignment, placement, movement, cargo, turns, region selection and terrain/table controls. Changing between the two major workspaces exits immersion; reenter in the destination. Full headset usability still needs the hands-on checklist.
 
-Open [Geographic tabletop](http://127.0.0.1:5173/scenario.html) to choose a map/year, assemble Red/China and Blue/United States forces from the catalog, preview and commit hex movement, transport individual pieces, and export/reopen a replay-verified exercise. The default is a seven-piece **authored training setup** on Western Senkaku in 2026; positions are not real deployments. All six Pacific/CENTCOM views are available.
+See [playable terrain controls, persistence and verification](docs/playable-terrain.md). `npm test` verifies rules and persistence; `npm run build` typechecks and builds; `npm start` serves the production build. Use `PORT` for a different port and `DATA_DIR` for a separate journal directory. One server process may write a given directory.
 
-The [scenario runbook](docs/geographic-scenario.md) documents original coastal/layer rules, versioned persistence, source ambiguities, browser controls, Quest controller paths, verification and the pending hands-on headset checklist. Its journal is separate from the original Island Coordination saved session.
-
-## Terrain workspaces
-
-Open [CENTCOM terrain](http://127.0.0.1:5173/centcom.html) for **Strait of Hormuz** and **Bab al-Mandeb** hex maps, or [Pacific terrain](http://127.0.0.1:5173/pacific.html) for **Palawan/Spratlys** and **Taiwan/Senkaku**, including Second Thomas Shoal and western Senkaku close-ups. Each workspace has geographic hex tiles and an inspector. These are terrain foundations; the original playable exercise remains separate. See the [CENTCOM record](docs/centcom-terrain.md) and [Pacific data, controls, and verification record](docs/pacific-terrain.md).
+The Island Coordination trial and the catalog's fictional test board have been retired from the application. Their source remains in Git baseline `f25a7a7` on `main`. The original trial's [runbook](docs/prototype.md) and [geographic integration record](docs/geographic-scenario.md) are historical records.
 
 ## Start here
 
-Open the [Red/Blue equipment catalog](http://127.0.0.1:5173/catalog.html) to search **1,607 ODIN records**, inspect source facts/components, and test individual pieces on a fictional browser board. The [catalog guide](catalog/README.md) documents the [SQLite database](catalog/equipment.sqlite), original movement/cargo rules, reproducible builds and validation. Historical service and combat performance remain unverified.
+Open the [Red/Blue equipment catalog](http://127.0.0.1:5173/catalog.html) to search **1,607 ODIN records**, inspect source facts/components, and open an equipment record in either playable map workspace. The [catalog guide](catalog/README.md) documents the [SQLite database](catalog/equipment.sqlite), original movement/cargo rules, reproducible builds and validation. Historical service and combat performance remain unverified.
 
 Read the [confirmed product requirements](docs/product-requirements.md), the [manual review](docs/research/manual-review.md), and the [research overview](docs/research/README.md). Architecture choices remain [proposed](docs/research/architecture-options.md).
 
 | Topic | Reference |
 | --- | --- |
-| Launching, testing, and extending the first playable slice | [Prototype runbook](docs/prototype.md) |
+| Using the playable Pacific/CENTCOM workspaces | [Playable terrain runbook](docs/playable-terrain.md) |
 | Quest 3 hardware, native Unity, WebXR, input, performance, and testing | [Quest 3 development](docs/research/quest3-development.md) |
 | Installed development software, toolchain checks, and remaining setup | [Computer readiness](docs/research/computer-readiness.md) |
 | What can be reused from the earlier Quest project | [Prior-project audit](docs/research/prior-project-audit.md) |

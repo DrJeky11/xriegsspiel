@@ -1,5 +1,6 @@
 # Integrated geographic tabletop
 
+**Historical record:** this standalone UI was retired on 2026-09-16. Use the original Pacific/CENTCOM workspaces; see [current controls and verification](playable-terrain.md). Source is preserved in Git baseline `f25a7a7`.
 Implemented **2026-09-16 UTC / 2026-09-15–16 America/New_York**. This is the first catalog + geographic scenario slice. It supports assembly, movement, transport and persistence. Combat, detection, fog of war, opposing-player permissions, referee contests and AI remain outside this milestone.
 
 ## Open

@@ -1,5 +1,6 @@
 # CENTCOM hex terrain
 
+**2026-09-16 integration:** this original terrain workspace now includes catalog selection, placement, movement and transport in browser and VR/MR controller panels. Each map has its own saved exercise. See [current controls and verification](playable-terrain.md); the terrain/data record below remains applicable.
 Implemented **2026-09-15 local / 2026-09-16 UTC** for the owner's requested Strait of Hormuz and Bab al-Mandeb terrain scenarios. The owner confirmed hexagonal map tiles. Region bounds, spacing, reference labels, and illustrative relief below are implementation choices, not approved combat rules.
 
 ## Open and inspect
