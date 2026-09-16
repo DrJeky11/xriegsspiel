@@ -42,12 +42,13 @@ Open [CENTCOM terrain](http://127.0.0.1:5173/centcom.html) for **Strait of Hormu
 
 Open the [Red/Blue equipment catalog](http://127.0.0.1:5173/catalog.html) to search **1,607 ODIN records**, inspect source facts/components, and open an equipment record in either playable map workspace. The [catalog guide](catalog/README.md) documents the [SQLite database](catalog/equipment.sqlite), original movement/cargo rules, reproducible builds and validation. Historical service and combat performance remain unverified.
 
-Read the [confirmed product requirements](docs/product-requirements.md), the [manual review](docs/research/manual-review.md), and the [research overview](docs/research/README.md). Architecture choices remain [proposed](docs/research/architecture-options.md).
+Read the [confirmed product requirements](docs/product-requirements.md), the [manual review](docs/research/manual-review.md), and the [research overview](docs/research/README.md). The owner selected **continuing with WebXR** on 2026-09-16; see the [platform decision and findings](docs/research/quest-native-vs-webxr.md). Other architecture choices remain [proposed](docs/research/architecture-options.md).
 
 | Topic | Reference |
 | --- | --- |
 | Using the playable Pacific/CENTCOM workspaces | [Playable terrain runbook](docs/playable-terrain.md) |
 | Quest 3 hardware, native Unity, WebXR, input, performance, and testing | [Quest 3 development](docs/research/quest3-development.md) |
+| Why we use WebXR, native Quest migration work, and the recommended path | [Native versus WebXR assessment](docs/research/quest-native-vs-webxr.md) |
 | Installed development software, toolchain checks, and remaining setup | [Computer readiness](docs/research/computer-readiness.md) |
 | What can be reused from the earlier Quest project | [Prior-project audit](docs/research/prior-project-audit.md) |
 | Marine Corps and joint-force games, rules, and evidence of use | [Wargames and rules](docs/research/wargames-and-rules.md) |
@@ -67,6 +68,7 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 ## Decisions so far
 
 - Quest 3 is primary; browser access is also required.
+- Continue with the existing Three.js/TypeScript WebXR application. Native Unity/OpenXR remains a future alternative if measured needs justify revisiting the decision; no migration is planned.
 - Prioritize officers/staffs practicing operational planning and MCU/NPS students learning military decision-making as teams.
 - Support the full planning cycle with game-specific turn sequences.
 - Automate adjudication, with player contests and referee takeover.

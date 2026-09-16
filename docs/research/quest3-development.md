@@ -2,6 +2,10 @@
 
 Research date: **2026-09-15**. This guide combines documented platform facts with explicitly proposed XRiegsspiel practices. Nothing here constitutes a headset performance result.
 
+**Updated comparison, 2026-09-16:** read the [native versus WebXR assessment](quest-native-vs-webxr.md) for the actual implementation, installed immersive PWA option, native migration scope, current device metadata and decision criteria. Current IWSDK documentation also covers camera streams and depth occlusion; do not interpret the historical browser MR reference below as a complete current capability limit. Neither capability was tested on this headset.
+
+**Owner decision, 2026-09-16:** continue the existing Three.js/WebXR application. The web/native comparison and starter procedures below are retained as technical reference; they are not instructions to scaffold a replacement or migrate to IWSDK. Headset usability and sustained performance still require measurement.
+
 ## 1. Hardware facts that change the design
 
 Quest 3 is a standalone device with an XR2 Gen 2 mobile processor, 8 GB RAM, 2064 × 2208 physical display pixels per eye, color passthrough, a depth sensor, and documented refresh rates of 72/80/90/120 Hz. Physical panel resolution is not the same as the runtime's render-target resolution. [Q01](sources.md#q01)

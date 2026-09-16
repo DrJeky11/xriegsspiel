@@ -2,6 +2,18 @@
 
 Research baseline: **2026-09-15**, with dated follow-ups below. This file records work performed, not future prototype acceptance results.
 
+## Native Quest versus WebXR research — 2026-09-16
+
+The owner requested exploration on `codex/fullVR`, not application implementation. The [assessment](quest-native-vs-webxr.md) records the code audit, native migration scope, current platform references, recommendation and future comparison criteria.
+
+- Inspected the TypeScript/Three.js client, Node map authorities, transport, persistence, native reference package records and available Android module directories. Retrieved primary references N01–N27 in the study.
+- `npm ls --depth=0` confirmed the installed packages. The audited snapshot passed **60/60 tests** and `npm run typecheck`. No fresh Vite production build or Unity build was run.
+- Read-only ADB checks found one authorized Quest 3, Android 14, firmware incremental `52433670036000520`, and installed Browser `150.1.0.24.52.1046134268`. Distinguished its hidden factory Browser package from the active update. No app launch/install, settings changes, camera access or immersive trial occurred.
+- Checked eight research/navigation documents: 229 local links/anchors resolved, fences/newlines/whitespace passed, and `git diff --check` passed.
+- Recorded hashes for 76 application/asset/dependency/save files. Concurrent opponent code and the live Palawan journal changed during research, and more opponent files appeared. This task edited documentation only and preserved that other work. Test results precede those later changes and do not certify them.
+
+Unverified: physical grip/menu repair, sustained Quest performance, native clean build, installed PWA behavior, colocation and the eventual venue/network route. No engine decision was made during the initial research pass. The owner subsequently chose to continue with WebXR and authorized a documentation-only merge; no license commitment or native migration was made.
+
 ## Branch integration — 2026-09-16
 
 - Consolidated playable terrain (`07047f7`), its VR miniature palette follow-up (`9f3b9c5`), opponent/scenario research (`58b694d`) and previously uncommitted data-capture documentation (preserved as `2c06ab7`) into `main`, retaining their commit history. No runtime-code merge conflicts occurred. Resolved overlapping navigation/requirements additions and reconciled research references with the retired Island and standalone Geographic interfaces.

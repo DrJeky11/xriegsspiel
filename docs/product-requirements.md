@@ -76,16 +76,22 @@ The owner also reported that pieces could be moved during the initial hands-on t
 ## Remaining open choices
 
 - First scenario to integrate into the live app and level of model detail. The eight-scenario authoring scope below is confirmed; its parameters remain uncalibrated. Any later adaptation of a named commercial game is a separate choice.
-- Passthrough versus fully virtual surroundings for the initial tabletop, any later first-person observation, and the implementation stack. WebXR remains a research recommendation.
+- Passthrough versus fully virtual surroundings for the initial tabletop and any later first-person observation. Continuing with WebXR is confirmed below; optional framework changes and installed PWA delivery remain unselected.
 - Headset/browser split within the initial 2–4 players, whether teams share a room, and remote participation needs.
 - Development time, session length, venue network, and instructor availability.
 - How much rule/scenario editing facilitators need, and when contests pause play.
 
 Ask the owner **one question at a time**. Do not re-ask the audience, full planning-cycle scope, adjudication preference, or stated pain points as if they were unknown.
 
+## Native Quest exploration — 2026-09-16
+
+The owner explicitly requested research on the current feature branch into why gameplay uses WebXR, what a fully native Meta Quest game would require, and the advantages/limitations of continuing with WebXR. **This request is exploration, not authorization to implement a migration.** Browser participation remains required; no final engine, offline topology or immersive mode was selected. The [engineering assessment](research/quest-native-vs-webxr.md) recommends WebXR for the next playable milestone, identifies Unity/OpenXR as the native alternative, and records migration work and measurable decision criteria. Those recommendations are not confirmed owner choices.
+
+**Confirmed follow-up, 2026-09-16:** after reviewing the findings, the owner chose to stay with WebXR and authorized recording the decision, merging this documentation into local and remote `main`, and removing the research branch. Continue the existing Three.js/TypeScript application. This supersedes the earlier open-stack language; it does not select IWSDK, PWA packaging, offline topology or an immersive mode, and does not authorize a native migration. Unity/OpenXR remains a documented alternative if future measured requirements justify reconsideration.
+
 ## Implementation references
 
-**First prototype authorized, 2026-09-15:** the owner asked to build something small, test it, and then expand. The [first prototype record](prototype.md) documents the implemented original cooperative movement/delivery slice and provisional Three.js/WebXR stack. It does not approve or implement all proposed multiplayer, WEGO, opposing-side, or referee behavior. The final immersive mode and longer-term stack remain subject to actual headset evidence.
+**First prototype authorized, 2026-09-15:** the owner asked to build something small, test it, and then expand. The [first prototype record](prototype.md) documents the implemented original cooperative movement/delivery slice and then-provisional Three.js/WebXR stack. It does not approve or implement all proposed multiplayer, WEGO, opposing-side, or referee behavior. The owner subsequently selected continuing with WebXR as recorded above; the final immersive mode and headset acceptance remain open.
 
 - [Manual review](research/manual-review.md): concrete examples and source coverage.
 - [Architecture](research/architecture-options.md): proposed authority, information, and replay boundaries.
