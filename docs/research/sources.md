@@ -1,6 +1,6 @@
 # Source register
 
-All sources were accessed **2026-09-15**. Dates below describe the source, not its search-engine crawl date. This register records what was consulted, not a claim that every linked document was read cover to cover. Sections used are identified where applicable. Summaries elsewhere are deliberately selective.
+Sources were accessed **2026-09-15**, except the explicitly dated follow-ups below. Dates describe the source, not its search-engine crawl date. This register records what was consulted, not a claim that every linked document was read cover to cover. Sections used are identified where applicable. Summaries elsewhere are deliberately selective.
 
 ## Quest and web development
 
@@ -116,6 +116,8 @@ All sources were accessed **2026-09-15**. Dates below describe the source, not i
 
 SHA-256 of retrieved PDF: `66a29ee90620b50d84d9ef9f276f2e18bf3f03f5ca5c0c0454deaf5309107c4c`.
 
+**Additional reading, 2026-09-16:** re-read retained extracted text for §3.5 p. 9 and Appendix B pp. 43, 46: scenario-specific victory checks and the worked passage/deadline example. This did not retrieve a newer edition or establish digital-edition parity.
+
 ### W06
 
 [U.S. Naval War College: CNCS Joint Military Operations syllabus, AY24–25](https://usnwc.edu/_images/portals/0/NWCDepartments/Joint-Military-Operations-Department/CNCS-2025-Syllabusc46b.pdf) — 132 PDF pages. Consulted PDF pp. 77–79: OWS/War at Sea assigned materials, Falklands/Malvinas exercise, and debrief prompts. Cites OWS Series Rules v2.2 (October 2023); this research did not retrieve those rules.
@@ -133,6 +135,8 @@ SHA-256 of retrieved PDF: `66a29ee90620b50d84d9ef9f276f2e18bf3f03f5ca5c0c0454dea
 [Matrix: Flashpoint Campaigns Cold War, FM01 Game Operations](https://ftp.matrixgames.com/pub/FlashpointCampaignsColdWar/FM01%20Game%20Operations.pdf) — FCCW-01/R0, 2025-11-05; 159 PDF pages. Downloaded in the follow-up; inspected selected §§21–22 (orders, delays, waypoints, pp. 118–124), §§26–27 (readiness/logistics, pp. 141–143), plus the earlier introductory engine description. A commercial family reference; not a substitute for MCU's differently named FM01 or proof of PE parity.
 
 SHA-256: `213c9874a5f2bbaf19a42b2765130a3228ee704b0da94508b35c46a0d8228dcb`.
+
+**Additional reading, 2026-09-16:** retained extracted text, §15.1.2 p. 82 and §§30.1–30.2 pp. 145–146: victory-point components, graded results and postmortem. The objectives study relies on p. 82; no exact victory-band percentages were inferred from screenshots.
 
 Corroborating primary source: [Matrix's Southern Storm announcement](https://www.matrixgames.com/news/flashpoint-campaigns-southern-storm-out-now), 2022-11-17, explicitly describes command friction in the asynchronous resolution system.
 
@@ -304,6 +308,68 @@ Public sources accessed 2026-09-15. Vendor descriptions below were read as produ
 
 [Farama Foundation: PettingZoo Parallel API](https://pettingzoo.farama.org/api/parallel/) — living documentation; no installed version selected. Read simultaneous-action description, usage example, and `reset`/`step` reference. A conceptual ML-environment interface reference, not a networking/authentication layer or XRiegsspiel dependency decision.
 
+**Rechecked 2026-09-16:** same interface sections for the [opponent study](opponent-ai.md); contrasted with AEC below. No wrapper or Python dependency installed.
+
+## Opponent research follow-up
+
+Accessed **2026-09-16**. These are primary research papers, author/publisher material, model authors' cards and official project documentation. Coverage is limited as stated; none supplies XRiegsspiel playing-strength or training-performance evidence. The local code/host measurements are separately retained in [opponent-probe.json](opponent-probe.json).
+
+### A05
+
+[Colledanchise and Ögren: Behavior Trees in Robotics and AI: An Introduction](https://arxiv.org/abs/1709.00084) — first submitted 31 August 2017; author book manuscript. Read indexed abstract; [authors' companion site](https://btirai.github.io/) corroborates authors/title and examples. Used for modular, reactive task switching; the book and sample code were not comprehensively reviewed.
+
+### A06
+
+[Bill Merrill: Building Utility Decisions into Your Existing Behavior Tree](https://www.gameaipro.com/GameAIPro/GameAIPro_Chapter10_Building_Utility_Decisions_into_Your_Existing_Behavior_Tree.pdf) — *Game AI Pro*, chapter 10, 2013; inspected indexed opening, §10.1, printed p. 127, and section list. Direct web PDF retrieval timed out; the indexed author chapter and [publisher chapter page](https://www.oreilly.com/library/view/game-ai-pro/9781466565975/chapter-40.html) supplied the opening text. Supports combining utility selection with behavior trees, not a specific XRiegsspiel scoring formula. Remaining sections/code were not reviewed.
+
+### A07
+
+[Świechowski et al.: Monte Carlo Tree Search: A Review of Recent Modifications and Applications](https://arxiv.org/abs/2103.04931) — first submitted 8 March 2021. Read indexed research abstract: simulation sampling, exploration/exploitation and problem-dependent modifications for large/complex games. This is a research survey, not original evidence that MCTS beats utility search in our game. Full survey and its cited experiments were not independently audited.
+
+### A08
+
+[Cowling, Powley and Whitehouse: Information Set Monte Carlo Tree Search](https://eprints.whiterose.ac.uk/id/eprint/75048/1/CowlingPowleyWhitehouse2012.pdf) — *IEEE Transactions on Computational Intelligence and AI in Games* 4(2), 120–143, 2012; DOI 10.1109/TCIAIG.2012.2200894. Read indexed abstract and §I introduction, printed p. 120: information sets, partially observed/simultaneous moves, determinization and strategy fusion. Bibliographic details corroborated by the [University of York record](https://pure.york.ac.uk/portal/en/publications/information-set-monte-carlo-tree-search/). Algorithm variants and experimental results not reproduced. The study uses this for information-boundary design, not equilibrium guarantees.
+
+### A09
+
+[Ross, Gordon and Bagnell: A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning](https://arxiv.org/abs/1011.0686) — first submitted November 2010, revised 2011. Read abstract on sequential prediction, non-IID observations induced by a policy's own actions, and the iterative learning approach. Motivation for collecting learner-visited states; no implementation or guarantee for this project was tested.
+
+### A10
+
+[Schulman et al.: Proximal Policy Optimization Algorithms](https://arxiv.org/abs/1707.06347) — submitted 20 July 2017. Read indexed abstract on collecting interactions and optimizing a surrogate objective over minibatches. Establishes PPO as an RL method; original benchmark performance is not evidence of our game's training cost or strength.
+
+### A11
+
+[Farama: PettingZoo AEC API](https://pettingzoo.farama.org/main/api/aec/) — living/main documentation, no installed release selected. Read AEC usage, Action Masking, About AEC, and conversion restriction: an AEC environment converted to Parallel must update only at cycle end. The examples are a moving documentation target; recheck against a pinned release before implementing a wrapper. A04 records the separate Parallel API.
+
+### A12
+
+[Stable Baselines3-Contrib: Maskable PPO](https://sb3-contrib.readthedocs.io/en/master/modules/ppo_mask.html) — retrieved documentation identifies 2.9.0. Read opening, “Can I use?”, evaluation warnings and example: discrete action support, no recurrent policies, mask-aware evaluation and subprocess mask requirements. No package installed; compatibility and performance with our environment unverified.
+
+### A13
+
+[Google DeepMind: OpenSpiel](https://github.com/google-deepmind/open_spiel) — repository README, “A Framework for Reinforcement Learning in Games,” API/language description and license label. Documents broad game representations and search/RL research tools, C++ core/Python access and Apache-2.0 licensing. No repository checkout, algorithm implementation or XRiegsspiel adapter tested. A candidate research reference, not a runtime dependency selection.
+
+### A14
+
+[Qwen: Qwen3-4B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507) — model author's card, July 2025 checkpoint identifier. Read Model Overview, Quickstart, Agentic Use and license metadata; [license file](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507/blob/main/LICENSE) states Apache-2.0. Documents 4.0B parameters and non-thinking output; text/agent benchmark claims were not adopted as game-performance evidence. Neither weights nor dependencies downloaded; no immutable model revision selected.
+
+### A15
+
+[Qwen: Qwen3.5-4B](https://huggingface.co/Qwen/Qwen3.5-4B) — living model card. Read Model Overview, artifact description, license metadata and Hugging Face Transformers serving subsection. Describes a 4B language model with vision encoder under Apache-2.0. The serving example installs Transformers from `main`; our proposal instead requires a verified reproducible pin. Family-wide marketing statements about mixture-of-experts are not asserted as this checkpoint's architecture. No weights, inference or fine-tuning tested.
+
+### A16
+
+[Hugging Face: SmolLM3-3B](https://huggingface.co/HuggingFaceTB/SmolLM3-3B) — model author's card. Read Model Summary, Key features, How to use, Enabling and Disabling Extended Thinking Mode, and license metadata. Documents 3B scale, public training details/configuration and Apache-2.0. No model downloaded; comparative game strength and runtime compatibility remain unknown.
+
+### A17
+
+[MLX LM repository](https://github.com/ml-explore/mlx-lm) — README introduction, supported-model caveat and low-rank/full fine-tuning description; [LoRA guide](https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/LORA.md), Fine-tune, Data / Local Datasets, and quantized-versus-unquantized model handling. Documents Apple-silicon inference and LoRA/QLoRA workflows with JSONL data. No package installed or training performed; documented general support does not prove each model/quantization works on the inspected machine.
+
+### A18
+
+Maintainer distribution records: [PyTorch on PyPI](https://pypi.org/project/torch/), Download files and file metadata for `torch-2.14.0-cp314-cp314-macosx_14_0_arm64.whl` (uploaded 2 September 2026); [MLX LM on PyPI](https://pypi.org/project/mlx-lm/), Requires and `mlx_lm-0.31.3-py3-none-any.whl` (uploaded 22 April 2026, Python >=3.8); [PettingZoo on PyPI](https://pypi.org/project/pettingzoo/), Requires Python >=3.10,<3.15. These metadata checks address the active Python 3.14.6/ARM64 host. Dependency resolution, transitive binary wheels, imports, GPU kernels and training remain untested. These are inspected versions/ranges, not approved installs or permanent latest-version claims.
+
 ## Owner-supplied research documents
 
 These four files were already present in `docs/datasets/` when this review began. Local contents were inspected on **2026-09-15**; their original download dates and download routes were not independently established. See the [dataset review](dataset-review.md) for findings and coverage. Hashes identify the supplied copies; no byte-for-byte comparison with remote copies was performed.
@@ -375,6 +441,30 @@ Accessed **2026-09-15**. The [unit review](unit-catalog-and-data-sources.md) rec
 ### W49
 
 [NAVAIR: MV-22B Osprey](https://www.navair.navy.mil/product/MV-22B-Osprey) — page updated **February 2023**. Read Mission, Description, and Specifications: medium-lift support, transport from ships/land bases, and helicopter/turboprop operation. Used for role and movement-mode references, not mission speed, usable radius, present readiness, or current procurement status. The page contains unrelated navigation/plugin text, which was excluded from the research.
+
+## Objectives and victory follow-up
+
+Accessed **2026-09-16** for the [objectives study](objectives-and-victory.md). Selective public-document reading; no game executable was run. These sources supplement W05/W09 and do not imply one scoring standard across all editions.
+
+### W50
+
+[Official Command online manual: ScenEdit](https://command.matrixgames.com/manual/scenedit/) — living reference, no exact build/date pin established. Read §§5.2.1–5.2.2 (assigning missions and separately adding scoring), §§5.4.5–5.4.6 (briefing, side result thresholds, objective/loss tradeoffs), §5.5.1 (points and scenario-end actions), and §5.5.3 (event triggers). This is CMO documentation; professional-configuration parity was not tested.
+
+### W51
+
+[Official Command online manual: Example Scenario](https://command.matrixgames.com/manual/example-scenario/) — read §10.4.1's briefing/objective discussion for *Trapped Under Ice, 1999*. Used only to illustrate the primacy of a designated objective over optional enemy losses. The study does not adopt its tactical walkthrough, performance figures or scenario assets.
+
+### W52
+
+[Battlefront: Combat Mission Shock Force 2 base-game manual, official Steam-hosted PDF](https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1369370/manuals/CM_Shock_Force_2_Base_Game_Manual.pdf?t=1728393961) — 96 PDF pages; read printed/PDF p. 44, “Victory and After Action Report Screen,” through the web reader. Confirms Ground, Targets and Parameters examples. No explicit revision pin was established; this is not a review of every Combat Mission edition. The Matrix FTP copy failed to open; the linked Steam copy succeeded. No local source copy or visual-page inspection was performed in this follow-up.
+
+### W53
+
+[RAND: Hedgemony — Player Guide](https://www.rand.org/content/dam/rand/pubs/tools/TL300/TL301/RAND_TL301.guide.pdf) — companion to the 2020 publication W15, 27 PDF pages. Read “Strategic Objectives and Victory Conditions,” printed p. 7 / PDF p. 13: Influence, absolute/relative objectives, asymmetric conditions, multiple possible winners, and teaching priorities. This accessible guide does not remove W16's rulebook-access limitation or establish a current institutional deployment.
+
+## Maritime scenario library — accessed 2026-09-16
+
+The separate [SC01–SC13 source register](../scenarios/sources.md) supports eight original historical/fictional scenario briefs for the Spratlys, Senkakus, Hormuz and Bab al-Mandeb. It records exact URLs, dates, sections, disputed accounts, and search-text versus direct-page access. The library's authored units, action rules, scoring weights and event timings are not sourced real-world performance measurements. Its technical references supplement the earlier agent research without adding dependencies.
 
 ## Access and reuse notes
 

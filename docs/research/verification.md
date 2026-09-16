@@ -1,6 +1,39 @@
 # Research scope and verification
 
-Research date: **2026-09-15**. This file records work performed, not future prototype acceptance results.
+Research baseline: **2026-09-15**, with dated follow-ups below. This file records work performed, not future prototype acceptance results.
+
+## Eight-scenario library — 2026-09-16
+
+- Researched the June 17, 2024 Second Thomas resupply confrontation, September 7, 2010 Senkaku collision, July 19, 2019 Stena Impero seizure and October 1, 2016 Swift attack. The [SC01–SC13 register](../scenarios/sources.md) identifies article/official-statement coverage, dates, conflicting accounts, and direct-retrieval limitations. Fictional companions use documented patterns, not quantified forecasts.
+- Created [eight briefs](../scenarios/README.md), original facilitated sector/adjudication rules, side-specific score tables, mission/constraint precedence, and separate AI-training and human-evaluation procedures. Historical actors remain distinct from the existing catalog's US/China labels. No copyrighted source artwork or third-party scenario files were imported.
+- Added versioned terminal metric definitions, a dependency-free offline TypeScript scorer and CLI, and a clearly synthetic worked example. These do not implement the live decision resolver, authority boundaries or training environment. Existing user changes on `oppoenent-research` were retained; no staging, commit or dependency changes were made by this scenario task.
+- **Node v26.0.0:** `node scripts/score-scenarios.mjs --validate` passed for all eight definitions. The example ledger returned Blue 85, Red 55 and a Blue mission win.
+- **`npm test`: 48/48 passed**, including 11 new scoring tests for thresholds, mission-over-points precedence, common constraints, joint outcomes, ledger inconsistencies, malformed counts, incomplete runs and exhaustive combinations of objective metrics. These tests validate terminal arithmetic and declared consistency rules, not whole simulated episodes or balance.
+- **`npm run build` passed**, including TypeScript checking. Vite retained its large-chunk warning; no renderer changes were made.
+- A local documentation check covered 13 Markdown files and resolved 155 relative links/anchors before this verification entry was added; fences, final newlines and trailing whitespace passed. `git diff --check` passed. Source references in every JSON definition resolved to the new register.
+
+No complete scenario was played, no historical track reconstruction or weapons model was validated, no headset test occurred, and no policy was trained. Balance and learning validity remain open. HOR-H01 explicitly documents the strong cautious-support policy as a calibration concern before competitive ranking. The scenario library is available for facilitated trials; app integration and automated self-play require the documented resolver and role-authority work.
+
+## Objectives and victory follow-up — 2026-09-16
+
+- Read official Command online manual sections on briefings, scoring, event actions/triggers and the designated objective in an example scenario. Read Combat Mission Shock Force 2's objective summary and RAND Hedgemony's victory section through the web reader. Re-read selected retained Littoral Commander v2.8 and Flashpoint Cold War FM01 text. New W50–W53 records and W05/W09 additions state exact coverage and limits.
+- Added the [objectives study](objectives-and-victory.md) and revised the opponent recommendation to an asymmetric Island Resupply exercise. Kept the earlier cargo race as an optional engineering fixture. Delivery thresholds, eight-round duration, disruption/protection rules and learner assessment are explicitly proposals.
+- Updated requirements and navigation without treating the research question as approval of a scenario. The requested `oppoenent-research` branch already existed; restored that checkout from `codex/data-capture`, preserving all uncommitted work.
+- Checked the seven affected Markdown files for local links/anchors, balanced fences, final newlines, trailing whitespace and source-ID references; `git diff --check` passed. No application code or dependencies changed in this follow-up, so application tests were not rerun.
+
+No live Command/CPE execution, new scenario playtest, balance test, model training, classroom assessment or headset trial occurred. The most significant remaining design gap is an executable interaction that lets Red disrupt delivery and lets Blue protect it.
+
+## Opponent research — 2026-09-16
+
+- Created the owner-requested branch `oppoenent-research` from `f25a7a7a02cd4fec40f427db1732da01ab94e829`; the starting worktree was clean.
+- Inspected project instructions, product/research records, actual geographic and piece rules, session command handling, tests, package manifest and runtime versions. The [opponent study](opponent-ai.md) distinguishes existing mechanics from missing competitive objectives, permissions, observations and training data.
+- Consulted primary behavior-tree/utility/search/learning literature and official environment, model and training-runtime documentation. A05–A18 in the [source register](sources.md#a05) record URLs, access date, sections and coverage limits; A04 was rechecked. No model weights, new dependencies or external training services were used.
+- Fresh `npm test`: **37 tests passed**. Fresh `npm run build`: TypeScript check and Vite build passed, retaining the existing shared Three.js chunk-size warning. No application/runtime code changed afterward; the added script was executed separately.
+- Added and ran [`scripts/probe-opponent.mjs`](../../scripts/probe-opponent.mjs). It verifies generated candidates and unchanged inputs across all six default map demonstrations, exact replay, and a five-command default-map transport/session sequence with duplicate and stale protection. It also confirms that the existing handler accepts a Blue command without actor identity, explicitly documenting the missing authority boundary.
+- Retained [probe output](opponent-probe.json), including commit/script hashes, hardware, pinned manifest, action counts, latency sample sizes and method limits. The recorded script SHA-256 matches the final script. The two probe runs produced the same initial/final state hashes; timings varied as expected.
+- `node --check scripts/probe-opponent.mjs` and `git diff --check` passed. Research Markdown local targets/anchors, fences, final newlines and whitespace were checked.
+
+No competitive match, trained model, GPU execution test, classroom evaluation, new browser/Quest test or live-session mutation occurred. The implementation sequence, difficulty budgets, proposed transport competition and training sizes remain proposals. The probe supplies mechanics/performance evidence, not an opponent-strength result.
 
 ## Initial research pass
 

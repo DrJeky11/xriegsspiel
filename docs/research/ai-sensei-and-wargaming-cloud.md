@@ -2,6 +2,8 @@
 
 **Research and owner context: 2026-09-15. Status: design proposals; no agents, API, cloud service, or tutor implemented.** This extends the [CPE study](command-professional-edition.md) and [simulation blueprint](../design/simulation-blueprint.md). The owner wants our own improved platform, with Quest 3 primary and browser participation. The initial scope remains a 2–4 player tabletop.
 
+**Implementation/research follow-up, 2026-09-16:** the repository now has cooperative and geographic command services, deterministic movement/cargo rules and replay; the opening status above describes this study's original date. The [opponent research](opponent-ai.md) audits those actual foundations, adds a headless feasibility probe and specifies an adjustable-opponent/training path. Competitive authority, objectives, a playing agent and tutor remain unimplemented.
+
 ## Why these notes matter
 
 The owner identifies three institutional lines of effort: **agent development, agent integration, and data analytics**. Their combined purpose is an **AI Sensei** that helps learners develop their judgment as commanders. Preserve this as owner-reported strategic context; it does not establish an approved MCU/NPS program specification or an institutional partnership with XRiegsspiel.
