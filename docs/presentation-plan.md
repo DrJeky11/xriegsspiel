@@ -1,6 +1,46 @@
 # MCU–NPS hackathon presentation discussion
 
-**Recorded 2026-09-16. Status: discussion draft, not an approved deck or script.**
+**Recorded 2026-09-16; expanded 2026-09-17. Status: eight-slide v2 presentation draft. The original discussion below remains as background.**
+
+## Expanded v2: six content slides
+
+The owner requested two additional slides on database capture and supplied a 48-image browser demonstration collection (local output: `output/playwright/presentation-demo/README.md`). The revised [eight-slide PowerPoint](XRiegsspiel-MCU-NPS-Hackathon-v2-expanded.pptx) retains the introduction and Questions slide, with six content slides between them. The earlier six-slide deck remains unchanged. The expanded deck is checked into this repository; the screenshot collection and earlier deck remain local outputs under the ignored `output/` directory.
+
+| Time | Slide |
+| --- | --- |
+| 0:00–0:25 | Fabio Garcia / XRiegsspiel |
+| 0:25–1:05 | The learning problem |
+| 1:05–3:00 | Inside XRiegsspiel, including the 90-second VR video slot |
+| 3:00–3:50 | AI opponent and Sensei |
+| 3:50–4:45 | The database preserves each decision |
+| 4:45–5:40 | Review, reflect and compare |
+| 5:40–6:40 | Future development |
+| 7:00–10:00 | Questions, after 20 seconds of transition margin |
+
+Screenshots **24, 29, 35 and 39** show the route warning, a Sensei explanation of a recorded outcome, database reconstruction, and reports. Image areas are wider and slide copy is shorter than the first draft; the Simple Light Mode typography, white background, title positions and page markers remain. Speaker notes distinguish the Second Thomas scenario from the Senkaku map exercise and identify demonstration data and illustrative assessments. Activity counts are not learning scores.
+
+The owner reports having a VR demonstration video. It is not part of the supplied screenshot directory or embedded in this revision; the notes retain a 90-second playback slot. The browser screenshots are not presented as headset captures.
+
+## Six-slide presentation draft
+
+The owner requested the Simple Light Mode template, four information slides, an introduction for **Fabio Garcia**, and a closing **Questions** slide. This supersedes the earlier seven-slide proposal below. The earlier editable PowerPoint draft (local output: `output/hackathon-presentation/final/XRiegsspiel-MCU-NPS-Hackathon-v2.pptx`) follows this sequence:
+
+| Time | Slide |
+| --- | --- |
+| 0:00–0:30 | Fabio Garcia / XRiegsspiel |
+| 0:30–1:30 | The learning problem |
+| 1:30–3:40 | Inside XRiegsspiel, including a planned 90-second demonstration |
+| 3:40–5:15 | AI opponent and Sensei |
+| 5:15–6:40 | Future development |
+| 7:00–10:00 | Questions, after 20 seconds of transition margin |
+
+The draft contains speaker notes and existing prototype screenshots. The owner's video is not yet supplied or embedded. The introduction uses “Creator of XRiegsspiel” pending a preferred one-line background.
+
+**Confirmed future direction:** an API connecting other board gaming platforms, participation across different VR headsets and browsers, remote avatars around the board with shared piece manipulation, and a more effective AI teacher. These are future objectives, not implemented interoperability or universal device compatibility. This presentation request does not authorize building those features.
+
+**AI wording:** the owner reports struggling against the current opponent even in a delivery scenario. This is personal experience, not a benchmark. The project records distinguish the authored planning/search opponent from the trained Sensei teaching-topic selector. The actual run used 15,638 synthetic training examples from 360 simulated games; it does not establish a game-playing model trained for a few thousand iterations. Learning benefit still needs evaluation.
+
+**Presentation checks:** all six slides rendered for visual review; the output preserves the reference's dimensions, Helvetica Neue typography and reused slide layouts. Package, text geometry, font and import checks passed. The deck has not been opened in PowerPoint, and event-system video playback remains to be checked after the clip is available.
 
 ## Confirmed by the owner
 
