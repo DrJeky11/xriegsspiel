@@ -15,6 +15,7 @@ def build():
     rules = json.loads((OUT / "rules.json").read_text())
     pieces = json.loads((OUT / "pieces.json").read_text())
     components = json.loads((OUT / "components.json").read_text())
+    references = json.loads((OUT / 'references.json').read_text())
     # Build atomically so readers never see a half-written database.
     path = OUT / "equipment.sqlite.tmp"
     if path.exists():
@@ -51,6 +52,20 @@ def build():
         review_status TEXT NOT NULL, source_url TEXT NOT NULL, accessed TEXT NOT NULL, locator TEXT NOT NULL,
         source_field TEXT, fields_json TEXT NOT NULL, note TEXT NOT NULL,
         FOREIGN KEY(equipment_id,source_field) REFERENCES source_fact(equipment_id,field));
+      CREATE TABLE unit_reference(equipment_id TEXT PRIMARY KEY REFERENCES equipment(id), reference_version TEXT NOT NULL,
+        title TEXT NOT NULL, role_label TEXT NOT NULL, role TEXT NOT NULL, recognition_json TEXT NOT NULL,
+        review_status TEXT NOT NULL, reviewed TEXT NOT NULL);
+      CREATE TABLE reference_source(equipment_id TEXT NOT NULL REFERENCES unit_reference(equipment_id), ordinal INTEGER NOT NULL,
+        label TEXT NOT NULL, url TEXT NOT NULL, locator TEXT NOT NULL, dated TEXT NOT NULL, accessed TEXT NOT NULL,
+        PRIMARY KEY(equipment_id,ordinal));
+      CREATE TABLE reference_media(id TEXT PRIMARY KEY, equipment_id TEXT NOT NULL UNIQUE REFERENCES unit_reference(equipment_id),
+        subject TEXT NOT NULL, relationship TEXT NOT NULL, photo_date TEXT NOT NULL, source_page TEXT NOT NULL,
+        original_url TEXT NOT NULL, creator TEXT NOT NULL, credit TEXT NOT NULL, license TEXT NOT NULL,
+        license_url TEXT NOT NULL, rights_evidence TEXT NOT NULL, attribution TEXT NOT NULL, source_sha256 TEXT NOT NULL,
+        source_asset_url TEXT NOT NULL, alt TEXT NOT NULL, framing TEXT NOT NULL, caveat TEXT NOT NULL);
+      CREATE TABLE reference_asset(media_id TEXT NOT NULL REFERENCES reference_media(id), size TEXT NOT NULL,
+        path TEXT NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL, bytes INTEGER NOT NULL, sha256 TEXT NOT NULL,
+        PRIMARY KEY(media_id,size));
       CREATE INDEX component_equipment ON component(equipment_id);
       CREATE VIEW lab_eligible_2026 AS
         SELECT p.*,e.name,m.force FROM piece_definition p JOIN equipment e ON e.id=p.equipment_id
@@ -67,8 +82,8 @@ def build():
     """)
     for k, v in {"version": catalog["version"], "accessed": catalog["accessed"], "scope": catalog["scope"],
                  "global_quality_notes": quality["global"], "rules": rules, "piece_version": pieces["version"],
-                 "component_version": components["version"],
-                 "input_sha256": {name: hashlib.sha256((OUT / (name + '.json')).read_bytes()).hexdigest() for name in ('equipment','sources','rules','pieces','components','quality-notes')}}.items():
+                 "component_version": components["version"], "reference_version": references["version"], "reference_notice": references["notice"],
+                 "input_sha256": {name: hashlib.sha256((OUT / (name + '.json')).read_bytes()).hexdigest() for name in ('equipment','sources','rules','pieces','components','quality-notes','references')}}.items():
         db.execute("INSERT INTO metadata VALUES (?,?)", (k, json.dumps(v)))
     for s in sources:
         db.execute("INSERT INTO source_export VALUES (?,?,?,?,?,?,?)", (s["id"], s["url"], s["accessed"], json.dumps(s["filter"]), s["rowCount"], s["sha256"], s["localFile"]))
@@ -87,6 +102,15 @@ def build():
         db.execute('INSERT INTO piece_definition VALUES (?,?,?,?,?,?,?,?,?,?)', (p['id'],p['equipmentId'],p['profileId'],p['rulesVersion'],p['kind'],p['loadSlots'],p['pieceScale'],p['definitionStatus'],p['historicalServiceStatus'],p['reviewFlag']))
     for c in components['components']:
         db.execute('INSERT INTO component VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (c['id'],c['equipmentId'],c['parentComponentId'],c['linkedEquipmentId'],c['kind'],c['name'],c['quantity'],c['relationship'],c['reviewStatus'],c['sourceUrl'],c['accessed'],c['locator'],c['sourceField'],json.dumps(c['fields']),c['note']))
+    for r in references['records']:
+        db.execute('INSERT INTO unit_reference VALUES (?,?,?,?,?,?,?,?)', (r['equipmentId'],references['version'],r['title'],r['roleLabel'],r['role'],json.dumps(r['recognition']),r['reviewStatus'],r['reviewed']))
+        for i, source in enumerate(r['sources']):
+            db.execute('INSERT INTO reference_source VALUES (?,?,?,?,?,?,?)', (r['equipmentId'],i,source['label'],source['url'],source['locator'],source['dated'],source['accessed']))
+        m = r['media']
+        db.execute('INSERT INTO reference_media VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (m['id'],r['equipmentId'],m['subject'],m['relationship'],m['photoDate'],m['sourcePage'],m['originalUrl'],m['creator'],m['credit'],m['license'],m['licenseUrl'],m['rightsEvidence'],m['attribution'],m['sourceSha256'],m['sourceAssetUrl'],m['alt'],m['framing'],m['caveat']))
+        for size in ('thumbnail','detail'):
+            a = m[size]
+            db.execute('INSERT INTO reference_asset VALUES (?,?,?,?,?,?,?)', (m['id'],size,a['path'],a['width'],a['height'],a['bytes'],a['sha256']))
     db.commit()
     assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
     assert not db.execute("PRAGMA foreign_key_check").fetchall()
@@ -97,7 +121,7 @@ def build():
                       "pieceDefinitions": db.execute("SELECT COUNT(*) FROM piece_definition").fetchone()[0],
                       "components": db.execute("SELECT COUNT(*) FROM component").fetchone()[0],
                       "eligibleDistinctPieces2026": db.execute("SELECT COUNT(DISTINCT id) FROM lab_eligible_2026").fetchone()[0],
-                      "integrity": "ok"}))
+                      "referenceCards": db.execute("SELECT COUNT(*) FROM unit_reference").fetchone()[0], "integrity": "ok"}))
     db.close()
     path.replace(OUT / "equipment.sqlite")
 

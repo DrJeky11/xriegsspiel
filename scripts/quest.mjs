@@ -16,5 +16,7 @@ const response = await fetch(`http://127.0.0.1:${port}/api/maps/state?map=hormuz
 if (!response?.ok) throw new Error('Start the map workspaces with npm run dev or npm start before opening it on Quest.');
 adb('-s', serial, 'reverse', `tcp:${port}`, `tcp:${port}`);
 const url = `http://localhost:${port}${path}`;
-adb('-s', serial, 'shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', url, '-p', 'com.oculus.browser');
+// adb joins shell arguments; protect query separators from the Android shell.
+const shellUrl = "'" + url.replaceAll("'", "'\\''") + "'";
+adb('-s', serial, 'shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', shellUrl, '-p', 'com.oculus.browser');
 console.log(`${model}: USB forwarding configured and Browser launch requested. Put on the headset, open ${url} if needed, and choose Enter VR or Enter MR. Keep USB connected.`);

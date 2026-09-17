@@ -36,7 +36,6 @@ export async function initOpponentWorkspace(options: Options) {
   let scenarioId = 'SPR-H01', difficulty: Difficulty = 'standard', humanSide: Side = 'blue', asReferee = false, shortWindow = false;
   let reviewRound: number | null = null;
   let orientation = false, guided = true;
-  const senseiPilot = new URL(location.href).searchParams.get('sensei') === 'pilot';
   let hintState: {key: string; decision: GuideDecision} | null = null;
   const hintHistory = new Map<string, Lesson[]>(), briefAcknowledged = new Set<string>();
   const hintLog: Record<string, unknown>[] = [];
@@ -56,7 +55,7 @@ export async function initOpponentWorkspace(options: Options) {
   const persist = () => { try { localStorage.setItem(storageKey, JSON.stringify(saved)); } catch { message = 'Browser storage unavailable. Keep the invitation link to resume this run.'; } };
   const canOrder = () => !!view && online && !busy && !pending && !view.paused && !view.contest && view.phase === 'planning' && !view.sealed[view.observation.side] && (view.observation.side === view.humanSide || asReferee && view.takeover);
   const hintSession = () => `${view?.id}:${view?.observation.side}`;
-  const canHint = () => senseiPilot && !!view && supportsGuide(view.observation) && online && !busy && !pending && !view.paused && !view.contest;
+  const canHint = () => !!view && supportsGuide(view.observation) && online && !busy && !pending && !view.paused && !view.contest;
   const hintKey = () => JSON.stringify([view?.id, view?.revision, view?.observation.side, draft, movePreview?.id, briefAcknowledged.has(hintSession())]);
   const currentHint = () => hintState?.key === hintKey() ? hintState.decision.hint : null;
   function requestHint() {
@@ -199,7 +198,7 @@ export async function initOpponentWorkspace(options: Options) {
     const el = <T extends HTMLElement = HTMLElement>(id: string) => root.querySelector<T>(`#op-${id}`);
     const on = (id: string, fn: () => void) => { const e = el(id); if (e) (e as HTMLButtonElement).onclick = fn; };
     on('start', () => void start());
-    if (senseiPilot && o && supportsGuide(o)) {
+    if (o && supportsGuide(o)) {
       const section=document.createElement('section');section.className='op-orders';
       section.innerHTML=`<h3>Sensei pilot · current round ${o.round}</h3><p>Optional practice hints for evaluation by you and your instructor.</p><button id="op-hint" ${canHint()?'':'disabled'}>Ask for a teaching hint</button><button id="op-hint-brief" ${briefAcknowledged.has(hintSession())?'disabled':''}>${briefAcknowledged.has(hintSession())?'Briefing acknowledged':'I have read my mission briefing'}</button>${hint?`<h3>${esc(hint.title)}</h3><p>${esc(hint.text)}</p><p><b>${esc(hint.question)}</b></p><details><summary>Evidence</summary><p>${esc(hint.ruleRefs.join(' · '))}${hint.eventIds.length?'<br>'+esc(hint.eventIds.join(' · ')):''}</p></details>`:''}${hintLog.length?'<button id="op-hint-export">Export hint review log</button>':''}`;
       root.querySelector('.op-orders')?.insertAdjacentElement('afterend',section)??root.appendChild(section);
@@ -291,7 +290,7 @@ export async function initOpponentWorkspace(options: Options) {
       panel.buttons = [button(view.paused ? 'Resume exercise' : 'Pause exercise', () => void send({ type: 'pause', paused: !view!.paused })), button(asReferee ? 'Leave referee controls' : 'Referee controls', () => void refereeMode(), !!credentials?.refereeToken), ...(asReferee ? [button(view.takeover ? 'Restore AI control' : 'Take over AI side', () => void send({ type: 'takeover', enabled: !view!.takeover }), view.phase === 'planning'), button('Switch controlled side', () => void controlSide(), view.takeover)] : []), button('New AI scenario', setup), button('Map assembly', hide), back];
     } else {
       panel.lines = [`AI · ${mapName(s.mapId)} · R${o!.round}/${s.rounds}`, ...wrap(missionProgress(o!)).slice(0, 2), ...(o!.variant && o!.round < 3 ? ['Supply ships B1/B2 unavailable until round 3'] : [`${3 - used} CP left · one action per ship`]), ...wrap(guided && o!.round === 1 ? firstRoundGuide(o!, draft).text : message).slice(0, 3)];
-      panel.buttons = [button('Choose unit / staff orders', () => go('actions'), canOrder()), button(`Review plan (${draft.length} orders)`, () => go('plan')), button('Mission briefing', () => go('orientation')), button('Reports', () => go('reports')), button('Exercise controls', () => go('controls')), view.review.length ? button('Last round summary', () => go('summary')) : button('Refresh saved state', () => { pending = null; void refresh(); }), button('Map assembly', hide)];
+      panel.buttons = [button('Choose unit / staff orders', () => go('actions'), canOrder()), button(`Review plan (${draft.length} orders)`, () => go('plan')), button('Mission briefing', () => go('orientation')), button('Reports', () => go('reports')), button('Exercise controls', () => go('controls')), view.review.length ? button('Last round summary', () => go('summary')) : button('Refresh saved state', () => { pending = null; void refresh(); }), supportsGuide(o!) ? button('Sensei teaching hint', requestHint, canHint()) : button('Map assembly', hide)];
     }
     if (canHint() && xrPage !== 'sensei' && panel.buttons.length < 7) panel.buttons.push(button('Sensei teaching hint',requestHint));
     if (busy) panel.lines = ['Saving / preparing opponent…', ...panel.lines.slice(0, 6)];

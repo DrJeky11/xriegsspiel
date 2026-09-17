@@ -37,7 +37,7 @@ New scenarios open a mission briefing with optional first-round guidance. Round 
 
 The opponent uses authored priorities and bounded search. It has no access to your draft or private information and uses the same rules at every difficulty. Second Thomas Resupply offers an explicit **Short window** variant for tighter opposition, separate from difficulty. Automated and browser checks pass; physical Quest usability and human balance trials remain pending.
 
-An optional **Sensei pilot** now selects teaching hints for Second Thomas Resupply using a small locally trained policy. Add `sensei=pilot` to the workspace URL, then request a hint during the exercise. The owner and an instructor will evaluate the explanations. See the [training results, review packet and launch instructions](docs/training/guided-policy-v1.md); agreement with synthetic labels does not establish learning benefit.
+An optional **Sensei pilot** now selects teaching hints for Second Thomas Resupply using a small locally trained policy. During the exercise, choose **Sensei teaching hint** on the main controller menu, or **Ask for a teaching hint** in the browser. No special URL is needed. The owner and an instructor will evaluate the explanations. See the [training results, review packet and launch instructions](docs/training/guided-policy-v1.md); agreement with synthetic labels does not establish learning benefit.
 
 ## Authored scenario library
 

@@ -1,4 +1,6 @@
 import './workspace.css';
+import { loadReferences, referenceFor, referencePhoto, showReferenceImages, onReferenceChange, referenceImages } from './references.ts';
+import { referenceImageMarkup, referenceCardMarkup, refreshReferenceImages } from './reference-card.ts';
 import { loading } from '../loading.ts';
 import { CaptureClient } from '../capture/client.ts';
 import type { WebXRManager } from 'three';
@@ -47,7 +49,7 @@ let stream:EventSource|null=null,generation=0,ready=false;
 const api=(action:string,mapId=map.id)=>`/api/maps/${action}?map=${encodeURIComponent(mapId)}`;
 let active:string|null=null, selectedTile:Cell|null=null, draft:Operation|null=null, draftPreview:Preview|null=null, draftRevision=0;
 let definition=DEMO[0].definitionId as string, placement=false, online=false, busy=false, pendingCommand:ScenarioCommand|null=null;
-let page=0, xrPage:'main'|'cargo'|'setup'|'table'|'evidence'|'catalog'|'candidate'|'search'|'maps'|'terrain'|'filters'|'actions'|'roster'='catalog', xrCargoPage=0;
+let page=0, xrPage:'main'|'cargo'|'setup'|'table'|'evidence'|'catalog'|'candidate'|'search'|'maps'|'terrain'|'filters'|'actions'|'roster'|'reference'='catalog', xrCargoPage=0;
 let equipment=new Map<string,Equipment>();
 const visuals=new Map<string,UnitVisual>(),grab=new GrabTransaction();
 let xrDomain:Domain='ground',xrGroup='All';
@@ -120,7 +122,7 @@ $('quick-inspect').onclick=showPieces;$('quick-confirm').onclick=()=>void commit
 function switchTab(catalog:boolean) {
   $('catalog').hidden=!catalog;$('roster').hidden=catalog;
   $('catalog-tab').setAttribute('aria-pressed',String(catalog));$('roster-tab').setAttribute('aria-pressed',String(!catalog));
-  if(catalog)renderCatalog();
+  renderCatalog();
 }
 function clearDraft() {draft=null;draftPreview=null;pendingCommand=null;}
 function selectPiece(id:string) {
@@ -208,7 +210,10 @@ function renderCatalog() {
   const force=$<HTMLSelectElement>('force').value as Force,list=candidates();
   page=Math.min(page,Math.max(0,Math.ceil(list.length/5)-1));
   $('result-count').textContent=`${list.length.toLocaleString()} records · year ${state().year} · page ${page+1}`;
-  $('results').innerHTML=list.slice(page*5,page*5+5).map(p=>{const allowed=rules.eligibility(p.id,force,state().year).allowed;return `<button class="catalog-row ${p.id===definition?'selected':''}" data-definition="${p.id}"><strong>${esc(p.name)}</strong><small>${esc(p.profileId)} · ${p.eraEvidence.reportedYear??'Date unknown'} ${allowed?'':'· REVIEW'}</small></button>`;}).join('');
+  const visible=list.slice(page*5,page*5+5);
+  showReferenceImages('browser-list',$('catalog').hidden?[]:visible.map(p=>({reference:referenceFor(p.equipmentId),size:'thumbnail'})));
+  $('results').innerHTML=visible.map(p=>{const allowed=rules.eligibility(p.id,force,state().year).allowed,ref=referenceFor(p.equipmentId);return `<button class="catalog-row ${p.id===definition?'selected':''}" aria-pressed="${p.id===definition}" data-definition="${p.id}">${referenceImageMarkup(p.equipmentId,visual(p.id).model,force,'thumbnail')}<span><strong>${esc(p.name)}</strong><small class="reference-label">${esc(ref?.roleLabel??visual(p.id).group)}</small><small>${p.eraEvidence.reportedYear??'Date unknown'} ${allowed?'':'· REVIEW'}</small></span></button>`;}).join('');
+  refreshReferenceImages($('results'));
   $('results').querySelectorAll<HTMLButtonElement>('button').forEach(b=>b.onclick=()=>chooseDefinition(b.dataset.definition!));
   $<HTMLButtonElement>('previous').disabled=page===0;$<HTMLButtonElement>('next').disabled=(page+1)*5>=list.length;
 }
@@ -227,11 +232,13 @@ function render() {
   $('roster').querySelectorAll<HTMLButtonElement>('button').forEach(b=>b.onclick=()=>selectPiece(b.dataset.instance!));
   const note=review.records.find(r=>r.definitionId===d.id);
   const inspected=!!p||!$('catalog').hidden;
-  $('details').innerHTML=inspected?`<p class="force-label">${p?forceName(p.force):'Catalog candidate'} ${p?`· ${esc(p.id)}`:''}</p><h2>${esc(d.name)}</h2><p class="piece-location">${p?(p.carrierId?`Carried by ${esc(p.carrierId)}`:`Hex ${locationName(p.tileId)} · ${profile.layer} layer`):esc(rules.eligibility(d.id,$<HTMLSelectElement>('force').value as Force,s.year).reason)}</p><div class="values"><div><strong>${p?p.movement:profile.movement}<small> / ${profile.movement}</small></strong><span>Movement points</span></div><div><strong>${p?rules.cargoUsed(s,p.id):0}<small> / ${profile.cargoSlots}</small></strong><span>Cargo slots used</span></div></div><p class="authored">Authored game values · ${esc(profile.label)} · load size ${d.loadSlots} slots. ${profile.movement===0?'Transport required to relocate.':''}</p><details id="play-source-facts"><summary>Source evidence & variant review</summary><p><strong>ODIN source facts</strong><br>Reported introduction: ${esc(d.eraEvidence.raw)}<br>Origin: ${esc(fact?.origin??'Unknown')}<br>Operator evidence: ${esc(d.forceEvidence.map(e=>`${e.force}: ${e.basis}`).join('; '))}</p><p>${esc(note?.note??'Exact operator service interval and retirement have not been reviewed. Catalog classification is provisional.')}</p>${note?.sources.map(source=>`<p><a href="${esc(source.url)}" target="_blank" rel="noreferrer">${esc(source.label)} ↗</a> · ${esc(source.locator)}</p>`).join('')??''}<p>Source specifications never set movement or combat values. Raw ODIN fields can describe components and omit units.</p>${fact?`<a href="${esc(fact.sourceUrl)}" target="_blank" rel="noreferrer">ODIN equipment record ↗</a><dl class="facts">${Object.entries(fact.sourceFields).slice(0,8).map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v.value??`Unknown (${v.raw})`)}</dd>`).join('')}</dl>`:''}<p><a href="/catalog.html">Open full equipment facts and components →</a></p></details>`:'<h2>Select a piece</h2><p>Choose a token or roster entry. Legal destinations and restrictions appear immediately.</p>';
+  $('details').innerHTML=inspected?`<p class="force-label">${p?forceName(p.force):'Catalog candidate'} ${p?`· ${esc(p.id)}`:''}</p><h2>${esc(d.name)}</h2>${referenceCardMarkup(d.equipmentId,visual(d.id).model,p?.force??$<HTMLSelectElement>('force').value as Force)}<p class="piece-location">${p?(p.carrierId?`Carried by ${esc(p.carrierId)}`:`Hex ${locationName(p.tileId)} · ${profile.layer} layer`):esc(rules.eligibility(d.id,$<HTMLSelectElement>('force').value as Force,s.year).reason)}</p><div class="values"><div><strong>${p?p.movement:profile.movement}<small> / ${profile.movement}</small></strong><span>Movement points</span></div><div><strong>${p?rules.cargoUsed(s,p.id):0}<small> / ${profile.cargoSlots}</small></strong><span>Cargo slots used</span></div></div><p class="authored">Authored game values · ${esc(profile.label)} · load size ${d.loadSlots} slots. ${profile.movement===0?'Transport required to relocate.':''} Map assembly does not model weapons or sensors.</p><details id="play-source-facts"><summary>Source evidence & variant review</summary><p><strong>ODIN source facts</strong><br>Reported introduction: ${esc(d.eraEvidence.raw)}<br>Origin: ${esc(fact?.origin??'Unknown')}<br>Operator evidence: ${esc(d.forceEvidence.map(e=>`${e.force}: ${e.basis}`).join('; '))}</p><p>${esc(note?.note??'Exact operator service interval and retirement have not been reviewed. Catalog classification is provisional.')}</p>${note?.sources.map(source=>`<p><a href="${esc(source.url)}" target="_blank" rel="noreferrer">${esc(source.label)} ↗</a> · ${esc(source.locator)}</p>`).join('')??''}<p>Source specifications never set movement or combat values. Raw ODIN fields can describe components and omit units.</p>${fact?`<a href="${esc(fact.sourceUrl)}" target="_blank" rel="noreferrer">ODIN equipment record ↗</a><dl class="facts">${Object.entries(fact.sourceFields).slice(0,8).map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v.value??`Unknown (${v.raw})`)}</dd>`).join('')}</dl>`:''}<p><a href="/catalog.html?piece=${encodeURIComponent(d.id)}">Open full equipment facts and components →</a></p></details>`:'<h2>Select a piece</h2><p>Choose a token or roster entry. Legal destinations and restrictions appear immediately.</p>';
   let legal:string[]=[];
   if(p){if(p.carrierId){const at=map.cells.find(c=>c.id===s.pieces.find(c=>c.id===p.carrierId)?.tileId);legal=at?[at,...neighbors(map,at)].filter(c=>rules.evaluate(s,{type:'unload',pieceId:p.id,tileId:c.id}).allowed).map(c=>c.id):[];}else legal=[...rules.reachable(s,p.id).keys()].filter(id=>id!==p.tileId);}
   const movementHelp=legal.length?(p?.carrierId?'Choose a marked hex beside the carrier to preview unloading.':'Choose a gold-ring hex to preview movement.'):(p?.carrierId?'No legal unloading destination: check carrier points, shoreline and occupied layers.':profile.movement===0?'This piece requires transport to relocate.':p?.movement===0?'No movement points remain. Advance the turn to refresh the budget.':'No legal destination within the budget and free layers. Ordinary ground cannot cross coast-to-coast edges.');
   const cargo=p?s.pieces.filter(c=>c.carrierId===p.id):[];
+  showReferenceImages('browser-detail',inspected?[{reference:referenceFor(d.equipmentId),size:'detail'}]:[]);
+  refreshReferenceImages($('details'));
   $('orders').innerHTML=p?`<h3>Available actions</h3><p>${movementHelp} ${profile.layer==='air'?'Air is an abstract layer; no basing or endurance is modeled.':''}</p><button id="play-hold">Preview hold</button><button id="play-focus-piece">Focus piece</button>${cargo.length?`<p><strong>Cargo manifest</strong></p>${cargo.map(c=>`<button class="cargo-row" data-cargo="${esc(c.id)}">▧ ${esc(c.id)} · ${esc(short(c.definitionId))} → Unload</button>`).join('')}` : ''}${!p.carrierId?`<label>Load selected piece into<select id="play-carrier"><option value="">Choose carrier</option>${s.pieces.filter(c=>c.id!==p.id&&c.force===p.force&&rules.lab.profile(c).cargoSlots>0).map(c=>`<option value="${esc(c.id)}">${esc(c.id)} · ${esc(short(c.definitionId))}</option>`).join('')}</select></label><button id="play-load">Preview load</button>`:''}`:!$('catalog').hidden?`<button id="play-place" class="primary full">${placement?'Placement active · choose a hex':'Place an instance'}</button><p>Placement is validated before commitment. Repeat to add multiple instances.</p>`:'';
   $('focus-piece')?.addEventListener('click',()=>{if(selectedTile)options.focusTile(selectedTile.id);});
   $('hold')?.addEventListener('click',()=>preview({type:'action',action:{type:'hold',pieceId:active!}}));
@@ -285,14 +292,16 @@ function renderXR() {
       groups:roster?[]:['All',...UNIT_GROUPS[xrDomain]].map(group=>({...button(group,()=>{xrGroup=group;resetBrowse();}),selected:group===xrGroup})),
       cards:list.slice(xrCatalogPage*6,xrCatalogPage*6+6).map(({definition:d,instance})=>{
         const eligible=rules.eligibility(d.id,instance?.force??force,state().year).allowed;
-        return {...button((instance?instance.id+' · ':'')+d.name,()=>{if(instance){selectPiece(instance.id);return;}xrPage='candidate';chooseDefinition(d.id);}),model:visual(d.id).model,force:instance?.force??force,available:eligible,grab:eligible?(instance?{pieceId:instance.id}:{definitionId:d.id}):undefined};
+        return {...button((instance?instance.id+' · ':'')+d.name,()=>{if(instance){selectPiece(instance.id);return;}xrPage='candidate';chooseDefinition(d.id);}),reference:referenceFor(d.equipmentId),role:referenceFor(d.equipmentId)?.roleLabel,model:visual(d.id).model,force:instance?.force??force,available:eligible,grab:eligible?(instance?{pieceId:instance.id}:{definitionId:d.id}):undefined};
       }),
     };
     panel.buttons=[button('← Previous',()=>{xrCatalogPage--;renderXR();},xrCatalogPage>0),button('Next →',()=>{xrCatalogPage++;renderXR();},(xrCatalogPage+1)*6<list.length),button(roster?'Add units':'On map',()=>{xrCatalogPage=0;go(roster?'catalog':'roster');}),button('Settings',()=>go('main')),button('Clear search',()=>{$<HTMLInputElement>('search').value='';xrGroup='All';resetBrowse();}),button($<HTMLSelectElement>('eligible').value==='all'?'Show eligible':'Show all records',()=>{$<HTMLSelectElement>('eligible').value=$<HTMLSelectElement>('eligible').value==='all'?'eligible':'all';resetBrowse();})];
-  } else if(xrPage==='candidate') {
-    const d=rules.lab.definition(definition),pr=rules.lab.profiles.get(d.profileId)!,eligible=rules.eligibility(d.id,$<HTMLSelectElement>('force').value as Force,state().year);
+  } else if(xrPage==='candidate'||xrPage==='reference') {
+    const selected=xrPage==='reference'?p:undefined,d=rules.lab.definition(selected?.definitionId??definition),pr=rules.lab.profiles.get(d.profileId)!,force=selected?.force??$<HTMLSelectElement>('force').value as Force,eligible=rules.eligibility(d.id,force,state().year),ref=referenceFor(d.equipmentId);
+    panel.reference={name:d.name,origin:`${forceName(force)} · ${state().year} map assembly`,model:visual(d.id).model,force,content:ref,guidance:[`${selected?selected.movement+' / ':''}${pr.movement} movement points`,`${pr.cargoSlots} cargo slots`,selected?(selected.carrierId?'Use Cargo to preview unloading':`${Math.max(0,rules.reachable(state(),selected.id).size-1)} movement destinations; hold ${rules.evaluate(state(),{type:'hold',pieceId:selected.id}).allowed?'available':'unavailable'}`):pr.movement?'Place, then preview movement / hold':'Transport required to relocate', 'Weapons and sensors are not modeled.'],eligibility:eligible.allowed?`Eligible for ${state().year} · Historical service unverified`:eligible.reason};
     panel.title='UNIT DETAILS';panel.lines=[...wrap(d.name).slice(0,3),forceName($<HTMLSelectElement>('force').value as Force),`${pr.movement} MP · Stylized ${visual(d.id).model} model`,`Cargo ${pr.cargoSlots} slots · Load size ${d.loadSlots}`,...wrap(eligible.reason).slice(0,2)];
-    panel.buttons=[{...button('Hold SIDE GRIP here to pick up',()=>{status('Use the side button under your middle finger. Hold, lower to green, then release.');renderXR();},eligible.allowed),grab:eligible.allowed?{definitionId:d.id}:undefined},button('Place with pointer',beginPlacement,eligible.allowed),button('Source evidence',()=>go('evidence')),button('Back to catalog',()=>go('catalog'))];
+    panel.buttons=[{...button('Hold SIDE GRIP here to pick up',()=>{status('Use the side button under your middle finger. Hold, lower to green, then release.');renderXR();},eligible.allowed),grab:eligible.allowed?{definitionId:d.id}:undefined},button('Place with pointer',beginPlacement,eligible.allowed),button('Sources & details',()=>go('evidence')),button('Back to catalog',()=>go('catalog'))];
+    if(selected)panel.buttons=[button('Back to selected unit',()=>go('main')),button('Cargo / load / unload',()=>go('cargo')),button('Sources & details',()=>go('evidence')),back];
   } else if(xrPage==='maps') {
     panel.title='MAP ASSEMBLIES';panel.lines=[name(map.id),opponent?.context?`AI saved: ${opponent.context.mapName}`:'Each map has independent saved pieces.','Regions in this workspace open inside VR/MR.','The other workspace opens after exiting immersion.'];
     panel.buttons=options.mapIds.map(id=>button(name(id),()=>{if(id===map.id){go('main');return;}options.showMap(id);}));
@@ -307,10 +316,12 @@ function renderXR() {
   } else if(xrPage==='table') {
     panel.title='TABLE & EXERCISE';panel.buttons=[button('Smaller table',()=>table.scale(.8)),button('Larger table',()=>table.scale(1.25)),button('Recenter table',()=>table.reset()),button('New map assembly',()=>{setup={mapId:map.id,year:state().year,demo:false};go('setup');}),back,button('Exit VR / MR',()=>void table.exit())];
   } else if(xrPage==='actions') {
-    panel.title='PIECE ACTIONS';panel.buttons=[button('Preview hold',()=>p&&preview({type:'action',action:{type:'hold',pieceId:p.id}}),!!p),button('Preview next turn',()=>preview({type:'action',action:{type:'advance'}})),button('Source evidence',()=>go('evidence')),button('Clear selection',()=>{active=null;selectedTile=null;status('Selection cleared.');go('main');render();}),back];
+    panel.title='PIECE ACTIONS';panel.buttons=[button('Reference card',()=>go('reference')), button('Preview hold',()=>p&&preview({type:'action',action:{type:'hold',pieceId:p.id}}),!!p),button('Preview next turn',()=>preview({type:'action',action:{type:'advance'}})),button('Source evidence',()=>go('evidence')),button('Clear selection',()=>{active=null;selectedTile=null;status('Selection cleared.');go('main');render();}),back];
   } else if(xrPage==='evidence') {
     const d=rules.lab.definition(p?.definitionId??definition),note=review.records.find(r=>r.definitionId===d.id);
-    panel.title='SOURCE EVIDENCE';panel.lines=[`ODIN introduction: ${d.eraEvidence.raw}`,...wrap(note?.note??'Historical service dates and classification remain provisional. Detailed source records are in the equipment library.').slice(0,5),'Movement and cargo rules are separately authored.'];panel.buttons=[button('Back',()=>go(p?'main':'candidate'))];
+    const ref=referenceFor(d.equipmentId);
+    panel.title='SOURCES & DETAILS';panel.lines=ref?[...wrap(`${ref.media.credit} · ${ref.media.license}`).slice(0,2),...wrap(ref.media.caveat).slice(0,2),...wrap(ref.sources[0].label+' · '+ref.sources[0].dated).slice(0,2),'Full links and credits: browser equipment library.',`ODIN introduction: ${d.eraEvidence.raw}`]:[`ODIN introduction: ${d.eraEvidence.raw}`,...wrap(note?.note??'Historical service dates and classification remain provisional. Detailed source records are in the equipment library.').slice(0,5),'Movement and cargo rules are separately authored.'];panel.buttons=[button('Back',()=>go(p?'reference':'candidate'))];
+
   } else if(xrPage==='cargo'&&p) {
     const actions:{label:string;action?:Action;id?:string}[]=state().pieces.filter(c=>c.carrierId===p.id).map(c=>({label:`Unload ${short(c.definitionId)} / ${c.id}`,id:c.id}));
     if(profile!.cargoSlots)for(const c of state().pieces.filter(c=>c.force===p.force&&c.id!==p.id&&!c.carrierId))actions.push({label:`Load ${short(c.definitionId)} / ${c.id}`,action:{type:'load',pieceId:c.id,carrierId:p.id}});
@@ -325,6 +336,9 @@ function renderXR() {
   presentPanel(panel);
 }
 function presentPanel(panel:TablePanel) {
+  showReferenceImages('quest-panel',panel.reference?[{reference:panel.reference.content,size:'detail'}]:panel.catalog?.cards.map(c=>({reference:c.reference,size:'thumbnail'}))??[]);
+  if(panel.reference)panel.reference.photo=referencePhoto(panel.reference.content,'detail');
+  panel.catalog?.cards.forEach(c=>{c.photo=referencePhoto(c.reference,'thumbnail');});
   lastPanel=panel;table.setScenarioPanel(panel);
   if(panelPreview){
     if(!new URL(location.href).searchParams.has('palette-review')) (opponentRoot.hidden?root:opponentRoot).append(panelPreview);
@@ -338,6 +352,20 @@ function presentPanel(panel:TablePanel) {
     if(grab.active){const release=document.createElement('button');release.textContent='Release over chosen hex';release.onclick=()=>grabBindings.release(selectedTile?.id??null);panelPreview.append(release);}
   }
 }
+
+let referenceContentReady=false;
+onReferenceChange(()=>{
+  if(!ready)return;
+  if(!referenceContentReady){referenceContentReady=true;renderCatalog();render();return;}
+  refreshReferenceImages(root);
+  if(lastPanel&&!opponent?.active){
+    if(lastPanel.reference)lastPanel.reference.photo=referencePhoto(lastPanel.reference.content,'detail');
+    lastPanel.catalog?.cards.forEach(c=>{c.photo=referencePhoto(c.reference,'thumbnail');});
+    table.setScenarioPanel(lastPanel);
+    const canvas=panelPreview?.querySelector('canvas');if(canvas)drawPanel(canvas,lastPanel);
+  }
+});
+void loadReferences();
 
 const grabBindings:GrabBindings={
   version:()=>opponent?.active?opponent.grabBindings.version():ready?map.id+':'+envelope.revision:'loading',
@@ -387,7 +415,7 @@ function cancel() {if(busy||!ready)return;if(draft||grab.active)capture.event('c
   $('export').onclick=()=>{try{const save={...rules.export(state()),capture:{runId:envelope.runId!,serviceRevision:envelope.revision}},url=URL.createObjectURL(new Blob([JSON.stringify(save,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`xriegsspiel-${state().manifest.mapId.replaceAll('/','-')}-${state().year}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status('Save exported after exact journal replay verification.');}catch(e){status(String(e));}};
   $('import-open').onclick=()=>$<HTMLInputElement>('import').click();$('import').onchange=()=>{const input=$<HTMLInputElement>('import'),file=input.files?.[0];input.value='';if(!file)return;if(busy||!ready)return;clearDraft();if(file.size>8_000_000){status('Save exceeds the 8 MB import limit.');render();return;}void file.text().then(text=>{preview({type:'import',save:JSON.parse(text)});}).catch(()=>{status('Unable to read this JSON save.');render();});};
   document.addEventListener('keydown',e=>{if(e.key==='Escape')cancel();if(e.key==='Enter'&&e.target===table.renderer.domElement){e.preventDefault();void commit();}});
-  Object.defineProperty(window,'__playableTerrain',{value:{get diagnostics(){return{state:structuredClone(envelope),mapId:map.id,selected:active,selectedTile:selectedTile?.id,preview:draftPreview?structuredClone(draftPreview):null,placement,ready,interactionBuild:'controller-grab-2',input:table.inputDiagnostics,controllerPanel:lastPanel?{title:lastPanel.title,lines:lastPanel.lines,buttons:panelTargets(lastPanel).map(b=>({label:b.label,enabled:b.enabled!==false}))}:null,...table.stats};}}});
+  Object.defineProperty(window,'__playableTerrain',{value:{get diagnostics(){return{state:structuredClone(envelope),mapId:map.id,selected:active,selectedTile:selectedTile?.id,preview:draftPreview?structuredClone(draftPreview):null,placement,ready,interactionBuild:'controller-grab-2',input:table.inputDiagnostics,referencePhotos:{...referenceImages.stats},controllerPanel:lastPanel?{title:lastPanel.title,lines:lastPanel.lines,reference:lastPanel.reference?{name:lastPanel.reference.name,role:lastPanel.reference.content?.role,photoReady:!!lastPanel.reference.photo,guidance:lastPanel.reference.guidance}:undefined,buttons:panelTargets(lastPanel).map(b=>({label:b.label,enabled:b.enabled!==false}))}:null,...table.stats};}}});
   root.querySelectorAll('details').forEach(detail=>detail.addEventListener('toggle',()=>{if(detail.open&&/Rules|controls/.test(detail.querySelector('summary')?.textContent??''))capture.event('help');}));
   await loading.measure('Join exercise database',()=>capture.join());
   await loading.measure('Restore map assembly',async()=>{await openMap(options.mapId);if(!ready)throw new Error(message);});
