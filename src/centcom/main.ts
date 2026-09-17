@@ -1,4 +1,5 @@
 import './style.css';
+import { loading } from '../loading.ts';
 import { initPlayableWorkspace } from '../play/workspace.ts';
 import type { PlayWorkspace } from '../play/workspace.ts';
 import { initTerrainMenu, terrainMenuControls, terrainMenuHeading } from '../terrain-menu.ts';
@@ -78,9 +79,9 @@ function loadRegion(id: string) {
   void play?.openMap(region.id);
 }
 
-try {
+async function start() { try {
   view = new TerrainView($('viewport'), tile=>{select(tile);play?.chooseTile(tile.id);}, active => document.body.classList.toggle('xr-active', active), () => loadRegion(map.region.id === 'hormuz' ? 'bab-al-mandeb' : 'hormuz'));
-  loadRegion(new URL(location.href).searchParams.get('region') || 'hormuz');
+  await loading.measure('Build and draw CENTCOM terrain',()=>loadRegion(new URL(location.href).searchParams.get('region') || 'hormuz'));
   document.querySelectorAll<HTMLButtonElement>('[data-region]').forEach(button => button.onclick = () => loadRegion(button.dataset.region!));
   $('landmark').onchange = () => {
     const value = ($('landmark') as HTMLSelectElement).value; if (value === '') return;
@@ -122,12 +123,16 @@ try {
     focusTile:id=>{const tile=map.tiles.find(t=>t.id===id);if(tile)view.focusTile(tile);},
     coordinates:id=>map.tiles.find(t=>t.id===id),tileAt:(q,r)=>map.byAxial.get(axialKey({q,r}))?.id,openMenu:()=>menu.setOpen(true),
     terrainActions:()=>[{label:menu.labelsVisible?'Hide place labels':'Show place labels',run:()=>{$('map-labels').click();}},{label:'Toggle source coastline',run:()=>{$('coastline').click();}},{label:'Toggle illustrative relief',run:()=>{$('relief').click();}}],
-  }).then(workspace=>{play=workspace;}).catch(error=>{$('status').textContent=String(error);});
+  }).then(workspace=>{play=workspace;}).catch(error=>{loading.fail(error);$('status').textContent=String(error);});
   Object.defineProperty(window, '__centcomTerrain', { value: {
     get diagnostics() { return { region: map.region.id, tileCount: map.tiles.length, selected: selection?.id, ...view.stats }; },
   } });
 } catch (error) {
+  loading.fail(error);
   $('status').textContent = `Terrain could not load: ${error instanceof Error ? error.message : String(error)}`;
   $('viewport').innerHTML = '<p class="load-error">The terrain view requires WebGL. Enable hardware acceleration or try another browser.</p>';
   console.error(error);
 }
+
+}
+void start();

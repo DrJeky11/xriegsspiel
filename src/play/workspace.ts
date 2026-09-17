@@ -1,4 +1,5 @@
 import './workspace.css';
+import { loading } from '../loading.ts';
 import { CaptureClient } from '../capture/client.ts';
 import type { WebXRManager } from 'three';
 import { initOpponentWorkspace } from '../opponent/workspace.ts';
@@ -71,8 +72,8 @@ original.before(tabs);
 const root=document.createElement('section');root.className='terrain-menu-content play-controls';root.id='piece-workspace';original.before(root);
 const opponentRoot=document.createElement('section');opponentRoot.className='terrain-menu-content opponent-controls';opponentRoot.hidden=true;original.before(opponentRoot);
 root.innerHTML=`<fieldset id="play-controls" disabled>
-  <p class="eyebrow">Saved map exercise</p><h2 id="play-title">Loading…</h2><p id="play-map-label" hidden></p><p id="play-scale-label" class="muted"></p>
-  <label>Map<select id="play-map-select"></select></label><div class="play-meta"><span id="play-year-label">2026</span><span id="play-turn-label">Turn 1</span><button id="play-setup-open" type="button">New exercise</button></div>
+  <p class="eyebrow">Map assembly · independent save</p><h2 id="play-title">Loading…</h2><p id="play-map-label" hidden></p><p id="play-scale-label" class="muted"></p>
+  <label>Map<select id="play-map-select"></select></label><div class="play-meta"><span id="play-year-label">2026</span><span id="play-turn-label">Turn 1</span><button id="play-setup-open" type="button">New map assembly</button></div>
   <div class="play-tabs"><button id="play-roster-tab" aria-pressed="true">Forces <span id="play-roster-count"></span></button><button id="play-catalog-tab" aria-pressed="false">Add pieces</button></div>
   <section id="play-roster" aria-label="Placed pieces"></section>
   <section id="play-catalog" hidden aria-label="Catalog assembly">
@@ -94,11 +95,22 @@ root.innerHTML=`<fieldset id="play-controls" disabled>
   <p><a href="/review.html" id="play-review">Exercise review & reports ↗</a> · <a href="/scenario-review.html">Scenario learning records ↗</a></p><p id="play-capture" class="muted">Connecting to the exercise database…</p>
   <p><a href="/catalog.html">Full equipment evidence & database ↗</a></p>
 </fieldset><p id="play-status" role="status" aria-live="polite">Loading pieces…</p><p id="play-connection" class="muted">Connecting…</p><button id="play-retry" hidden>Retry loading map</button>
-<dialog id="play-setup-dialog"><form id="play-setup-form"><p class="eyebrow">This map only</p><h2>New exercise</h2><p>Replaces this map's pieces and progress. Other maps are kept. This run remains in the exercise archive.</p><label>Scenario year<input id="play-year" type="number" min="1980" max="2026" value="2026" required></label><label class="play-checkbox"><input id="play-demo" type="checkbox"> Add a demonstration roster where eligible</label><div class="play-dialog-actions"><button type="button" id="play-setup-close">Cancel</button><button>Preview new exercise</button></div></form></dialog>`;
+<dialog id="play-setup-dialog"><form id="play-setup-form"><p class="eyebrow">This map only</p><h2>New map assembly</h2><p>Replaces this map's pieces and progress. Other maps are kept. This run remains in the exercise archive.</p><label>Scenario year<input id="play-year" type="number" min="1980" max="2026" value="2026" required></label><label class="play-checkbox"><input id="play-demo" type="checkbox"> Add a demonstration roster where eligible</label><div class="play-dialog-actions"><button type="button" id="play-setup-close">Cancel</button><button>Preview new map assembly</button></div></form></dialog>`;
 const bar=document.createElement('div');bar.className='play-command-bar';bar.hidden=true;
 bar.innerHTML='<p id="play-quick-status"></p><div><button id="play-quick-inspect">Pieces & orders</button><button id="play-quick-confirm" disabled>Confirm</button><button id="play-quick-cancel">Cancel</button></div>';
 document.querySelector('.terrain-layout')!.append(bar);
-function menuTab(pieces:boolean) {opponent?.deactivate();opponentRoot.hidden=true;root.hidden=!pieces;original.hidden=pieces;$('pieces-tab').setAttribute('aria-pressed',String(pieces));$('terrain-tab').setAttribute('aria-pressed',String(!pieces));$('opponent-tab').setAttribute('aria-pressed','false');if(ready)render();}
+const context = document.createElement('div'); context.className='play-context';
+context.innerHTML='<p id="play-context-label"></p><button id="play-return-ai" hidden>Return to active exercise</button>';
+document.querySelector('.map-heading')!.append(context);
+function renderContext() {
+  const run = opponent?.context;
+  const name = map ? (map.view.id === 'focus' ? map.region.focusName : map.region.name) : 'Loading';
+  $('context-label').textContent = run?.active ? `AI scenario · ${run.title} · Round ${run.round} · run ${run.id.slice(0,8)}` : opponent?.active ? `AI scenario setup · ${name}` : `Map assembly · ${name}${envelope?.runId ? ' · save ' + envelope.runId.slice(0,8) : ''}${run ? ` | AI saved: ${run.title} · ${run.mapName} · Round ${run.round}` : ''}`;
+  $('return-ai').hidden = !run || run.active;
+  $<HTMLButtonElement>('return-ai').disabled = busy || !!pendingCommand || !!opponent?.busy || !ready;
+}
+$('return-ai').onclick=()=>{if(ready&&!busy&&!pendingCommand){table.cancelGrab();void opponent?.activate();}};
+function menuTab(pieces:boolean) {if(opponent?.busy)return;table.cancelGrab();opponent?.deactivate();opponentRoot.hidden=true;root.hidden=!pieces;original.hidden=pieces;$('pieces-tab').setAttribute('aria-pressed',String(pieces));$('terrain-tab').setAttribute('aria-pressed',String(!pieces));$('opponent-tab').setAttribute('aria-pressed','false');if(ready)render();}
 function showPieces(){menuTab(true);options.openMenu();}
 $('pieces-tab').onclick=()=>menuTab(true);$('terrain-tab').onclick=()=>menuTab(false);
 $('opponent-tab').onclick=()=>{if(busy||pendingCommand)return;table.cancelGrab();opponent?.activate();};
@@ -201,6 +213,7 @@ function renderCatalog() {
   $<HTMLButtonElement>('previous').disabled=page===0;$<HTMLButtonElement>('next').disabled=(page+1)*5>=list.length;
 }
 function render() {
+  renderContext();
   if(!ready||!envelope||!rules)return;
   if(opponent?.active){bar.hidden=true;opponent.render();return;}
   $<HTMLFieldSetElement>('controls').disabled=busy;
@@ -229,7 +242,7 @@ function render() {
   $<HTMLButtonElement>('confirm').disabled=busy||!draftPreview?.allowed;$<HTMLButtonElement>('cancel').disabled=busy||!draft;
   $('confirm').textContent=busy?'Saving…':pendingCommand?'Retry order':'Confirm order';
   $('history-count').textContent=String(s.events.length);$('history').innerHTML=s.events.slice(-30).reverse().map(e=>`<li><strong>${e.revision} · Turn ${e.turn} · ${esc(e.action.type)}</strong> ${esc('pieceId' in e.action?e.action.pieceId:e.action.type==='deploy'?e.action.id:'')}<p>${esc(e.explanation)}</p></li>`).join('');
-  table.setScenarioPieces(s.pieces.filter(p=>p.tileId!==null).map(p=>{const profile=rules.lab.profile(p);return{id:p.id,tileId:p.tileId!,force:p.force,symbol:symbol(profile.id,profile.layer),name:rules.lab.definition(p.definitionId).name,model:visual(p.definitionId).model,selected:p.id===active,cargo:s.pieces.filter(c=>c.carrierId===p.id).length,layer:profile.layer};}),legal,draftPreview?.allowed?draftPreview.path:[],selectPiece);
+  table.setScenarioPieces(s.pieces.filter(p=>p.tileId!==null).map<TablePiece>(p=>{const profile=rules.lab.profile(p);return{id:p.id,tileId:p.tileId!,force:p.force,symbol:symbol(profile.id,profile.layer),name:rules.lab.definition(p.definitionId).name,model:visual(p.definitionId).model,selected:p.id===active,cargo:s.pieces.filter(c=>c.carrierId===p.id).length,layer:profile.layer};}).concat(opponent?.contextPieces(map) ?? []),legal,draftPreview?.allowed?draftPreview.path:[],selectPiece);
   bar.hidden=!active&&!placement&&!draft;
   $('quick-status').textContent=draftPreview?.reason??(placement?'Place '+short(definition):p?short(p.definitionId)+' · '+p.movement+' MP · choose a gold-ring hex':'');
   $<HTMLButtonElement>('quick-confirm').disabled=busy||!draftPreview?.allowed;
@@ -264,7 +277,7 @@ function renderXR() {
     const roster=xrPage==='roster',force=$<HTMLSelectElement>('force').value as Force;
     const list=roster?state().pieces.filter(p=>p.force===force).map(p=>({definition:rules.lab.definition(p.definitionId),instance:p})):candidates().filter(d=>visual(d.id).domain===xrDomain&&(xrGroup==='All'?d.kind==='platform'&&visual(d.id).group!=='Equipment':visual(d.id).group===xrGroup)).sort((a,b)=>a.name.localeCompare(b.name)).map(d=>({definition:d,instance:null}));
     xrCatalogPage=Math.max(0,Math.min(xrCatalogPage,Math.ceil(list.length/6)-1));
-    panel.title=roster?'ON THE MAP':'UNITS';panel.lines=[`${forceName(force)} · ${state().year} · ${list.length} ${roster?'pieces':'choices'} · ${xrCatalogPage+1}/${Math.max(1,Math.ceil(list.length/6))}`,message.startsWith('Saved')?message:'Stylized class miniatures · select for the full unit name'];
+    panel.title=roster?'MAP ASSEMBLY / ON MAP':'MAP ASSEMBLY / UNITS';panel.lines=[`${forceName(force)} · ${state().year} · ${list.length} ${roster?'pieces':'choices'} · ${xrCatalogPage+1}/${Math.max(1,Math.ceil(list.length/6))}`,`${name(map.id)} · Turn ${state().turn} · independent save`];
     const resetBrowse=()=>{xrCatalogPage=0;renderXR();};
     panel.catalog={
       toolbar:[button(force==='blue'?'United States ▾':'China ▾',()=>{$<HTMLSelectElement>('force').value=force==='blue'?'red':'blue';renderCatalog();resetBrowse();}),button('Search: '+($<HTMLInputElement>('search').value||'unit name'),()=>go('search'))],
@@ -281,18 +294,18 @@ function renderXR() {
     panel.title='UNIT DETAILS';panel.lines=[...wrap(d.name).slice(0,3),forceName($<HTMLSelectElement>('force').value as Force),`${pr.movement} MP · Stylized ${visual(d.id).model} model`,`Cargo ${pr.cargoSlots} slots · Load size ${d.loadSlots}`,...wrap(eligible.reason).slice(0,2)];
     panel.buttons=[{...button('Hold SIDE GRIP here to pick up',()=>{status('Use the side button under your middle finger. Hold, lower to green, then release.');renderXR();},eligible.allowed),grab:eligible.allowed?{definitionId:d.id}:undefined},button('Place with pointer',beginPlacement,eligible.allowed),button('Source evidence',()=>go('evidence')),button('Back to catalog',()=>go('catalog'))];
   } else if(xrPage==='maps') {
-    panel.title='MAPS & TERRAIN';panel.lines=[name(map.id),'Switching maps keeps their pieces and progress.','Regions in this workspace open inside VR/MR.','The other workspace opens after exiting immersion.'];
+    panel.title='MAP ASSEMBLIES';panel.lines=[name(map.id),opponent?.context?`AI saved: ${opponent.context.mapName}`:'Each map has independent saved pieces.','Regions in this workspace open inside VR/MR.','The other workspace opens after exiting immersion.'];
     panel.buttons=options.mapIds.map(id=>button(name(id),()=>{if(id===map.id){go('main');return;}options.showMap(id);}));
     const other=map.id.includes('/')?'CENTCOM':'Pacific';
     panel.buttons.push(button('Terrain controls',()=>go('terrain')),button(`Open ${other} workspace`,()=>{void table.exit().then(()=>location.assign(other==='Pacific'?'/pacific.html':'/centcom.html'));}),back);
   } else if(xrPage==='terrain') {
     panel.title='TERRAIN CONTROLS';panel.lines=[name(map.id),'Display changes keep game positions and budgets.','Relief is illustrative; elevation and depth unknown.'];panel.buttons=[...options.terrainActions().map(b=>({...b,enabled:!busy})),back];
   } else if(xrPage==='setup') {
-    panel.title='NEW EXERCISE / THIS MAP';panel.lines=[name(map.id),`Year ${setup.year}`,setup.demo?'Demonstration roster where eligible':'Empty exercise','Replaces this map’s pieces and progress.','Your other maps are kept.','Export this run in the browser to keep a portable copy.'];
+    panel.title='NEW MAP ASSEMBLY';panel.lines=[name(map.id),`Year ${setup.year}`,setup.demo?'Demonstration roster where eligible':'Empty exercise','Replaces this map’s pieces and progress.','Your other maps are kept.','Export this run in the browser to keep a portable copy.'];
     const year=(delta:number)=>{setup.year=Math.max(1980,Math.min(2026,setup.year+delta));renderXR();};
-    panel.buttons=[button('Earlier year −1',()=>year(-1)),button('Later year +1',()=>year(1)),button('Earlier decade −10',()=>year(-10)),button('Later decade +10',()=>year(10)),button('Toggle demonstration roster',()=>{setup.demo=!setup.demo;renderXR();}),button('Preview new exercise',()=>preview({type:'new',setup:structuredClone(setup)})),back];
+    panel.buttons=[button('Earlier year −1',()=>year(-1)),button('Later year +1',()=>year(1)),button('Earlier decade −10',()=>year(-10)),button('Later decade +10',()=>year(10)),button('Toggle demonstration roster',()=>{setup.demo=!setup.demo;renderXR();}),button('Preview new map assembly',()=>preview({type:'new',setup:structuredClone(setup)})),back];
   } else if(xrPage==='table') {
-    panel.title='TABLE & EXERCISE';panel.buttons=[button('Smaller table',()=>table.scale(.8)),button('Larger table',()=>table.scale(1.25)),button('Recenter table',()=>table.reset()),button('New exercise on this map',()=>{setup={mapId:map.id,year:state().year,demo:false};go('setup');}),back,button('Exit VR / MR',()=>void table.exit())];
+    panel.title='TABLE & EXERCISE';panel.buttons=[button('Smaller table',()=>table.scale(.8)),button('Larger table',()=>table.scale(1.25)),button('Recenter table',()=>table.reset()),button('New map assembly',()=>{setup={mapId:map.id,year:state().year,demo:false};go('setup');}),back,button('Exit VR / MR',()=>void table.exit())];
   } else if(xrPage==='actions') {
     panel.title='PIECE ACTIONS';panel.buttons=[button('Preview hold',()=>p&&preview({type:'action',action:{type:'hold',pieceId:p.id}}),!!p),button('Preview next turn',()=>preview({type:'action',action:{type:'advance'}})),button('Source evidence',()=>go('evidence')),button('Clear selection',()=>{active=null;selectedTile=null;status('Selection cleared.');go('main');render();}),back];
   } else if(xrPage==='evidence') {
@@ -307,13 +320,14 @@ function renderXR() {
   } else {
     panel.title=p?'SELECTED UNIT':'TABLE SETTINGS';
     if(!p)panel.lines=[name(map.id),`${state().year} · Turn ${state().turn}`,'The unit palette is beside the table.','Grip its top handle to move it; − hides it.'];
-    panel.buttons=[button('Unit palette',()=>{xrCatalogPage=0;go('catalog');}),...(p?[button('Cargo / load / unload',()=>{xrCargoPage=0;go('cargo');}),button('More unit actions',()=>go('actions'))]:[]),button('Preview next turn',()=>preview({type:'action',action:{type:'advance'}})),button('Maps & terrain',()=>go('maps')),button('Table & exercise',()=>go('table')),button('Play against AI',()=>opponent?.activate())];
+    panel.buttons=[button('Unit palette',()=>{xrCatalogPage=0;go('catalog');}),...(p?[button('Cargo / load / unload',()=>{xrCargoPage=0;go('cargo');}),button('More unit actions',()=>go('actions'))]:[]),button('Preview next turn',()=>preview({type:'action',action:{type:'advance'}})),button('Maps & terrain',()=>go('maps')),button('Table & exercise',()=>go('table')),button(opponent?.context?'Return to active exercise':'Play against AI',()=>void opponent?.activate())];
   }
   presentPanel(panel);
 }
 function presentPanel(panel:TablePanel) {
   lastPanel=panel;table.setScenarioPanel(panel);
   if(panelPreview){
+    if(!new URL(location.href).searchParams.has('palette-review')) (opponentRoot.hidden?root:opponentRoot).append(panelPreview);
     panelPreview.innerHTML=`<h3>Controller panel preview</h3><strong>${esc(panel.title)}</strong><p>${panel.lines.map(esc).join('<br>')}</p>`;
     const surface=document.createElement('div');surface.className='spatial-preview-surface';panelPreview.append(surface);const canvas=document.createElement('canvas');drawPanel(canvas,panel);surface.append(canvas);
     for(const target of panelTargets(panel)){const b=document.createElement('button');b.textContent=target.label;b.setAttribute('aria-label',target.label);b.disabled=target.enabled===false;b.onclick=target.run;b.style.cssText=`left:${target.x/10.24}%;top:${target.y/12.8}%;width:${target.width/10.24}%;height:${target.height/12.8}%`;if(target.selected)b.setAttribute('aria-pressed','true');
@@ -352,9 +366,9 @@ const grabBindings:GrabBindings={
 };
 
 function cancel() {if(busy||!ready)return;if(draft||grab.active)capture.event('cancel',{action:draft?.type==='action'?draft.action.type:'preview'});table.cancelGrab();grab.cancel();clearDraft();placement=false;status('Preview cancelled. No movement or cargo was spent.');render();}
-  const [catalog,profiles,research,regional,shoal,senkaku]=await Promise.all([json<PieceCatalog>(piecesUrl),json<PieceRules>(rulesUrl),json<{equipment:Equipment[]}>(equipmentUrl),json<Geography>('/terrain/pacific/regional-land.json'),json<Geography>('/terrain/pacific/shoal-detail.json'),json<Geography>('/terrain/pacific/senkaku-detail.json')]);
-  rules=new GeographicRules(catalog,profiles,scenarioMaps({regional,shoal,senkaku}));equipment=new Map(research.equipment.map(e=>[e.id,e]));
-  for(const d of catalog.pieces)visuals.set(d.id,unitVisual(d,equipment.get(d.equipmentId)));
+  const [catalog,profiles,research,regional,shoal,senkaku]=await Promise.all([loading.measure('Piece catalog',()=>json<PieceCatalog>(piecesUrl)),loading.measure('Movement profiles',()=>json<PieceRules>(rulesUrl)),loading.measure('Equipment reference',()=>json<{equipment:Equipment[]}>(equipmentUrl)),loading.measure('Scenario geography',()=>json<Geography>('/terrain/pacific/regional-land.json')),json<Geography>('/terrain/pacific/shoal-detail.json'),json<Geography>('/terrain/pacific/senkaku-detail.json')]);
+  rules=await loading.measure('Build six rules maps',()=>new GeographicRules(catalog,profiles,scenarioMaps({regional,shoal,senkaku})));equipment=new Map(research.equipment.map(e=>[e.id,e]));
+  await loading.measure('Classify miniatures',()=>{for(const d of catalog.pieces)visuals.set(d.id,unitVisual(d,equipment.get(d.equipmentId)));});
   table.setGrabBindings(grabBindings);
   const mapName=(id:string)=>{const m=rules.map(id);return m.view.id==='focus'?m.region.focusName:m.region.name;};
   $('map-select').innerHTML=options.mapIds.map(id=>`<option value="${id}">${esc(mapName(id))}</option>`).join('');
@@ -375,17 +389,19 @@ function cancel() {if(busy||!ready)return;if(draft||grab.active)capture.event('c
   document.addEventListener('keydown',e=>{if(e.key==='Escape')cancel();if(e.key==='Enter'&&e.target===table.renderer.domElement){e.preventDefault();void commit();}});
   Object.defineProperty(window,'__playableTerrain',{value:{get diagnostics(){return{state:structuredClone(envelope),mapId:map.id,selected:active,selectedTile:selectedTile?.id,preview:draftPreview?structuredClone(draftPreview):null,placement,ready,interactionBuild:'controller-grab-2',input:table.inputDiagnostics,controllerPanel:lastPanel?{title:lastPanel.title,lines:lastPanel.lines,buttons:panelTargets(lastPanel).map(b=>({label:b.label,enabled:b.enabled!==false}))}:null,...table.stats};}}});
   root.querySelectorAll('details').forEach(detail=>detail.addEventListener('toggle',()=>{if(detail.open&&/Rules|controls/.test(detail.querySelector('summary')?.textContent??''))capture.event('help');}));
-  await capture.join();
-  await openMap(options.mapId);
-  opponent=await initOpponentWorkspace({
-    root:opponentRoot,map:id=>rules.map(id),currentMap:()=>map.id,
+  await loading.measure('Join exercise database',()=>capture.join());
+  await loading.measure('Restore map assembly',async()=>{await openMap(options.mapId);if(!ready)throw new Error(message);});
+  opponent=await loading.measure('AI catalog / saved scenario',()=>initOpponentWorkspace({
+    root:opponentRoot,map:id=>rules.map(id),currentMap:()=>map.id,contextChanged:renderContext,
     switchMap:async id=>{opponentMapSwitch=true;try{options.showMap(id);}finally{opponentMapSwitch=false;}await openMap(id);},selectTile:options.selectTile,focusTile:options.focusTile,
     setPieces:(...args)=>table.setScenarioPieces(...args),setPanel:presentPanel,exitXR:()=>table.exit(),
     show:()=>{table.cancelGrab();clearDraft();placement=false;bar.hidden=true;root.hidden=true;original.hidden=true;opponentRoot.hidden=false;$('pieces-tab').setAttribute('aria-pressed','false');$('terrain-tab').setAttribute('aria-pressed','false');$('opponent-tab').setAttribute('aria-pressed','true');options.openMenu();},
     hide:()=>menuTab(true),
-  });
+  }));
   Object.defineProperty(window,'__opponent',{value:{get diagnostics(){return opponent?.diagnostics;}}});
   if(opponent.active)opponent.render();
+  renderContext();
+  await loading.finish();
   const requested=new URL(location.href).searchParams.get('piece');
   const requestedForce=new URL(location.href).searchParams.get('force');
   if(requestedForce==='red'||requestedForce==='blue')$<HTMLSelectElement>('force').value=requestedForce;

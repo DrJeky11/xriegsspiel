@@ -1,4 +1,5 @@
 import './style.css';
+import { loading } from '../loading.ts';
 import { initPlayableWorkspace } from '../play/workspace.ts';
 import type { PlayWorkspace } from '../play/workspace.ts';
 import { initTerrainMenu, terrainMenuControls, terrainMenuHeading } from '../terrain-menu.ts';
@@ -78,9 +79,9 @@ for(const [id,mode] of [['vr','immersive-vr'],['mr','immersive-ar']] as const) {
 async function start() {
   try {
     const fetchGeo=async(name:string):Promise<Geography>=>{const response=await fetch(`/terrain/pacific/${name}.json`);if(!response.ok)throw new Error(`Could not load ${name} (${response.status}).`);return response.json();};
-    const [regional,shoal,senkaku]=await Promise.all([fetchGeo('regional-land'),fetchGeo('shoal-detail'),fetchGeo('senkaku-detail')]);data={regional,shoal,senkaku};
+    const [regional,shoal,senkaku]=await loading.measure('Pacific terrain data',()=>Promise.all([fetchGeo('regional-land'),fetchGeo('shoal-detail'),fetchGeo('senkaku-detail')]));data={regional,shoal,senkaku};
     const params=new URLSearchParams(location.search);const index=REGIONS.findIndex(r=>r.id===params.get('region'));
-    loadMap(index<0?0:index,params.get('scale')==='focus');
+    await loading.measure('Build and draw Pacific terrain',()=>loadMap(index<0?0:index,params.get('scale')==='focus'));
     play=await initPlayableWorkspace({
       mapId:map!.id,mapIds:REGIONS.flatMap(r=>[`${r.id}/overview`,`${r.id}/focus`]),view:table,
       showMap:id=>{const [region,scale]=id.split('/');loadMap(REGIONS.findIndex(r=>r.id===region),scale==='focus');},
@@ -89,7 +90,7 @@ async function start() {
       coordinates:id=>map!.cells.find(c=>c.id===id),tileAt:(q,r)=>map!.byKey.get(`${q},${r}`)?.id,openMenu:()=>menu.setOpen(true),
       terrainActions:()=>[{label:menu.labelsVisible?'Hide place labels':'Show place labels',run:()=>{$('map-labels').click();}},{label:'Recenter map',run:()=>table.reset()}],
     });
-  } catch(error) {$('status').textContent=error instanceof Error?error.message:'Could not load terrain.';}
+  } catch(error) {loading.fail(error);$('status').textContent=error instanceof Error?error.message:'Could not load terrain.';}
 }
 void start();
 // Read-only diagnostics for reproducible desktop and headset verification.

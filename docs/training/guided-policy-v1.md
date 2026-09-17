@@ -57,7 +57,7 @@ With the application running, open:
 /pacific.html?region=palawan-spratlys&scale=focus&sensei=pilot
 ```
 
-1. Choose **Menu → Play against AI → SPR-H01 · Second Thomas Resupply**. Start either side using the baseline or Short window variant.
+1. Choose **Menu → Play against AI → SPR-H01 · Second Thomas Resupply**. Choose **Start AI scenario** with either side and the baseline or Short window variant, read the mission briefing, then select **Begin guided planning**.
 2. Use **Ask for a teaching hint**. Read the question as well as the explanation. The **Evidence** disclosure shows rule/event identifiers.
 3. Read the mission briefing, then acknowledge it. This is self-report, not a comprehension score. Request another hint after previewing or drafting an order, or after a round resolves.
 4. In the Quest controller panel, use **Exercise controls → Sensei teaching hint**. Route, plan and review pages also offer the action when space permits. The same text is paginated, with **More explanation**, **Another teaching hint** and **Back to exercise** controls.
@@ -118,6 +118,8 @@ node scripts/evaluate-guided-policy.mjs --data output/guided-policy-next/data --
 Scripts write only to their output directories; they do not automatically replace the bundled checkpoint or tracked reports. Review a candidate's evidence together, then copy its checkpoint and matching reports as a versioned change and run the relevant checks. Altering features, topic definitions, rules or source behavior requires regenerating and reevaluating the corresponding data/model; changing prose requires content review as well.
 
 ## Verification and limits
+
+**Integration check, 2026-09-16:** combined this pilot with the Quest mission-guidance/map-continuity fixes. All **121 tests passed** in one run, TypeScript checking and an isolated production build passed, and the evaluator replayed all 360 episodes with 3,822/3,822 matching predictions. Browser/controller checks covered mission briefing → guided planning → Sensei, then regional assembly browsing → Return to active exercise → Sensei again. The scenario ID, revision and ship state were unchanged across the map return; no browser console errors were reported. The existing bundle-size warning and physical-headset/educational evaluation limits remain. Earlier evidence below describes the initial pilot before integration.
 
 - **113 tests passed across verification runs:** the full suite passed 111 tests; two HTTP files initially could not bind a local port inside the sandbox. Both passed when rerun with local-port access. No tests were skipped. Six new tests cover the checkpoint, version/request gating, hidden information, applicability across complete games, invalid-model fallback and review evidence.
 - `npm run build` passed, including TypeScript checking. Vite still warns about a large frontend chunk; the model is bundled even when the optional UI is off.
