@@ -2,6 +2,8 @@
 
 Implemented 2026-09-16 in the existing Three.js/TypeScript WebXR application. All eight authored maritime scenarios support complete matches against either side, with Novice, Standard and Advanced policies. These are original abstract games; this is not a trained military commander, a CPE integration, or evidence of teaching effectiveness.
 
+**Sensei follow-up, 2026-09-16:** an optional locally trained teaching-hint selector now supports Second Thomas Resupply. Add `sensei=pilot` to the Pacific workspace URL; use **Ask for a teaching hint**, or **Exercise controls → Sensei teaching hint** in the controller panel. The [training runbook](training/guided-policy-v1.md) records launch, evaluation and limitations. This policy selects explanation topics; the opponent continues to use the authored planner described below.
+
 ## Play
 
 1. Run `npm run dev`, or `npm run build` followed by `npm start`. Open Pacific or CENTCOM and choose **Menu → Play against AI**.
@@ -53,6 +55,8 @@ Select your ship and a highlighted water hex, or choose **Movement destinations 
 The [geographic rules](ai-geographic-rules.md) define water passability, tick-by-tick traffic, four-point movement, adjacent interception, escort assignment, offshore transfer and version compatibility. These are authored game rules, not real-world performance or legal conclusions.
 
 ## Verification and limits
+
+**Owner MR trial, 2026-09-16, 7:45 p.m. EDT:** the owner started Second Thomas Resupply as Blue against Standard AI with the Short window variant, resolved two rounds and stopped at round 3 planning. The [test review](quest-test-2026-09-16-1945.md) records accepted commands and positive table/menu/visual feedback alongside major gaps in first-time orientation, results explanation and map/mode continuity. This is a partial physical-headset trial, not a complete-match or learning-effectiveness validation.
 
 The geographic update has separate evidence from the first sector prototype. Automated checks cover all eight native deployments, water-only paths and budgets, native render coordinates, Sierra Madre's landmark, spatial interception and bypass routes, escort protection, finite delays, objective eligibility, simultaneous collisions, private-information invariance, deterministic play at every difficulty/role, and the worker boundary. HTTP tests create all eight geographic scenarios in both roles, finish/export them, restart the service, and check that all six map assemblies remain unchanged. Legacy sector and capture/replay checks remain in the full suite.
 

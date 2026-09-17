@@ -19,3 +19,6 @@
 .opponent-controls details { border-top:1px solid #405c63;padding-top:12px;margin:14px 0; }.opponent-controls summary { cursor:pointer;font-size:12px; }
 .op-saved { width:100%;display:block;text-align:left;margin:8px 0; }
 .workspace-tabs { flex-wrap:wrap; }.workspace-tabs button { flex:1 1 30%; }
+.op-orientation,.op-guide,.op-round-summary { border-left:3px solid #d6c49e;padding:4px 14px;margin:16px 0;background:#203a43; }
+.op-mission { color:#eed5a4; }
+.op-location { color:#c1d3cc; }

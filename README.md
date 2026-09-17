@@ -17,7 +17,7 @@ Open [Pacific](http://127.0.0.1:5173/pacific.html) or [CENTCOM](http://127.0.0.1
 
 Open **Menu → Pieces & orders → Add pieces** to search the catalog, choose Red/China or Blue/United States, select a record and place an instance. Preview a destination, then confirm. **Terrain & regions** retains the original geographic inspection, labels, layer controls and exports.
 
-All six maps retain their own pieces, year, turn, budgets and history. Switching maps resumes that map's exercise. New maps start empty in 2026; **New exercise** resets only the current map after a preview and confirmation. Existing Geographic tabletop saves migrate to their matching map without modifying the old journal.
+All six maps retain their own pieces, year, turn, budgets and history. Switching maps resumes that map's exercise. New maps start empty in 2026; **New map assembly** resets only the current map after a preview and confirmation. Existing Geographic tabletop saves migrate to their matching map without modifying the old journal.
 
 With an authorized Quest connected by USB, run `npm run quest` (Pacific), or `QUEST_PATH=/centcom.html npm run quest`. Choose **Enter VR** or **Enter MR** in Quest Browser. Controller panels provide catalog search with a spatial keyboard, Red/Blue assignment, placement, movement, cargo, turns, region selection and terrain/table controls. Changing between the two major workspaces exits immersion; reenter in the destination. Full headset usability still needs the hands-on checklist.
 
@@ -33,7 +33,11 @@ Every new order is captured in a local SQLite exercise database. Open **Pieces &
 
 Choose **Menu → Play against AI** in either workspace. Play either side in all eight maritime scenarios against **Novice, Standard or Advanced** opposition. Move visible Blue and Red ships on the existing water hexes, preview routes, build and seal orders, review position-dependent interception, resume saved runs, contest outcomes and export the completed replay. The Quest controller panel supports the same play cycle. See the [AI controls, rules, evaluation and limitations](docs/ai-opponent.md).
 
+New scenarios open a mission briefing with optional first-round guidance. Round summaries explain recorded outcomes, while **Return to active exercise** restores the scenario map after assembly browsing. See the [Quest trial fixes and targeted retest](docs/quest-test-fixes-2026-09-16.md).
+
 The opponent uses authored priorities and bounded search. It has no access to your draft or private information and uses the same rules at every difficulty. Second Thomas Resupply offers an explicit **Short window** variant for tighter opposition, separate from difficulty. Automated and browser checks pass; physical Quest usability and human balance trials remain pending.
+
+An optional **Sensei pilot** now selects teaching hints for Second Thomas Resupply using a small locally trained policy. Add `sensei=pilot` to the workspace URL, then request a hint during the exercise. The owner and an instructor will evaluate the explanations. See the [training results, review packet and launch instructions](docs/training/guided-policy-v1.md); agreement with synthetic labels does not establish learning benefit.
 
 ## Authored scenario library
 
@@ -67,6 +71,8 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 | Our own simulation, orders, resources, information, and referee design | [Simulation blueprint](docs/design/simulation-blueprint.md) |
 | MCU cloud context, game-playing AI, APIs, analytics, and an AI Sensei | [Cloud and AI Sensei study](docs/research/ai-sensei-and-wargaming-cloud.md) |
 | Adjustable Red opposition, search versus trained models, current gaps and measured feasibility | [Opponent research](docs/research/opponent-ai.md) |
+| Teaching-first AI Sensei, laptop training, difficulty calibration, and required owner input | [Agent training plan](docs/design/agent-training-plan.md) |
+| Trained guided-exercise hint policy, pilot controls and evaluator packet | [First training run](docs/training/guided-policy-v1.md) |
 | How Command and other wargames define victory; proposed first opposed scenario | [Objectives and victory](docs/research/objectives-and-victory.md) |
 | Capturing decisions, comparing exercises, and preparing future AI datasets | [Data-capture design](docs/design/data-capture.md) |
 | Supplied tactics references, red-team methods, and empirical education research | [Dataset review](docs/research/dataset-review.md), [original documents](docs/datasets/README.md) |
@@ -86,7 +92,7 @@ Read the [confirmed product requirements](docs/product-requirements.md), the [ma
 - Build our own platform, using CPE as a reference. CPE software access and integration are outside the requested direction.
 - Start with 2–4 players using headsets or browsers and work through the headset tabletop experience first. Passthrough versus fully virtual surroundings remains open.
 - Preserve the owner's long-term AI Sensei vision through agent development, integration, and analytics. The API, headless runner, and teaching roadmap are **proposals**; the reported institutional cloud capacity is not a first-build requirement.
-- Provide adjustable opposition. The [playable opponent](docs/ai-opponent.md) now supports both roles, three planning budgets and all eight scenarios; `npm run evaluate:opponent` runs policy comparisons. No learned model is trained. The earlier [opponent study](docs/research/opponent-ai.md) remains the design rationale.
+- Provide adjustable opposition. The [playable opponent](docs/ai-opponent.md) now supports both roles, three planning budgets and all eight scenarios; `npm run evaluate:opponent` runs policy comparisons. No learned game-playing model is trained; the separate Sensei hint selector has a first trained checkpoint. The earlier [opponent study](docs/research/opponent-ai.md) remains the design rationale.
 - Treat data capture as a core pillar for trends, analysis, and future AI training. The owner approved phases 1–3 of the [implementation plan](docs/design/data-capture-implementation-plan.md). Local transactional capture, historical decision review and initial reports are implemented and verified through browser checks and an owner-confirmed Quest movement trial; [the operating guide](docs/exercise-database.md) records the evidence and remaining headset usability checks. Controlled AI dataset jobs and central hosting remain future work.
 
 Research baseline: **15 September 2026**. Recheck platform documentation and game editions before implementation. Future contributors should read [AGENTS.md](AGENTS.md).

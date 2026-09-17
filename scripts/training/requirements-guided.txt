@@ -1,0 +1,2 @@
+# Verified with Python 3.14.6 / macOS ARM64; already present on the training host.
+numpy==2.5.1

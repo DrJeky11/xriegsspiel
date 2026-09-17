@@ -12,6 +12,9 @@
     "test": "node --test tests/*.test.ts",
     "research:opponent": "node scripts/probe-opponent.mjs",
     "evaluate:opponent": "node scripts/evaluate-opponent.mjs",
+    "generate:guided": "node scripts/generate-guided-training.mjs",
+    "train:guided": "python3 scripts/train-guided-policy.py",
+    "evaluate:guided": "node scripts/evaluate-guided-policy.mjs",
     "quest": "node scripts/quest.mjs"
   },
   "dependencies": { "three": "0.186.0" },

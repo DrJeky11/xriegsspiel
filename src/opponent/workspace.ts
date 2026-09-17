@@ -1,4 +1,5 @@
 import './workspace.css';
+import { availability, missionProgress, missionBrief, planGuidance, firstRoundGuide, roundSummary } from './guidance.ts';
 import { batchError, opposite, orderCost, orderKey, describeOrder } from './types.ts';
 import type { Candidate, Difficulty, Order, Side } from './types.ts';
 import type { Scenario } from '../../scenarios/scoring.ts';
@@ -9,14 +10,17 @@ import type { TerrainMap } from '../pacific/terrain.ts';
 import { installNavigation, hasNavigation, tileLabel } from './geography.ts';
 import { vesselBoard } from '../scenario/navigation.ts';
 import type { GrabBindings } from '../play/spatial-palette.ts';
-import { scenarioLayout } from './layout.ts';
+import { scenarioLayout, activeExerciseLocator } from './layout.ts';
+import { guidedHint } from '../sensei/model.ts';
+import { supportsGuide } from '../sensei/guided-policy.ts';
+import type { GuideDecision, Lesson } from '../sensei/guided-policy.ts';
 
 interface SavedRun { id: string; playerToken: string; refereeToken?: string; title: string; mapId: string }
 interface Options {
   root: HTMLElement; map: (id: string) => TerrainMap; currentMap: () => string;
   switchMap: (id: string) => Promise<void>; selectTile: (id: string) => void; focusTile: (id: string) => void;
   setPieces: (pieces: TablePiece[], reachable: string[], path: string[], select: (id: string) => void) => void;
-  setPanel: (panel: TablePanel) => void; show: () => void; hide: () => void; exitXR: () => Promise<void>;
+  setPanel: (panel: TablePanel) => void; contextChanged: () => void; show: () => void; hide: () => void; exitXR: () => Promise<void>;
 }
 type Brief = Scenario & { objectives: Record<Side, string>; guidance: string[] };
 const storageKey = 'xriegsspiel-opponent-runs/1';
@@ -31,10 +35,15 @@ export async function initOpponentWorkspace(options: Options) {
   let saved: SavedRun[] = []; try { saved = JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { /* Empty local library if storage is unavailable. */ }
   let scenarioId = 'SPR-H01', difficulty: Difficulty = 'standard', humanSide: Side = 'blue', asReferee = false, shortWindow = false;
   let reviewRound: number | null = null;
+  let orientation = false, guided = true;
+  const senseiPilot = new URL(location.href).searchParams.get('sensei') === 'pilot';
+  let hintState: {key: string; decision: GuideDecision} | null = null;
+  const hintHistory = new Map<string, Lesson[]>(), briefAcknowledged = new Set<string>();
+  const hintLog: Record<string, unknown>[] = [];
   let movePreview: Candidate | null = null, held: string | null = null;
   let actionFilter: 'mission' | 'move' = 'move';
   let selected: string | null = null, group = 'Staff', draft: Order[] = [], confirm = false, pending: OpponentCommand | null = null;
-  let message = 'Choose a scenario and the side you want to play.', xrPage: 'home' | 'actions' | 'plan' | 'brief' | 'review' | 'reports' | 'controls' | 'saved' | 'route' = 'home', xrIndex = 0, fetchGeneration = 0;
+  let message = 'Choose a scenario and the side you want to play.', xrPage: 'home' | 'actions' | 'plan' | 'brief' | 'review' | 'reports' | 'controls' | 'saved' | 'route' | 'orientation' | 'summary' | 'sensei' = 'home', xrIndex = 0, fetchGeneration = 0;
   const root = options.root;
   const api = async <T>(path: string, body?: unknown, referee = asReferee): Promise<T> => {
     const query = credentials ? `?run=${credentials.id}&side=${view?.observation.side ?? humanSide}` : '';
@@ -46,8 +55,42 @@ export async function initOpponentWorkspace(options: Options) {
   const brief = (): Brief => view ? { ...view.observation.scenario, objectives: view.observation.objectives, guidance: view.observation.guidance } : catalog.find(s => s.id === scenarioId)!;
   const persist = () => { try { localStorage.setItem(storageKey, JSON.stringify(saved)); } catch { message = 'Browser storage unavailable. Keep the invitation link to resume this run.'; } };
   const canOrder = () => !!view && online && !busy && !pending && !view.paused && !view.contest && view.phase === 'planning' && !view.sealed[view.observation.side] && (view.observation.side === view.humanSide || asReferee && view.takeover);
+  const hintSession = () => `${view?.id}:${view?.observation.side}`;
+  const canHint = () => senseiPilot && !!view && supportsGuide(view.observation) && online && !busy && !pending && !view.paused && !view.contest;
+  const hintKey = () => JSON.stringify([view?.id, view?.revision, view?.observation.side, draft, movePreview?.id, briefAcknowledged.has(hintSession())]);
+  const currentHint = () => hintState?.key === hintKey() ? hintState.decision.hint : null;
+  function requestHint() {
+    if (!view || !canHint()) return;
+    const key=hintSession(), seen=hintHistory.get(key)??[];
+    const context={phase:view.phase, mode:'practice' as const, requested:true, briefRead:briefAcknowledged.has(key),
+      draft:view.phase==='planning'?structuredClone(draft):[], previewId:movePreview?.id, seen:[...seen]};
+    const decision=guidedHint(view.observation,context);
+    hintState={key:hintKey(),decision};
+    if(decision.hint){
+      hintHistory.set(key,[...seen,decision.hint.id].slice(-8));
+      hintLog.push({id:crypto.randomUUID(),time:new Date().toISOString(),runId:view.id,observationId:view.observationId,
+        revision:view.revision,side:view.observation.side,round:view.observation.round,context,decision});
+      if(hintLog.length>200)hintLog.shift();
+    }
+    go('sensei');
+  }
+  function exportHints() {
+    const blob=new Blob([JSON.stringify({schema:'guided-pilot-review/1',trainingPermission:'unspecified',
+      scope:'Last 200 requested hints in this page session; not a complete assistance record.',records:hintLog},null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='guided-pilot-review.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
   const show = () => { active = true; options.show(); render(); };
-  const hide = () => { active = false; options.hide(); };
+  const mapName = (id: string) => { const m = options.map(id); return m.view.id === 'focus' ? m.region.focusName : m.region.name; };
+  const locationBrief = () => { const m = options.map(brief().mapId); return `${mapName(m.id)}${m.view.id === 'focus' ? ' within ' + m.region.name : ''} · ${Math.round(m.view.widthKm)} × ${Math.round(m.view.heightKm)} km · ${m.view.hexKm} km hex spacing. ${m.view.id === 'focus' ? 'This close-up uses a separate grid from the regional assembly. ' : ''}Map assembly has its own saved pieces.`; };
+  async function activate() {
+    if (busy) return;
+    if (!view) { show(); return; }
+    busy = true; fetchGeneration++; movePreview = null; held = null;
+    try { await displayMap(view.observation.scenario.mapId); show(); }
+    catch (error) { status(String(error)); }
+    finally { busy = false; render(); options.contextChanged(); }
+  }
+  const hide = () => { if (busy) return; active = false; movePreview = null; held = null; options.hide(); };
   const status = (text: string) => { message = text; render(); };
   const pathFor = (mapId: string) => mapId.includes('/') ? `/pacific.html?region=${mapId.split('/')[0]}&scale=${mapId.endsWith('focus') ? 'focus' : 'overview'}` : `/centcom.html?region=${mapId}`;
   async function displayMap(mapId: string) {
@@ -64,6 +107,7 @@ export async function initOpponentWorkspace(options: Options) {
     if(firstView){selected=next.observation.assets.find(a=>a.side===next.observation.side&&a.ready&&a.tileId)?.id??null;group=selected??'Staff';}
     if (!next.observation.candidates.some(c => c.group === group)) group = next.observation.candidates[0]?.group ?? 'Staff';
     online = true;
+    options.contextChanged();
   }
   async function refresh() {
     if (!credentials || busy) return;
@@ -72,27 +116,27 @@ export async function initOpponentWorkspace(options: Options) {
     catch (error) { if (ticket !== fetchGeneration) return; online = false; status(String(error)); }
   }
   async function resume(run: SavedRun) {
-    if (busy) return; credentials = run; asReferee = false; view = null; draft = []; pending = null; confirm = false; busy = true; show();
-    try { accept(await api<RunView>('state', undefined, false)); await displayMap(view!.observation.scenario.mapId); const first=view!.observation.assets.find(a=>a.id===selected);if(first?.tileId)options.focusTile(first.tileId); message = 'Exercise restored. Your saved map assembly remains separate.'; xrPage = 'home'; }
+    if (busy) return; fetchGeneration++; credentials = run; asReferee = false; view = null; draft = []; pending = null; confirm = false; busy = true; show();
+    try { accept(await api<RunView>('state', undefined, false)); await displayMap(view!.observation.scenario.mapId); const first=view!.observation.assets.find(a=>a.id===selected);if(first?.tileId)options.focusTile(first.tileId); message = 'Exercise restored. Your saved map assembly remains separate.'; orientation = false; xrPage = view!.phase === 'planning' ? 'home' : 'summary'; show(); root.scrollTop = 0; }
     catch (error) { message = String(error); } finally { busy = false; render(); }
   }
   async function start() {
-    if (busy) return; busy = true; message = 'Preparing the opponent’s sealed plan…'; render();
+    if (busy) return; busy = true; fetchGeneration++; message = 'Preparing the opponent’s sealed plan…'; render();
     try {
       const created = await api<{ playerToken: string; refereeToken: string; state: RunView }>('create', { scenarioId, difficulty, humanSide, ...(scenarioId === 'SPR-H01' && shortWindow ? { variant: 'short-window/1' } : {}) });
       const s = catalog.find(s => s.id === scenarioId)!;
       credentials = { id: created.state.id, playerToken: created.playerToken, refereeToken: created.refereeToken, title: s.title, mapId: s.mapId };
       saved.unshift(credentials); persist(); asReferee = false; accept(created.state); draft = []; pending = null; confirm = false; selected = created.state.observation.assets.find(a=>a.side===humanSide&&a.ready&&a.tileId)?.id ?? null; group = selected ?? 'Staff'; movePreview = null; held = null;
       await displayMap(s.mapId); const first=view!.observation.assets.find(a=>a.id===selected); if(first?.tileId)options.focusTile(first.tileId); const url = new URL(location.href); url.searchParams.set('opponent', credentials.id); history.replaceState(null, '', url);
-      message = 'Opponent ready. Build a plan using up to 3 CP, then seal your orders.'; xrPage = 'home';
+      message = 'Read your mission, then plan the first round.'; orientation = true; guided = true; xrPage = 'orientation'; xrIndex = 0; show(); root.scrollTop = 0;
     } catch (error) { message = String(error); } finally { busy = false; render(); }
   }
   async function send(operation: OpponentOperation) {
     if (!credentials || !view || busy) return;
     busy = true; confirm = false; fetchGeneration++; pending ??= { id: crypto.randomUUID(), revision: view.revision, operation,observationId:view.observationId }; render();
-    try { const response = await api<{ state: RunView }>('command', pending); accept(response.state); pending = null; draft = []; message = view!.phase === 'review' ? 'Round resolved. Review events before opening the next round.' : 'Saved.'; xrPage = view!.phase === 'planning' ? 'home' : 'review'; }
+    try { const response = await api<{ state: RunView }>('command', pending); accept(response.state); pending = null; draft = []; message = view!.phase === 'review' ? 'Round resolved. Review events before opening the next round.' : 'Saved.'; xrPage = view!.phase === 'planning' ? 'home' : 'summary'; xrIndex = 0; }
     catch (error) { message = `${String(error)} Use Retry to resend the identical command, or Refresh to inspect the saved state.`; }
-    finally { busy = false; render(); }
+    finally { busy = false; render(); root.querySelector(view!.phase === 'planning' ? '.op-orders' : '.op-round-summary')?.scrollIntoView({block:'start'}); }
   }
   function add(c: Candidate) { if (!canOrder()) return; const error = draftError(c); if (error) return status(error); draft.push(c.order); movePreview = null; confirm = false; status(`${c.label} added to the plan. ${3 - draft.reduce((n, o) => n + orderCost(o), 0)} CP remain.`); }
   function choose(id: string) { if (id.startsWith('sector:')) return; selected = id; movePreview = null; const a = view?.observation.assets.find(a => a.id === id); group = a?.side === view?.observation.side ? id : 'Staff'; actionFilter=view?.observation.candidates.some(c=>c.group===group&&['deliver','rescue','handover'].includes(c.order.type))?'mission':'move'; xrPage = 'actions'; xrIndex = 0; render(); }
@@ -102,7 +146,7 @@ export async function initOpponentWorkspace(options: Options) {
   function routeTo(id: string | null, asset = selected) { return view?.observation.candidates.find(c=>c.order.type==='move'&&c.order.asset===asset&&c.order.target===id); }
   function label(order: Order) { return order.type==='move'&&view?.observation.geography ? `${order.asset} → hex ${tileLabel(view.observation.geography.mapId,order.target)}` : describeOrder(order); }
   function button(label: string, run: () => void, enabled = true): PanelButton { return { label, run, enabled: enabled && !busy }; }
-  function go(page: typeof xrPage) { xrPage = page; xrIndex = 0; render(); }
+  function go(page: typeof xrPage) { xrPage = page; xrIndex = 0; render(); if (page === 'orientation') root.scrollTop = 0; }
   async function invite() {
     if (!credentials) return;
     const link = `${location.origin}${pathFor(credentials.mapId)}&opponent=${credentials.id}#team=${encodeURIComponent(credentials.playerToken)}`;
@@ -121,35 +165,49 @@ export async function initOpponentWorkspace(options: Options) {
     if (!view?.takeover || !asReferee) return;
     view.observation.side = opposite(view.observation.side); draft = []; confirm = false; pending = null; await refresh(); render();
   }
-  function setup() { if(busy)return; view = null; credentials = null; draft = []; confirm = false; pending = null; asReferee = false; xrPage = 'home'; const url = new URL(location.href); url.searchParams.delete('opponent'); history.replaceState(null, '', url); message = 'Start another run; earlier exercises remain in Saved runs.'; render(); }
+  function setup() { if(busy)return; fetchGeneration++; view = null; credentials = null; draft = []; confirm = false; pending = null; asReferee = false; orientation = false; xrPage = 'home'; const url = new URL(location.href); url.searchParams.delete('opponent'); history.replaceState(null, '', url); message = 'Start another run; earlier exercises remain in Saved runs.'; render(); options.contextChanged(); }
 
   function render() {
+    options.contextChanged();
     if (!active) return;
     const o = view?.observation, s = brief(), groups = [...new Set(o?.candidates.filter(c => c.order.type !== 'hold').map(c => c.group) ?? [])];
     const used = draft.reduce((n, order) => n + orderCost(order), 0);
     const summary = view ? `${title(difficulty)} opponent · ${o!.side === 'blue' ? 'Blue' : 'Red'} player · Round ${o!.round}/${s.rounds}${o!.variant ? ' · Short window' : ''}` : 'Eight maritime exercises';
-    const progress = o ? Object.entries(o.metrics).filter(([key]) => !/^(blue|red)_/.test(key)) : [];
-    const roundToReview = reviewRound ?? o?.round;
+    const progress = o ? Object.entries(o.metrics).filter(([key]) => !/^(blue|red)_/.test(key) && !(s.id.startsWith('SPR') && key === 'delivered')) : [];
+    const roundToReview = reviewRound ?? (view?.phase === 'planning' ? view.review.at(-1)?.round ?? o?.round : o?.round);
     const record = view?.review.find(r => r.round === roundToReview);
-    root.innerHTML = `<p class="eyebrow">Play against AI</p><h2>${esc(view ? s.title : 'Choose your opposition')}</h2><p class="muted">${esc(summary)}</p><p id="op-status" role="status" aria-live="polite">${esc(message)}</p>
-    ${view ? `<div class="op-metrics"><b>${3 - used} CP in draft</b><span>${o!.pressure}/${s.pressureTokens} pressure left</span><span>${view.phase === 'planning' ? 'Sealed planning' : view.phase === 'review' ? 'Result review' : 'Exercise complete'}${view.paused ? ' · PAUSED' : ''}</span></div><p><strong>Your mission</strong><br>${esc(o!.objectives[o!.side])}</p>
+    const hint=currentHint();
+    const resolved = view ? roundSummary(view, roundToReview!) : null;
+    const guidance = o ? firstRoundGuide(o, draft) : null;
+    root.innerHTML = `<p class="eyebrow">AI scenario${view ? ` · run ${esc(view.id.slice(0,8))}` : ""}</p><h2>${esc(view ? s.title : 'Choose your opposition')}</h2><p class="muted">${esc(summary)}</p><p id="op-status" role="status" aria-live="polite">${esc(message)}</p>
+    ${view ? `${orientation ? '' : `<p class="op-location">${esc(locationBrief())}</p>`}<p class="op-mission"><b>${esc(missionProgress(o!))}</b></p>${orientation ? `<section class="op-orientation"><h3>Mission briefing</h3>${missionBrief(o!, locationBrief()).map(p=>`<h3>${esc(p.title)}</h3><p>${esc(p.text)}</p>`).join('')}<button id="op-begin" class="op-primary">Begin guided planning</button><button id="op-skip">Plan without guidance</button></section>` : ''}<div class="op-metrics"><b>${3 - used} CP in draft</b><span>${o!.pressure}/${s.pressureTokens} pressure left</span><span>${view.phase === 'planning' ? 'Sealed planning' : view.phase === 'review' ? 'Result review' : 'Exercise complete'}${view.paused ? ' · PAUSED' : ''}</span></div><p><strong>Your mission</strong><br>${esc(o!.objectives[o!.side])}</p>
       ${view.result ? `<section class="op-result"><p class="eyebrow">${esc(view.result.outcome.replaceAll('_', ' '))}</p><h2>${view.result.scores?.blue.total} Blue / ${view.result.scores?.red.total} Red</h2><p>${esc(view.result.reason)}</p><p>Game outcome and diagnostic points are separate from learning assessment.</p></section>` : ''}
       <p class="op-progress">${progress.map(([key, value]) => `<span><b>${esc(title(key.replaceAll('_', ' ')))}</b> ${value}/${s.metrics[key].max}</span>`).join('')}</p>
       <details id="op-brief"><summary>Briefing, roles & rules</summary><p><b>Blue:</b> ${esc(s.actors.blue)}<br><b>Red:</b> ${esc(s.actors.red)}</p><p>${esc(o!.objectives[opposite(o!.side)])}</p><ul>${o!.guidance.map(g => `<li>${esc(g)}</li>`).join('')}</ul><p>Three CP and at most three orders per side each round. Each mobile asset acts once. Prerequisites use the start of the round. Orders are sealed; both sides resolve together. Medical and rescue actions are protected. Unused effort expires. Both sides’ decision records are disclosed after completion.</p><p>Original abstract exercise · scenario ${s.version} · ${s.rulesVersion}${o!.variant ? ' · variant ' + o!.variant : ''}. ${o!.geography ? 'Ships move on native water hexes. Movement points and objective areas are authored game rules.' : 'Legacy sector exercise: connections are abstract game moves.'}</p></details>
       ${selected&&o!.assets.find(a=>a.id===selected)?.tileId?'<button id="op-focus">Focus selected ship</button>':''}<div class="op-sectors">${o!.sectors.map(sector => `<button data-sector="${esc(sector)}">${esc(o!.geography?.goals.find(g=>g.id===sector)?.label??sector)}</button>`).join('<span>·</span>')}</div>
-      <details><summary>Forces & cargo (${o!.assets.length})</summary><div class="op-roster">${o!.assets.map(a => `<button data-asset="${a.id}" aria-pressed="${selected === a.id}"><b class="${a.side}">${a.id}</b><span>${esc(a.kind)} · ${esc(o!.geography&&a.tileId ? 'hex '+tileLabel(s.mapId,a.tileId)+' · '+a.movement+' MP' : a.sector)}${a.ready ? '' : ' · unavailable'}<small>${a.cargo.length ? 'Cargo ' + a.cargo.join(', ') : 'No cargo'}</small></span></button>`).join('')}</div></details>
-      ${view.phase === 'planning' ? `<section class="op-orders"><h3>Build this round’s plan</h3>${o!.geography ? `<p>Select your ship, then a highlighted water hex to preview its route. Red ships can intercept adjacent routes.</p><label>Orders<select id="op-filter"><option value="mission" ${actionFilter==='mission'?'selected':''}>Mission & staff actions</option><option value="move" ${actionFilter==='move'?'selected':''}>Movement destinations</option></select></label>` : ''}${movePreview ? `<p><b>Route preview</b><br>${esc(movePreview.label)} · 1 CP<br>${esc(movePreview.warning??'Water route; movement resolves after both sides seal.')}</p><button id="op-route-add">Add route to plan</button><button id="op-route-cancel">Cancel route</button>` : ''}<label>Unit or staff action<select id="op-group">${groups.map(g => `<option ${g === group ? 'selected' : ''}>${esc(g)}</option>`).join('')}</select></label><label>Available order<select id="op-action">${choices().map((c, i) => `<option value="${i}" ${batchError([...draft, c.order]) ? 'disabled' : ''}>${esc(c.label)} · ${c.cost} CP</option>`).join('')}</select></label><button id="op-add" ${!canOrder() || !choices().some(c => !batchError([...draft, c.order])) ? 'disabled' : ''}>${o!.geography&&actionFilter==='move'&&group!=='Staff'?'Preview route':'Add order to plan'}</button><ol class="op-draft">${draft.map((order, i) => `<li>${esc(label(order))}<button data-remove="${i}" aria-label="Remove order ${i + 1}">Remove</button></li>`).join('') || '<li>No orders yet. Sealing an empty plan holds this round.</li>'}</ol><p>Opponent ${view.sealed[opposite(o!.side)] ? 'has sealed its plan' : 'awaiting orders'}. Your draft is local until sealed.</p><button id="op-seal" class="op-primary" ${!canOrder() ? 'disabled' : ''}>${confirm ? `Confirm and seal ${draft.length} orders` : `Review plan · ${used}/3 CP`}</button>${confirm ? '<button id="op-back">Keep planning</button>' : ''}${view.sealed[o!.side] ? '<p>Your orders are sealed; waiting for the other side.</p>' : ''}</section>` : ''}
+      <details><summary>Forces & cargo (${o!.assets.length})</summary><div class="op-roster">${o!.assets.map(a => `<button data-asset="${a.id}" aria-pressed="${selected === a.id}"><b class="${a.side}">${a.id}</b><span>${esc(a.kind)} · ${esc(o!.geography&&a.tileId ? 'hex '+tileLabel(s.mapId,a.tileId)+' · '+a.movement+' MP' : a.sector)} · ${esc(availability(o!, a))}<small>${a.cargo.length ? 'Cargo ' + a.cargo.join(', ') : 'No cargo'}</small></span></button>`).join('')}</div></details>
+      ${view.phase === 'planning' ? `<section class="op-orders"><h3>Build this round’s plan</h3>${guided && o!.round === 1 ? `<section class="op-guide"><b>${esc(guidance!.title)}</b><p>${esc(guidance!.text)}</p></section>` : ''}<p>${planGuidance(o!, draft).map(esc).join('<br>')}</p>${o!.geography ? `<p>Select your ship, then a highlighted water hex to preview its route. Red ships can intercept adjacent routes.</p><label>Orders<select id="op-filter"><option value="mission" ${actionFilter==='mission'?'selected':''}>Mission & staff actions</option><option value="move" ${actionFilter==='move'?'selected':''}>Movement destinations</option></select></label>` : ''}${movePreview ? `<p><b>Route preview</b><br>${esc(movePreview.label)} · 1 CP<br>${esc(movePreview.warning??'Water route; movement resolves after both sides seal.')}</p><button id="op-route-add">Add route to plan</button><button id="op-route-cancel">Cancel route</button>` : ''}<label>Unit or staff action<select id="op-group">${groups.map(g => `<option ${g === group ? 'selected' : ''}>${esc(g)}</option>`).join('')}</select></label><label>Available order<select id="op-action">${choices().map((c, i) => `<option value="${i}" ${batchError([...draft, c.order]) ? 'disabled' : ''}>${esc(c.label)} · ${c.cost} CP</option>`).join('')}</select></label><button id="op-add" ${!canOrder() || !choices().some(c => !batchError([...draft, c.order])) ? 'disabled' : ''}>${o!.geography&&actionFilter==='move'&&group!=='Staff'?'Preview route':'Add order to plan'}</button><ol class="op-draft">${draft.map((order, i) => `<li>${esc(label(order))}<button data-remove="${i}" aria-label="Remove order ${i + 1}">Remove</button></li>`).join('') || '<li>No orders yet. Sealing an empty plan holds this round.</li>'}</ol><p>Opponent ${view.sealed[opposite(o!.side)] ? 'has sealed its plan' : 'awaiting orders'}. Your draft is local until sealed.</p><button id="op-seal" class="op-primary" ${!canOrder() ? 'disabled' : ''}>${confirm ? `Confirm and seal ${draft.length} orders` : `Review plan · ${used}/3 CP`}</button>${confirm ? `<p>${esc(planGuidance(o!, draft).join(' '))}</p><button id="op-back">Keep planning</button>` : ''}${view.sealed[o!.side] ? '<p>Your orders are sealed; waiting for the other side.</p>' : ''}</section>` : ''}
+      ${view.phase !== 'planning' ? `<section class="op-round-summary"><h3>${esc(resolved!.title)}</h3>${resolved!.lines.map(line=>`<p>${esc(line)}</p>`).join('')}</section>` : ''}
       ${view.phase === 'review' ? `<button id="op-next" class="op-primary" ${busy || view.paused || view.contest ? 'disabled' : ''}>${o!.finished ? 'Finish review & score exercise' : 'Next round'}</button>` : ''}
-      <details ${view.phase !== 'planning' ? 'open' : ''}><summary>Round events & decision review</summary><label>Review round<select id="op-review-round">${Array.from({length:o!.round},(_,i)=>`<option value="${i+1}" ${roundToReview===i+1?'selected':''}>Round ${i+1}</option>`).join('')}</select></label><ol class="op-events">${o!.events.filter(e => e.round === roundToReview).map(e => `<li><small>${esc(e.id)} · ${esc(e.side || 'Exercise')}</small>${esc(e.message)}</li>`).join('')}</ol>${record ? `<p><b>Your information before this decision</b><br>Pressure ${record.observation.pressure}; ${record.observation.reports.length} reports received; ${record.observation.candidates.length} legal individual choices.<br>${esc(record.observation.reports.map(r=>r.id+': '+(r.verified===null?'unverified':'verified')).join(' · '))}</p>` : ''}${view.result && record ? `<p><b>AI decision · round ${record.round}</b><br>${esc(record.decision?.reason ?? 'Human takeover')}<br>${record.decision ? `${record.decision.considered} plans / ${record.decision.transitions} simulated transitions${record.decision.fallback ? ' · ' + esc(record.decision.fallback) : ''}` : ''}</p><p><b>Selected orders</b><br>${esc(record.decision?.orders.map(label).join('; ') || 'Hold / human takeover')}</p>${record.decision?.alternatives.length ? `<details><summary>Alternatives the AI compared</summary>${record.decision.alternatives.map(a=>`<p>${esc(a.orders.map(label).join('; ')||'Hold')}<br>Authored utility estimate: ${a.value.toFixed(1)}</p>`).join('')}<p>These are planner estimates under its stated assumptions, not probabilities or proof of an optimal plan.</p></details>`:''}` : ''}</details>
+      <details ${view.phase !== 'planning' ? 'open' : ''}><summary>Round events & decision review</summary><label>Review round<select id="op-review-round">${Array.from({length:o!.round},(_,i)=>`<option value="${i+1}" ${roundToReview===i+1?'selected':''}>Round ${i+1}</option>`).join('')}</select></label><ol class="op-events">${o!.events.filter(e => e.round === roundToReview).map(e => `<li><small>${esc(e.id)} · ${esc(e.side || 'Exercise')}</small>${esc(e.message)}</li>`).join('')}</ol>${record ? `<p><b>${esc(resolved!.title)}</b><br>${resolved!.lines.map(esc).join('<br>')}</p><p><b>Your information before this decision</b><br>Pressure ${record.observation.pressure}; ${record.observation.reports.length} reports received; ${record.observation.candidates.length} legal individual choices.<br>${esc(record.observation.reports.map(r=>r.id+': '+(r.verified===null?'unverified':'verified')).join(' · '))}</p>` : ''}${view.result && record ? `<p><b>AI decision · round ${record.round}</b><br>${esc(record.decision?.reason ?? 'Human takeover')}<br>${record.decision ? `${record.decision.considered} plans / ${record.decision.transitions} simulated transitions${record.decision.fallback ? ' · ' + esc(record.decision.fallback) : ''}` : ''}</p><p><b>Selected orders</b><br>${esc(record.decision?.orders.map(label).join('; ') || 'Hold / human takeover')}</p>${record.decision?.alternatives.length ? `<details><summary>Alternatives the AI compared</summary>${record.decision.alternatives.map(a=>`<p>${esc(a.orders.map(label).join('; ')||'Hold')}<br>Authored utility estimate: ${a.value.toFixed(1)}</p>`).join('')}<p>These are planner estimates under its stated assumptions, not probabilities or proof of an optimal plan.</p></details>`:''}` : ''}</details>
       <details><summary>Reports (${o!.reports.length})</summary>${o!.reports.map(r => `<p><b>${esc(r.id)} · ${r.verified === null ? 'Unverified' : 'Verified'}</b><br>${esc(r.claim)}${r.truth ? '<br>' + esc(r.truth) : ''}</p>`).join('')}</details>
       ${view.phase === 'review' && !view.contest ? `<details><summary>Contest a result</summary><label>Event<select id="op-contest-event">${o!.events.filter(e => e.round === o!.round).map(e => `<option value="${e.id}">${esc(e.id + ' · ' + short(e.message, 65))}</option>`).join('')}</select></label><label>Reason<textarea id="op-reason" maxlength="1000"></textarea></label><button id="op-contest">Submit contest</button></details>` : ''}
       ${view.contest ? `<section class="op-contest"><h3>Advancement frozen</h3><p>${esc(view.contest.eventId)}: ${esc(view.contest.reason)}</p>${asReferee ? '<label>Referee ruling<textarea id="op-ruling" maxlength="1000"></textarea></label><button id="op-uphold">Uphold result</button><button id="op-replay">Replay round as a new branch</button>' : '<p>Use referee controls to record a ruling.</p>'}</section>` : ''}
-      <div class="op-controls"><button id="op-pause">${view.paused ? 'Resume' : 'Pause'}</button><button id="op-refresh">Refresh</button>${pending ? '<button id="op-retry">Retry saved command</button>' : ''}<button id="op-invite">Copy team invitation</button><input id="op-invitation" readonly hidden>${view.phase === 'complete' ? '<button id="op-export">Export replay & decisions</button>' : ''}<button id="op-referee">${asReferee ? 'Leave referee controls' : 'Referee controls'}</button>${asReferee && view.phase === 'planning' ? `<button id="op-takeover">${view.takeover ? 'Restore AI control' : 'Take over AI side'}</button>${view.takeover ? '<button id="op-side">Switch controlled side</button>' : ''}` : ''}<button id="op-new">New scenario</button></div><p class="muted">${online ? 'Connected · saved' : 'Connection unavailable'} · revision ${view.revision}${view.refereeModified ? ' · Referee-modified teaching run' : ''}</p>
-    ` : `<label>Scenario<select id="op-scenario">${catalog.map(c => `<option value="${c.id}" ${c.id === scenarioId ? 'selected' : ''}>${esc(c.id + ' · ' + c.title)}</option>`).join('')}</select></label><p>${esc(s.objectives[humanSide])}</p><label>Your side<select id="op-human"><option value="blue" ${humanSide === 'blue' ? 'selected' : ''}>Blue · ${esc(s.actors.blue)}</option><option value="red" ${humanSide === 'red' ? 'selected' : ''}>Red · ${esc(s.actors.red)}</option></select></label><label>AI difficulty<select id="op-difficulty">${levels.map(d => `<option ${d === difficulty ? 'selected' : ''}>${d}</option>`).join('')}</select></label>${scenarioId === 'SPR-H01' ? `<label>Scenario window<select id="op-window"><option value="baseline" ${!shortWindow?'selected':''}>Baseline · transports ready in round 1</option><option value="short" ${shortWindow?'selected':''}>Short window · transports ready in round 3</option></select></label><p class="muted">The short window gives less time to recover from delays. It is an explicit, versioned scenario variation, available at every AI difficulty.</p>`:''}<p class="muted">Novice: immediate choices. Standard: coordinated round planning. Advanced: up to three rounds of lookahead against several opposing responses. All use the same information and rules.</p><button id="op-start" class="op-primary" ${busy ? 'disabled' : ''}>Start exercise</button><p>New runs keep your saved map pieces and earlier exercises. Scenarios are original training abstractions; historical labels do not imply a reconstruction.</p>`}
-      <details><summary>Saved runs (${saved.length})</summary>${saved.map((run, i) => `<button class="op-saved" data-saved="${i}">${esc(run.title)}<small>${run.id.slice(0, 8)}</small></button>`).join('')}</details><button id="op-leave">Return to map assembly</button>`;
+      <div class="op-controls"><button id="op-pause">${view.paused ? 'Resume' : 'Pause'}</button><button id="op-refresh">Refresh</button>${pending ? '<button id="op-retry">Retry saved command</button>' : ''}<button id="op-invite">Copy team invitation</button><input id="op-invitation" readonly hidden>${view.phase === 'complete' ? '<button id="op-export">Export replay & decisions</button>' : ''}<button id="op-referee">${asReferee ? 'Leave referee controls' : 'Referee controls'}</button>${asReferee && view.phase === 'planning' ? `<button id="op-takeover">${view.takeover ? 'Restore AI control' : 'Take over AI side'}</button>${view.takeover ? '<button id="op-side">Switch controlled side</button>' : ''}` : ''}<button id="op-orientation">Mission briefing</button><button id="op-new">New AI scenario</button></div><p class="muted">${online ? 'Connected · saved' : 'Connection unavailable'} · revision ${view.revision}${view.refereeModified ? ' · Referee-modified teaching run' : ''}</p>
+    ` : `<label>Scenario<select id="op-scenario">${catalog.map(c => `<option value="${c.id}" ${c.id === scenarioId ? 'selected' : ''}>${esc(c.id + ' · ' + c.title)}</option>`).join('')}</select></label><p>${esc(s.objectives[humanSide])}</p><label>Your side<select id="op-human"><option value="blue" ${humanSide === 'blue' ? 'selected' : ''}>Blue · ${esc(s.actors.blue)}</option><option value="red" ${humanSide === 'red' ? 'selected' : ''}>Red · ${esc(s.actors.red)}</option></select></label><label>AI difficulty<select id="op-difficulty">${levels.map(d => `<option ${d === difficulty ? 'selected' : ''}>${d}</option>`).join('')}</select></label>${scenarioId === 'SPR-H01' ? `<label>Scenario window<select id="op-window"><option value="baseline" ${!shortWindow?'selected':''}>Baseline · transports ready in round 1</option><option value="short" ${shortWindow?'selected':''}>Short window · transports ready in round 3</option></select></label><p class="muted">${shortWindow ? 'Supply ships arrive in round 3; six rounds total.' : 'Baseline: supply ships are ready in round 1; six rounds total.'} Baseline is recommended for a first guided exercise. Short window is a separate scenario variation at every difficulty.</p>`:''}<p class="muted">Novice: immediate choices. Standard: coordinated round planning. Advanced: up to three rounds of lookahead against several opposing responses. All use the same information and rules.</p><button id="op-start" class="op-primary" ${busy ? 'disabled' : ''}>Start AI scenario</button><p>New runs keep your saved map pieces and earlier exercises. Scenarios are original training abstractions; historical labels do not imply a reconstruction.</p>`}
+      <details><summary>Saved runs (${saved.length})</summary>${saved.map((run, i) => `<button class="op-saved" data-saved="${i}">${esc(run.title)}<small>${run.id.slice(0, 8)}</small></button>`).join('')}</details><button id="op-leave">Show saved map assembly</button><p class="muted">Displays this map’s independent saved pieces. AI progress is retained; Return to active exercise restores it.</p>`;
     const el = <T extends HTMLElement = HTMLElement>(id: string) => root.querySelector<T>(`#op-${id}`);
     const on = (id: string, fn: () => void) => { const e = el(id); if (e) (e as HTMLButtonElement).onclick = fn; };
     on('start', () => void start());
+    if (senseiPilot && o && supportsGuide(o)) {
+      const section=document.createElement('section');section.className='op-orders';
+      section.innerHTML=`<h3>Sensei pilot · current round ${o.round}</h3><p>Optional practice hints for evaluation by you and your instructor.</p><button id="op-hint" ${canHint()?'':'disabled'}>Ask for a teaching hint</button><button id="op-hint-brief" ${briefAcknowledged.has(hintSession())?'disabled':''}>${briefAcknowledged.has(hintSession())?'Briefing acknowledged':'I have read my mission briefing'}</button>${hint?`<h3>${esc(hint.title)}</h3><p>${esc(hint.text)}</p><p><b>${esc(hint.question)}</b></p><details><summary>Evidence</summary><p>${esc(hint.ruleRefs.join(' · '))}${hint.eventIds.length?'<br>'+esc(hint.eventIds.join(' · ')):''}</p></details>`:''}${hintLog.length?'<button id="op-hint-export">Export hint review log</button>':''}`;
+      root.querySelector('.op-orders')?.insertAdjacentElement('afterend',section)??root.appendChild(section);
+      on('hint',requestHint);on('hint-brief',()=>{briefAcknowledged.add(hintSession());render();});on('hint-export',exportHints);
+    }
+    on('begin', () => { orientation = false; guided = true; go('home'); });
+    on('skip', () => { orientation = false; guided = false; go('home'); });
+    on('orientation', () => { orientation = true; go('orientation'); });
     on('focus',()=>{const a=o?.assets.find(a=>a.id===selected);if(a?.tileId)options.focusTile(a.tileId);});
     on('route-add', () => movePreview && add(movePreview)); on('route-cancel', () => {movePreview=null; render();});
     const filter=el<HTMLSelectElement>('filter'); if(filter)filter.onchange=()=>{actionFilter=filter.value as typeof actionFilter; xrIndex=0;render();};
@@ -186,19 +244,30 @@ export async function initOpponentWorkspace(options: Options) {
     const back = button('Back to exercise', () => go('home'));
     if (!view) {
       const index = catalog.findIndex(s => s.id === scenarioId);
-      panel.lines = [s.id + ' · ' + s.title, `You: ${humanSide} / AI: ${opposite(humanSide)}`, `Difficulty: ${title(difficulty)}`, ...wrap(s.objectives[humanSide]).slice(0, 3), short(message)];
-      panel.buttons = [button('Next scenario →', () => { scenarioId = catalog[(index + 1) % catalog.length].id; render(); }), scenarioId==='SPR-H01'?button(shortWindow?'Window: Short (rounds 3–6)':'Window: Baseline (rounds 1–6)',()=>{shortWindow=!shortWindow;render();}):button('← Previous scenario', () => { scenarioId = catalog[(index + catalog.length - 1) % catalog.length].id; render(); }), button('Difficulty: ' + title(difficulty), () => { difficulty = levels[(levels.indexOf(difficulty) + 1) % 3]; render(); }), button('Switch player side', () => { humanSide = opposite(humanSide); render(); }), button('Start exercise', () => void start()), button('Saved runs', () => go('saved')), button('Map assembly', hide)];
+      panel.lines = [s.id + ' · ' + s.title, `You: ${humanSide} / AI: ${opposite(humanSide)}`, `Difficulty: ${title(difficulty)}`, ...wrap(s.objectives[humanSide]).slice(0, 2), ...(scenarioId === 'SPR-H01' ? [shortWindow ? 'Supply ships arrive round 3; six rounds total.' : 'Baseline: ships ready now; six rounds total.', 'Baseline recommended for your first exercise.'] : [short(message)])];
+      panel.buttons = [button('Next scenario →', () => { scenarioId = catalog[(index + 1) % catalog.length].id; render(); }), scenarioId==='SPR-H01'?button(shortWindow?'Window: Short (rounds 3–6)':'Window: Baseline (rounds 1–6)',()=>{shortWindow=!shortWindow;render();}):button('← Previous scenario', () => { scenarioId = catalog[(index + catalog.length - 1) % catalog.length].id; render(); }), button('Difficulty: ' + title(difficulty), () => { difficulty = levels[(levels.indexOf(difficulty) + 1) % 3]; render(); }), button('Switch player side', () => { humanSide = opposite(humanSide); render(); }), button('Start AI scenario', () => void start()), button('Saved runs', () => go('saved')), button('Map assembly', hide)];
       if (xrPage === 'saved') { panel.title = 'SAVED EXERCISES'; panel.lines = ['Each run retains its own scenario and progress.']; panel.buttons = [...saved.slice(xrIndex, xrIndex + 4).map(r => button(short(r.title), () => void resume(r))), button('More runs', () => { xrIndex = (xrIndex + 4) % Math.max(1, saved.length); render(); }), button('Back', () => go('home'))]; }
+    } else if (xrPage === 'orientation') {
+      const pages = missionBrief(o!, locationBrief()).flatMap(p => { const lines = wrap(p.text); return Array.from({length: Math.ceil(lines.length / 6)}, (_, i) => ({title: p.title, lines: lines.slice(i * 6, i * 6 + 6)})); });
+      xrIndex = Math.min(xrIndex, pages.length - 1); const page = pages[xrIndex];
+      panel.title = 'MISSION BRIEFING'; panel.lines = [`${xrIndex + 1}/${pages.length} · ${page.title}`, ...page.lines];
+      panel.buttons = [button('Next briefing page', () => { xrIndex = (xrIndex + 1) % pages.length; render(); }), button('Previous page', () => { xrIndex = Math.max(0, xrIndex - 1); render(); }, xrIndex > 0), button('Begin guided planning', () => { orientation = false; guided = true; go('home'); }), button('Plan without guidance', () => { orientation = false; guided = false; go('home'); }), button('Full rules',()=>go('brief'))];
+    } else if (xrPage === 'summary' || xrPage === 'home' && view.phase !== 'planning') {
+      const summary = roundSummary(view, view.phase === 'planning' ? view.review.at(-1)?.round ?? o!.round : o!.round), lines = summary.lines.flatMap(wrap);
+      const pages = Math.max(1, Math.ceil(lines.length / 6)); xrIndex = Math.min(xrIndex, pages - 1);
+      panel.title = summary.title.toUpperCase(); panel.lines = [`Page ${xrIndex + 1}/${pages}`, ...lines.slice(xrIndex * 6, xrIndex * 6 + 6)];
+      panel.buttons = [button('More summary', () => { xrIndex = (xrIndex + 1) % pages; render(); }, pages > 1), button('Detailed events / contest', () => go('review')), button(o!.finished ? 'Finish review & score' : 'Next round', () => void send({type:'next'}), view.phase === 'review' && !view.contest && !view.paused), button('Mission briefing', () => go('orientation')), button('Exercise controls', () => go('controls'))];
+      if(view.result) { panel.lines = [title(view.result.outcome.replaceAll('_', ' ')), ...wrap(view.result.reason).slice(0, 3), ...panel.lines.slice(0, 3)]; panel.buttons.push(button('New AI scenario', setup)); }
     } else if (xrPage === 'route' && movePreview) {
       panel.lines=[...wrap(movePreview.label),...wrap(movePreview.warning??'Water route. Add it to the plan, then seal when ready.')];
       panel.buttons=[button('Add route to plan',()=>{if(movePreview)add(movePreview);go('plan');},canOrder()),button('Cancel route',()=>{movePreview=null;go('actions');}),back];
     } else if (xrPage === 'actions') {
       const groups = [...new Set(o!.candidates.filter(c => c.order.type !== 'hold').map(c => c.group))];
       const list = choices(); xrIndex = Math.min(xrIndex, Math.max(0, list.length - 1));
-      panel.lines = [`Round ${o!.round} · ${o!.side} · ${3 - used} CP left`, `Action group: ${group}`, 'Select an order to add it to your draft.', ...wrap(message).slice(0, 3)];
+      panel.lines = [`Round ${o!.round} · ${o!.side} · ${3 - used} CP left`, `Action group: ${group}`, ...wrap(planGuidance(o!, draft).join(' ')).slice(0, 5)];
       panel.buttons = [...list.slice(xrIndex, xrIndex + 2).map(c => button(short(c.label), () => selectOrder(c), canOrder() && !batchError([...draft, c.order]))), button('More choices →', () => { xrIndex = (xrIndex + 2) % Math.max(1, list.length); render(); }), button('Next unit / staff group', () => { group = groups[(groups.indexOf(group) + 1) % groups.length] ?? 'Staff'; selected=o!.assets.some(a=>a.id===group)?group:null; movePreview=null; xrIndex = 0; render(); }), button(actionFilter==='mission'?'Show movement routes':'Show mission actions',()=>{actionFilter=actionFilter==='mission'?'move':'mission';xrIndex=0;render();}), button('Review drafted orders', () => go('plan')), back];
     } else if (xrPage === 'plan') {
-      panel.lines = [`${used}/3 CP · ${draft.length}/3 orders`, ...draft.flatMap(order => wrap(label(order))).slice(0, 5), draft.length ? 'Sealing resolves after both sides commit.' : 'Empty plan: Hold this round.'];
+      panel.lines = [`${used}/3 CP · ${draft.length}/3 orders · ${3 - used} CP will expire`, ...draft.map(order => short(label(order))), ...wrap(planGuidance(o!, draft)[1]).slice(0, 2), draft.length ? 'Sealing resolves after both sides commit.' : 'Empty plan: Hold this round.'];
       panel.buttons = [button(confirm ? 'Confirm & seal orders' : 'Review, then seal', () => { if (confirm) void send({ type: 'orders', side: o!.side, orders: draft }); else { confirm = true; render(); } }, canOrder()), ...draft.map((_, i) => button(`Remove order ${i + 1}`, () => { draft.splice(i, 1); confirm = false; render(); })), button('Choose more orders', () => go('actions')), back];
     } else if (xrPage === 'brief') {
       const lines = [`You: ${s.actors[o!.side]}`, ...wrap(o!.objectives[o!.side]), ...o!.guidance.flatMap(wrap), ...wrap('3 CP, at most 3 orders, one action per asset. Orders resolve from start-of-round prerequisites. Both sides’ decisions are revealed after completion.')];
@@ -206,18 +275,25 @@ export async function initOpponentWorkspace(options: Options) {
     } else if (xrPage === 'reports') {
       const report = o!.reports[xrIndex % Math.max(1, o!.reports.length)]; panel.lines = report ? [report.id + (report.verified === null ? ' · UNVERIFIED' : ' · VERIFIED'), ...wrap(report.claim), ...wrap(report.truth ?? 'Choose Verify in Staff actions to check this report.')].slice(0, 7) : ['No reports received.'];
       panel.buttons = [button('Next report', () => { xrIndex++; render(); }), button('Staff actions', () => { group = 'Staff'; go('actions'); }), back];
-    } else if (xrPage === 'review' || xrPage === 'home' && (view.phase === 'review' || view.phase === 'complete')) {
+    } else if (xrPage === 'review') {
       const events = o!.events.filter(e => e.round === o!.round), current = events[xrIndex % Math.max(1, events.length)];
       panel.lines = view.result ? [title(view.result.outcome.replaceAll('_', ' ')), `Blue ${view.result.scores?.blue.total} / Red ${view.result.scores?.red.total}`, ...wrap(view.result.reason).slice(0, 3), 'Full replay export is available in the browser.'] : [`Round ${o!.round} results`, current?.id ?? '', ...wrap(current?.message ?? '').slice(0, 4), view.contest ? 'CONTEST OPEN · advancement frozen' : 'Review before continuing.'];
-      panel.buttons = [button('Next event', () => { xrIndex++; render(); }), button(o!.finished ? 'Finish review & score' : 'Next round', () => void send({ type: 'next' }), view.phase === 'review' && !view.contest && !view.paused), button('Contest this event', () => current && void send({ type: 'contest', eventId: current.id, reason: 'Participant requests referee review of this event.' }), view.phase === 'review' && !view.contest), button('Reports', () => go('reports')), button('Exercise controls', () => go('controls')), button('New scenario', setup)];
+      panel.buttons = [button('Round summary', () => go('summary')), button('Next event', () => { xrIndex++; render(); }), button(o!.finished ? 'Finish review & score' : 'Next round', () => void send({ type: 'next' }), view.phase === 'review' && !view.contest && !view.paused), button('Contest this event', () => current && void send({ type: 'contest', eventId: current.id, reason: 'Participant requests referee review of this event.' }), view.phase === 'review' && !view.contest), button('Reports', () => go('reports')), button('Exercise controls', () => go('controls')), button('New AI scenario', setup)];
       if (view.contest && asReferee) panel.buttons = [button('Uphold recorded result', () => void send({ type: 'ruling', disposition: 'uphold', reason: 'Referee reviewed the event and upheld the recorded result.' })), button('Replay disputed round', () => void send({ type: 'ruling', disposition: 'replay', reason: 'Referee requested a teaching replay; previous disclosures retained.' })), button('Exercise controls', () => go('controls'))];
+    } else if (xrPage === 'sensei') {
+      const hint=currentHint(),lines=hint?[...wrap(hint.title),...wrap(hint.text),...wrap(hint.question)]:['The exercise or draft changed. Ask for a fresh hint.'];
+      const pages=Math.max(1,Math.ceil(lines.length/6));xrIndex=Math.min(xrIndex,pages-1);
+      panel.title='SENSEI · PRACTICE PILOT';panel.lines=[`Current round ${o!.round} · ${xrIndex+1}/${pages}`,...lines.slice(xrIndex*6,xrIndex*6+6)];
+      panel.buttons=[button('More explanation',()=>{xrIndex=(xrIndex+1)%pages;render();},pages>1),button('Another teaching hint',requestHint,canHint()),
+        button('Mark briefing read',()=>{briefAcknowledged.add(hintSession());requestHint();},!briefAcknowledged.has(hintSession())),back];
     } else if (xrPage === 'controls') {
       panel.lines = [title(difficulty) + ' opponent', asReferee ? 'REFEREE CONTROLS' : 'Player controls', view.takeover ? 'Human controls the opposing side.' : 'AI controls the opposing side.', short(message)];
-      panel.buttons = [button(view.paused ? 'Resume exercise' : 'Pause exercise', () => void send({ type: 'pause', paused: !view!.paused })), button(asReferee ? 'Leave referee controls' : 'Referee controls', () => void refereeMode(), !!credentials?.refereeToken), ...(asReferee ? [button(view.takeover ? 'Restore AI control' : 'Take over AI side', () => void send({ type: 'takeover', enabled: !view!.takeover }), view.phase === 'planning'), button('Switch controlled side', () => void controlSide(), view.takeover)] : []), button('New scenario', setup), button('Map assembly', hide), back];
+      panel.buttons = [button(view.paused ? 'Resume exercise' : 'Pause exercise', () => void send({ type: 'pause', paused: !view!.paused })), button(asReferee ? 'Leave referee controls' : 'Referee controls', () => void refereeMode(), !!credentials?.refereeToken), ...(asReferee ? [button(view.takeover ? 'Restore AI control' : 'Take over AI side', () => void send({ type: 'takeover', enabled: !view!.takeover }), view.phase === 'planning'), button('Switch controlled side', () => void controlSide(), view.takeover)] : []), button('New AI scenario', setup), button('Map assembly', hide), back];
     } else {
-      panel.lines = [`Round ${o!.round}/${s.rounds} · ${title(difficulty)} AI`, `${o!.side.toUpperCase()} · ${s.actors[o!.side]}`, `${3 - used} CP remaining in draft · pressure ${o!.pressure}`, ...wrap(o!.objectives[o!.side]).slice(0, 3), short(message)];
-      panel.buttons = [button('Choose unit / staff orders', () => go('actions'), canOrder()), button(`Review plan (${draft.length} orders)`, () => go('plan')), button('Briefing & rules', () => go('brief')), button('Reports', () => go('reports')), button('Exercise controls', () => go('controls')), button('Refresh saved state', () => { pending = null; void refresh(); }), button('Map assembly', hide)];
+      panel.lines = [`AI · ${mapName(s.mapId)} · R${o!.round}/${s.rounds}`, ...wrap(missionProgress(o!)).slice(0, 2), ...(o!.variant && o!.round < 3 ? ['Supply ships B1/B2 unavailable until round 3'] : [`${3 - used} CP left · one action per ship`]), ...wrap(guided && o!.round === 1 ? firstRoundGuide(o!, draft).text : message).slice(0, 3)];
+      panel.buttons = [button('Choose unit / staff orders', () => go('actions'), canOrder()), button(`Review plan (${draft.length} orders)`, () => go('plan')), button('Mission briefing', () => go('orientation')), button('Reports', () => go('reports')), button('Exercise controls', () => go('controls')), view.review.length ? button('Last round summary', () => go('summary')) : button('Refresh saved state', () => { pending = null; void refresh(); }), button('Map assembly', hide)];
     }
+    if (canHint() && xrPage !== 'sensei' && panel.buttons.length < 7) panel.buttons.push(button('Sensei teaching hint',requestHint));
     if (busy) panel.lines = ['Saving / preparing opponent…', ...panel.lines.slice(0, 6)];
     if (pending && !busy) panel.buttons = [button('Retry identical command', () => void send(pending!.operation)), button('Refresh saved state', () => { pending = null; void refresh(); }), ...panel.buttons.slice(0, 5)];
     options.setPanel(panel);
@@ -240,8 +316,10 @@ export async function initOpponentWorkspace(options: Options) {
   setInterval(() => { if (active && credentials) void refresh(); }, 2000);
   return {
     grabBindings,
-    get active() { return active; }, get busy() { return busy || !!pending; }, activate: show, deactivate: () => { active = false; }, render,
-    onMap(id: string) { if (active && view && view.observation.scenario.mapId !== id) hide(); },
+    get active() { return active; }, get busy() { return busy || !!pending; }, activate, deactivate: () => { active = false; movePreview = null; held = null; options.contextChanged(); }, render,
+    get context() { return view ? { id:view.id, title:brief().title, mapId:brief().mapId, mapName:mapName(brief().mapId), round:view.observation.round, active } : null; },
+    contextPieces(map: TerrainMap): TablePiece[] { return view && !active ? activeExerciseLocator(map, options.map(brief().mapId)) : []; },
+    onMap(id: string) { if (active && view && view.observation.scenario.mapId !== id && !busy) hide(); },
     chooseTile(id: string) {
       if (!view) return;
       if(view.observation.geography){const c=routeTo(id);if(c&&canOrder()){if(draftError(c))status(draftError(c)!);else selectOrder(c);}return;}
@@ -250,6 +328,6 @@ export async function initOpponentWorkspace(options: Options) {
       const candidate = sector && view.observation.candidates.find(c => c.order.type === 'move' && c.order.asset === selected && c.order.target === sector && !batchError([...draft, c.order]));
       if (candidate) add(candidate);
     },
-    get diagnostics() { return { active, busy, online, state: view, draft, selected, group, message, movePreview, held }; },
+    get diagnostics() { return { active, busy, online, state: view, draft, selected, group, message, movePreview, held, xrPage, guided, orientation }; },
   };
 }
