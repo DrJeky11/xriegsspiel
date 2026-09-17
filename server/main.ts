@@ -90,8 +90,9 @@ const server = createServer(async (req, res) => {
   if (!path.startsWith(root + sep) && path !== root) return send(res, 403, { error: 'Invalid path.' });
   if (!extname(path)) path = resolve(root, 'index.html');
   if (!existsSync(path)) return send(res, 404, { error: 'Not found.' });
-  const type = ({ '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json' } as Record<string, string>)[extname(path)] || 'application/octet-stream';
-  res.writeHead(200, { 'Content-Type': type });
+  const type = ({ '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.webp':'image/webp', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.png':'image/png', '.svg':'image/svg+xml' } as Record<string, string>)[extname(path)] || 'application/octet-stream';
+  const immutable=/^\/unit-references\/[a-z0-9-]+\.[a-f0-9]{16}\.webp$/.test(url.pathname);
+  res.writeHead(200, { 'Content-Type': type, 'Cache-Control':immutable?'public, max-age=31536000, immutable':'no-cache' });
   createReadStream(path).pipe(res);
   } catch(error) { console.error('Request failed:',error instanceof Error?error.message:'unknown');if(!res.headersSent)send(res,503,{error:'Exercise storage is temporarily unavailable. Retry without changing your command ID.'});else res.end(); }
 });

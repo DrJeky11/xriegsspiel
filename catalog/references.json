@@ -1,0 +1,686 @@
+{
+  "version": "unit-references.v1",
+  "notice": "The appearance of U.S. Department of War (DoW) visual information does not imply or constitute DoW endorsement.",
+  "records": [
+    {
+      "equipmentId": "odin-008c2a5121dd0965e8cac49c96c03812",
+      "title": "Zumwalt class",
+      "roleLabel": "Guided-missile destroyer",
+      "role": "A surface warship designed for strike missions and operations against aircraft, ships and submarines.",
+      "recognition": [
+        "Angular superstructure",
+        "Inward-sloping hull sides"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "U.S. Navy · DDG 1000 fact file",
+          "url": "https://www.navy.mil/Resources/Fact-Files/Display-FactFiles/Article/2391800/destroyers-ddg-1000/",
+          "locator": "Description and Features",
+          "dated": "2023-01-05",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/008c2a5121dd0965e8cac49c96c03812",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://www.dvidshub.net/image/2930395/uss-zumwalt",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "2016-10-17",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "zumwalt",
+        "subject": "USS Zumwalt (DDG 1000)",
+        "relationship": "class example",
+        "photoDate": "2016-10-17",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness.",
+        "sourcePage": "https://www.dvidshub.net/image/2930395/uss-zumwalt",
+        "originalUrl": "https://d1ldvf68ux039x.cloudfront.net/thumbs/photos/1610/2930395/2000w_q95.jpg",
+        "sourceAssetUrl": "https://d1ldvf68ux039x.cloudfront.net/thumbs/photos/1610/2930395/2000w_q95.jpg",
+        "creator": "U.S. Navy / Liz Wolter",
+        "credit": "U.S. Navy / Liz Wolter",
+        "license": "Public domain (United States)",
+        "licenseUrl": "https://www.dvidshub.net/about/copyright",
+        "rightsEvidence": "https://www.dvidshub.net/image/2930395/uss-zumwalt#image-info",
+        "attribution": "U.S. Navy / Liz Wolter",
+        "sourceSha256": "6d1b6dd02958d73321bb6cfeda39ac03f8fa5749923f13c3c013062ed023f473",
+        "alt": "USS Zumwalt (DDG 1000) — Zumwalt class reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/zumwalt-thumbnail.e391329c5863522b.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 13192,
+          "sha256": "e391329c5863522b7bf25fb902a3282861190bb723b25a1acd5789d23a6c1a13"
+        },
+        "detail": {
+          "path": "/unit-references/zumwalt-detail.63b719a09a20c99d.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 81028,
+          "sha256": "63b719a09a20c99df1fe4146475d3ad5114fb62106dd478bd976953dc4971e3d"
+        }
+      }
+    },
+    {
+      "equipmentId": "odin-4468c6e679e1e03f61411de991d1985f",
+      "title": "Type 052D / Luyang III",
+      "roleLabel": "Multi-mission destroyer",
+      "role": "A surface warship with air-defense and strike capabilities for operations near shore and farther out to sea.",
+      "recognition": [
+        "Forward gun",
+        "Radar panels on the superstructure"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "Office of Naval Intelligence · The PLA Navy",
+          "url": "https://s3.documentcloud.org/documents/22129995/2015_pla_navy_pub_print.pdf",
+          "locator": "pp. 10, 15–16 · surface combatants",
+          "dated": "2015",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/4468c6e679e1e03f61411de991d1985f",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://commons.wikimedia.org/wiki/File:PLANS_Xining_(DDG-117)_20190801.jpg",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "2019-08-01",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "052d",
+        "subject": "Xining (117)",
+        "relationship": "class example",
+        "photoDate": "2019-08-01",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness.",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:PLANS_Xining_(DDG-117)_20190801.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/68/PLANS_Xining_%28DDG-117%29_20190801.jpg",
+        "sourceAssetUrl": "https://upload.wikimedia.org/wikipedia/commons/6/68/PLANS_Xining_%28DDG-117%29_20190801.jpg",
+        "creator": "Japan Ministry of Defense, Joint Staff Office",
+        "credit": "Japan Ministry of Defense, Joint Staff Office",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+        "rightsEvidence": "https://commons.wikimedia.org/wiki/File:PLANS_Xining_(DDG-117)_20190801.jpg#Licensing",
+        "attribution": "Japan Ministry of Defense, Joint Staff Office",
+        "sourceSha256": "7679976f5058a5b0693a1f8e4bf18e19b7def1f99e15464ed1a6cd15bcda5efc",
+        "alt": "Xining (117) — Type 052D / Luyang III reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/052d-thumbnail.2d871bab1346076f.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 8162,
+          "sha256": "2d871bab1346076f1b168fd24be9be9ab08fa417c8aafba0af714865d59cedac"
+        },
+        "detail": {
+          "path": "/unit-references/052d-detail.abb1fa4a791a857a.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 51352,
+          "sha256": "abb1fa4a791a857ad5b79de9adc882b23417c5aa8a5e03924c6d95cccff23f9e"
+        }
+      }
+    },
+    {
+      "equipmentId": "odin-196d7969af1359609042544adad07f83",
+      "title": "Type 055 / Renhai",
+      "roleLabel": "Guided-missile cruiser",
+      "role": "A large surface combatant designed to escort carrier groups and protect sea routes.",
+      "recognition": [
+        "Long hull",
+        "Integrated mast"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "U.S. Naval War College · China Maritime Report 5",
+          "url": "https://www.govinfo.gov/content/pkg/GOVPUB-D208-PURL-gpo144497/pdf/GOVPUB-D208-PURL-gpo144497.pdf",
+          "locator": "Summary, printed p. 1 (PDF p. 3)",
+          "dated": "2020-02",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/196d7969af1359609042544adad07f83",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://commons.wikimedia.org/wiki/File:PLANS_Nanchang_(DDG-101)_20210427.jpg",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "2021-04-27",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "055",
+        "subject": "Nanchang (101)",
+        "relationship": "class example",
+        "photoDate": "2021-04-27",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness.",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:PLANS_Nanchang_(DDG-101)_20210427.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7e/PLANS_Nanchang_%28DDG-101%29_20210427.jpg",
+        "sourceAssetUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7e/PLANS_Nanchang_%28DDG-101%29_20210427.jpg",
+        "creator": "Japan Ministry of Defense, Joint Staff Office",
+        "credit": "Japan Ministry of Defense, Joint Staff Office",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+        "rightsEvidence": "https://commons.wikimedia.org/wiki/File:PLANS_Nanchang_(DDG-101)_20210427.jpg#Licensing",
+        "attribution": "Japan Ministry of Defense, Joint Staff Office",
+        "sourceSha256": "99d5cb44f0ea1573df1df905e7611177974872d6541624a53385f817143cdaf7",
+        "alt": "Nanchang (101) — Type 055 / Renhai reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/055-thumbnail.b34074d14bb47863.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 7258,
+          "sha256": "b34074d14bb4786362e13a999f150e8c3bcb10244d61b7732b9f69e160f2a8fa"
+        },
+        "detail": {
+          "path": "/unit-references/055-detail.3556c38a54a1db2b.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 29638,
+          "sha256": "3556c38a54a1db2b9f3ef22ebf8714502b9952b011a463a509120a0232e8dc1a"
+        }
+      }
+    },
+    {
+      "equipmentId": "odin-e28eda08341b5085d5d9cda38c500907",
+      "title": "Type 072A / Yuting II",
+      "roleLabel": "Amphibious landing ship",
+      "role": "A landing ship for moving a force and its equipment from sea to shore.",
+      "recognition": [
+        "Bow landing doors",
+        "Superstructure toward the stern"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "Office of Naval Intelligence · The PLA Navy",
+          "url": "https://s3.documentcloud.org/documents/22129995/2015_pla_navy_pub_print.pdf",
+          "locator": "p. 18 · Amphibious Warfare (landing-ship role); class identity from ODIN and photo caption",
+          "dated": "2015",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/e28eda08341b5085d5d9cda38c500907",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://commons.wikimedia.org/wiki/File:Type_072A_landing_ship_-_1.jpg",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "2021-03-16",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "072a",
+        "subject": "Type 072A landing ship at berth",
+        "relationship": "class example",
+        "photoDate": "2021-03-16",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness.",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Type_072A_landing_ship_-_1.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Type_072A_landing_ship_-_1.jpg",
+        "sourceAssetUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Type_072A_landing_ship_-_1.jpg",
+        "creator": "隐世高人",
+        "credit": "隐世高人",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "rightsEvidence": "https://commons.wikimedia.org/wiki/File:Type_072A_landing_ship_-_1.jpg#Licensing",
+        "attribution": "隐世高人",
+        "sourceSha256": "07cea3adf3396dcd3577f60e8eb7c1bc0138c2f601a9f76343f5fa07a4fa9e2d",
+        "alt": "Type 072A landing ship at berth — Type 072A / Yuting II reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/072a-thumbnail.6e1f30426adfdf18.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 11476,
+          "sha256": "6e1f30426adfdf18c56f525ef642d7c9d599e008bbe3884c5db6461dad6d9f36"
+        },
+        "detail": {
+          "path": "/unit-references/072a-detail.0a5175d325a2c3e8.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 57942,
+          "sha256": "0a5175d325a2c3e85a08714e2d47d100096f5ae8ec4e65c294152c1d2351c8bc"
+        }
+      }
+    },
+    {
+      "equipmentId": "odin-d20860cfae8576ea41b1d949510cc7ee",
+      "title": "Type 054A / Jiangkai II",
+      "roleLabel": "Guided-missile frigate",
+      "role": "A surface escort with air-defense weapons for protecting ships and operating at sea.",
+      "recognition": [
+        "Forward gun",
+        "Radar mast above the bridge"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "Office of Naval Intelligence · The PLA Navy",
+          "url": "https://s3.documentcloud.org/documents/22129995/2015_pla_navy_pub_print.pdf",
+          "locator": "pp. 15–16 · surface combatants and area air defense",
+          "dated": "2015",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/d20860cfae8576ea41b1d949510cc7ee",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://commons.wikimedia.org/wiki/File:People%27s_Liberation_Army_(Navy)_frigate_PLA(N)_Yueyang_(FF_575)_steams_in_formation_with_42_other_ships_and_submarines_during_Rim_of_the_Pacific_(RIMPAC)_Exercise_2014.jpg",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "2014-07-25",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "054a",
+        "subject": "Yueyang (575)",
+        "relationship": "class example",
+        "photoDate": "2014-07-25",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness.",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:People%27s_Liberation_Army_(Navy)_frigate_PLA(N)_Yueyang_(FF_575)_steams_in_formation_with_42_other_ships_and_submarines_during_Rim_of_the_Pacific_(RIMPAC)_Exercise_2014.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/People%27s_Liberation_Army_%28Navy%29_frigate_PLA%28N%29_Yueyang_%28FF_575%29_steams_in_formation_with_42_other_ships_and_submarines_during_Rim_of_the_Pacific_%28RIMPAC%29_Exercise_2014.jpg",
+        "sourceAssetUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/People%27s_Liberation_Army_%28Navy%29_frigate_PLA%28N%29_Yueyang_%28FF_575%29_steams_in_formation_with_42_other_ships_and_submarines_during_Rim_of_the_Pacific_%28RIMPAC%29_Exercise_2014.jpg",
+        "creator": "U.S. Navy photo by Mass Communication Specialist 1st Class Shannon Renfroe",
+        "credit": "U.S. Navy photo by Mass Communication Specialist 1st Class Shannon Renfroe",
+        "license": "Public domain",
+        "licenseUrl": "https://commons.wikimedia.org/wiki/File:People%27s_Liberation_Army_(Navy)_frigate_PLA(N)_Yueyang_(FF_575)_steams_in_formation_with_42_other_ships_and_submarines_during_Rim_of_the_Pacific_(RIMPAC)_Exercise_2014.jpg#Licensing",
+        "rightsEvidence": "https://commons.wikimedia.org/wiki/File:People%27s_Liberation_Army_(Navy)_frigate_PLA(N)_Yueyang_(FF_575)_steams_in_formation_with_42_other_ships_and_submarines_during_Rim_of_the_Pacific_(RIMPAC)_Exercise_2014.jpg#Licensing",
+        "attribution": "U.S. Navy photo by Mass Communication Specialist 1st Class Shannon Renfroe",
+        "sourceSha256": "d1ba164133f8944b63d4213bae4bdefc6bc430534179e605c3129cf938b7d76e",
+        "alt": "Yueyang (575) — Type 054A / Jiangkai II reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/054a-thumbnail.840b5eece8bfa24f.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 20768,
+          "sha256": "840b5eece8bfa24f75d0850c0819dd791b64607f9299141e0a26e8b87b816fc0"
+        },
+        "detail": {
+          "path": "/unit-references/054a-detail.e5f298017620db7f.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 155320,
+          "sha256": "e5f298017620db7f393a9c80632709c116233919e6e85d8420131cd3d2e8bb3b"
+        }
+      }
+    },
+    {
+      "equipmentId": "odin-c92a0c319c8d227a73ddf3d644c06c58",
+      "title": "Type 052C / Luyang II",
+      "roleLabel": "Air-defense destroyer",
+      "role": "A surface warship equipped to provide area air defense with long-range surface-to-air missiles.",
+      "recognition": [
+        "Fixed radar panels",
+        "Forward gun"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "Office of Naval Intelligence · The PLA Navy",
+          "url": "https://s3.documentcloud.org/documents/22129995/2015_pla_navy_pub_print.pdf",
+          "locator": "pp. 15–16 · LUYANG II and area air defense",
+          "dated": "2015",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/c92a0c319c8d227a73ddf3d644c06c58",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://commons.wikimedia.org/wiki/File:PLANS_Jinan_(DDG-152)_20151103_3.JPG",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "2015-11-03",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "052c",
+        "subject": "Jinan (152)",
+        "relationship": "class example",
+        "photoDate": "2015-11-03",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness.",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:PLANS_Jinan_(DDG-152)_20151103_3.JPG",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f1/PLANS_Jinan_%28DDG-152%29_20151103_3.JPG",
+        "sourceAssetUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f1/PLANS_Jinan_%28DDG-152%29_20151103_3.JPG",
+        "creator": "Timothy Schumaker, Mark Andrew Hays, Stephanie Turo",
+        "credit": "U.S. Navy / Timothy Schumaker (151103-N-JX484-058)",
+        "license": "Public domain",
+        "licenseUrl": "https://commons.wikimedia.org/wiki/File:PLANS_Jinan_(DDG-152)_20151103_3.JPG#Licensing",
+        "rightsEvidence": "https://commons.wikimedia.org/wiki/File:PLANS_Jinan_(DDG-152)_20151103_3.JPG#Licensing",
+        "attribution": "U.S. Navy / Timothy Schumaker (151103-N-JX484-058)",
+        "sourceSha256": "1772419ae692c92ac78f05c9ff3c62242a92fa6ce9feaba8057333b941a2be55",
+        "alt": "Jinan (152) — Type 052C / Luyang II reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/052c-thumbnail.9f6251bb26ed225b.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 14410,
+          "sha256": "9f6251bb26ed225b941d5eeb9f85ecb1dd27b6aa5c77153779fa62834083117f"
+        },
+        "detail": {
+          "path": "/unit-references/052c-detail.290652333c2f73fe.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 80156,
+          "sha256": "290652333c2f73fe85ca66a8f033ec3f08ecb6aa3155e7eb1d11a25529c8dc3b"
+        }
+      }
+    },
+    {
+      "equipmentId": "odin-9611c4faa5340c9018930b54981b7c1d",
+      "title": "Type 056 / Jiangdao",
+      "roleLabel": "Coastal patrol corvette",
+      "role": "A smaller warship for regional patrols, counterpiracy and other coastal duties.",
+      "recognition": [
+        "Compact hull",
+        "Helicopter landing area aft"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "Office of Naval Intelligence · The PLA Navy",
+          "url": "https://s3.documentcloud.org/documents/22129995/2015_pla_navy_pub_print.pdf",
+          "locator": "p. 17 · JIANGDAO corvette",
+          "dated": "2015",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/9611c4faa5340c9018930b54981b7c1d",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://commons.wikimedia.org/wiki/File:596_Huizhou.jpg",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "2019-11-28",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "056",
+        "subject": "Huizhou (596)",
+        "relationship": "class example",
+        "photoDate": "2019-11-28",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness.",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:596_Huizhou.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0e/596_Huizhou.jpg",
+        "sourceAssetUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0e/596_Huizhou.jpg/960px-596_Huizhou.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "creator": "trey333",
+        "credit": "trey333",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "rightsEvidence": "https://commons.wikimedia.org/wiki/File:596_Huizhou.jpg#Licensing",
+        "attribution": "trey333",
+        "sourceSha256": "ca4015e450ffb4313fca7e85e82bca74402b5298da8e758af61caa7a9db837d1",
+        "alt": "Huizhou (596) — Type 056 / Jiangdao reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/056-thumbnail.0c7af7d444c94fbd.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 24054,
+          "sha256": "0c7af7d444c94fbd807f05855758b4c4c7f78dd82877e4c9eaeed5111b905f41"
+        },
+        "detail": {
+          "path": "/unit-references/056-detail.2b2c05a160f9dfff.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 147078,
+          "sha256": "2b2c05a160f9dfff6da2967a009c45cac6506a70037f566297659d62fffbd3c1"
+        }
+      }
+    },
+    {
+      "equipmentId": "odin-e7aa99371786b71927a4603ef1a63309",
+      "title": "Type 903 / Fuchi",
+      "roleLabel": "Replenishment ship",
+      "role": "A support ship that replenishes other ships so they can remain at sea longer.",
+      "recognition": [
+        "Replenishment rigs amidships",
+        "Long working deck"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "Office of Naval Intelligence · The PLA Navy",
+          "url": "https://s3.documentcloud.org/documents/22129995/2015_pla_navy_pub_print.pdf",
+          "locator": "p. 18 · Auxiliary Ships; FUCHI replenishment oilers",
+          "dated": "2015",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/e7aa99371786b71927a4603ef1a63309",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://commons.wikimedia.org/wiki/File:People%27s_Liberation_Army_(Navy)_ship_PLA(N)_Qiandaohu_(AO_886)_(foreground)_and_Republic_of_Korea_Navy_ship_ROKS_Wang_Geon_(DDH_978)_steam_in_close_formation_during_Rim_o.jpg",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "2014-07-25",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "903",
+        "subject": "Qiandaohu (886), foreground",
+        "relationship": "class example",
+        "photoDate": "2014-07-25",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness.",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:People%27s_Liberation_Army_(Navy)_ship_PLA(N)_Qiandaohu_(AO_886)_(foreground)_and_Republic_of_Korea_Navy_ship_ROKS_Wang_Geon_(DDH_978)_steam_in_close_formation_during_Rim_o.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cf/People%27s_Liberation_Army_%28Navy%29_ship_PLA%28N%29_Qiandaohu_%28AO_886%29_%28foreground%29_and_Republic_of_Korea_Navy_ship_ROKS_Wang_Geon_%28DDH_978%29_steam_in_close_formation_during_Rim_o.jpg",
+        "sourceAssetUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cf/People%27s_Liberation_Army_%28Navy%29_ship_PLA%28N%29_Qiandaohu_%28AO_886%29_%28foreground%29_and_Republic_of_Korea_Navy_ship_ROKS_Wang_Geon_%28DDH_978%29_steam_in_close_formation_during_Rim_o.jpg",
+        "creator": "U.S. Navy photo by Mass Communication Specialist 1st Class Shannon Renfroe",
+        "credit": "U.S. Navy photo by Mass Communication Specialist 1st Class Shannon Renfroe",
+        "license": "Public domain",
+        "licenseUrl": "https://commons.wikimedia.org/wiki/File:People%27s_Liberation_Army_(Navy)_ship_PLA(N)_Qiandaohu_(AO_886)_(foreground)_and_Republic_of_Korea_Navy_ship_ROKS_Wang_Geon_(DDH_978)_steam_in_close_formation_during_Rim_o.jpg#Licensing",
+        "rightsEvidence": "https://commons.wikimedia.org/wiki/File:People%27s_Liberation_Army_(Navy)_ship_PLA(N)_Qiandaohu_(AO_886)_(foreground)_and_Republic_of_Korea_Navy_ship_ROKS_Wang_Geon_(DDH_978)_steam_in_close_formation_during_Rim_o.jpg#Licensing",
+        "attribution": "U.S. Navy photo by Mass Communication Specialist 1st Class Shannon Renfroe",
+        "sourceSha256": "0f02e9cae5878851689254daaf7b4cad08d1645cffc5caebddb8da165b5d205a",
+        "alt": "Qiandaohu (886), foreground — Type 903 / Fuchi reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/903-thumbnail.ab42b64274a71160.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 14292,
+          "sha256": "ab42b64274a711600459c3b25c0f995fd8727edabf80b649a2024285c54ec1d2"
+        },
+        "detail": {
+          "path": "/unit-references/903-detail.11b29868da6fc7c3.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 112238,
+          "sha256": "11b29868da6fc7c3cb22d0ea36aabfcf875a1c308c4b695a5c6138e287f0259b"
+        }
+      }
+    },
+    {
+      "equipmentId": "odin-7b5ce669b8df3e136dcb1b97713c0228",
+      "title": "Type 920 / Anwei",
+      "roleLabel": "Hospital ship",
+      "role": "A ship equipped for medical support and humanitarian assistance missions.",
+      "recognition": [
+        "White hull",
+        "Hospital markings"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "Office of Naval Intelligence · The PLA Navy",
+          "url": "https://s3.documentcloud.org/documents/22129995/2015_pla_navy_pub_print.pdf",
+          "locator": "pp. 10, 18, 33 · PEACE ARK medical and humanitarian missions",
+          "dated": "2015",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/7b5ce669b8df3e136dcb1b97713c0228",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://commons.wikimedia.org/wiki/File:Forty_Ships_and_Submarines_Steam_in_Close_Formation_During_RIMPAC_-_Peace_Ark_(866)_160728-N-SI773-1842.jpg",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "2016-07-28",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "920",
+        "subject": "Peace Ark (866)",
+        "relationship": "class example",
+        "photoDate": "2016-07-28",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness.",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Forty_Ships_and_Submarines_Steam_in_Close_Formation_During_RIMPAC_-_Peace_Ark_(866)_160728-N-SI773-1842.jpg",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/18/Forty_Ships_and_Submarines_Steam_in_Close_Formation_During_RIMPAC_-_Peace_Ark_%28866%29_160728-N-SI773-1842.jpg",
+        "sourceAssetUrl": "https://upload.wikimedia.org/wikipedia/commons/1/18/Forty_Ships_and_Submarines_Steam_in_Close_Formation_During_RIMPAC_-_Peace_Ark_%28866%29_160728-N-SI773-1842.jpg",
+        "creator": "Petty Officer 1st Class Ace Rheaume",
+        "credit": "Petty Officer 1st Class Ace Rheaume",
+        "license": "Public domain",
+        "licenseUrl": "https://commons.wikimedia.org/wiki/File:Forty_Ships_and_Submarines_Steam_in_Close_Formation_During_RIMPAC_-_Peace_Ark_(866)_160728-N-SI773-1842.jpg#Licensing",
+        "rightsEvidence": "https://commons.wikimedia.org/wiki/File:Forty_Ships_and_Submarines_Steam_in_Close_Formation_During_RIMPAC_-_Peace_Ark_(866)_160728-N-SI773-1842.jpg#Licensing",
+        "attribution": "Petty Officer 1st Class Ace Rheaume",
+        "sourceSha256": "37647e592f04fab340c027079b217a3a010e0bc30bc613185a236025a04eb7d3",
+        "alt": "Peace Ark (866) — Type 920 / Anwei reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/920-thumbnail.46e4a097cbc7c7c3.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 9600,
+          "sha256": "46e4a097cbc7c7c3e50ea98cc9c59ecfcf8bd113820f14f8a70af408fbc8c031"
+        },
+        "detail": {
+          "path": "/unit-references/920-detail.aaf7d64358dca8a6.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 57106,
+          "sha256": "aaf7d64358dca8a67f8d44f556409e471afd92cabd03851e9a93d7b411e86bd3"
+        }
+      }
+    },
+    {
+      "equipmentId": "odin-a233a164a7e4be4d8b13515744a6c4e3",
+      "title": "LCM-8 / Mike Boat",
+      "roleLabel": "Mechanized landing craft",
+      "role": "A landing craft that carries personnel, supplies and equipment from ships to shore.",
+      "recognition": [
+        "Open cargo well",
+        "Bow loading ramp"
+      ],
+      "reviewStatus": "reviewed",
+      "reviewed": "2026-09-16",
+      "sources": [
+        {
+          "label": "U.S. Marine Corps · Amphibious Ships and Landing Craft Data Book",
+          "url": "https://www.trngcmd.marines.mil/Portals/207/Docs/TBS/MCRP%203-31B%20Amphibious%20Ships%20and%20Landing%20Craft%20Data%20Book.pdf",
+          "locator": "Printed p. 26 (PDF p. 31) · LCM Mark 8 · Mission",
+          "dated": "2001-08-29",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Army ODIN equipment record",
+          "url": "https://odin.t2com.army.mil/WEG/Asset/a233a164a7e4be4d8b13515744a6c4e3",
+          "locator": "Equipment name and classification (local import dated 2026-09-15)",
+          "dated": "Publication date not supplied",
+          "accessed": "2026-09-16"
+        },
+        {
+          "label": "Reference photograph",
+          "url": "https://commons.wikimedia.org/wiki/File:LCM_8_mechanized_landing_craft_with_M60_tanks.JPEG",
+          "locator": "Caption / subject identification and licensing; recognition notes are visual observations of this dated photo",
+          "dated": "1989-01-03",
+          "accessed": "2026-09-16"
+        }
+      ],
+      "media": {
+        "id": "lcm8",
+        "subject": "LCM-8 carrying M60 tanks, foreground",
+        "relationship": "class example",
+        "photoDate": "1989-01-03",
+        "caveat": "Dated class example; appearance and equipment fit may differ between hulls and over time. This does not establish current readiness. Embarked tanks are cargo in the photograph, not included with this piece.",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:LCM_8_mechanized_landing_craft_with_M60_tanks.JPEG",
+        "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4a/LCM_8_mechanized_landing_craft_with_M60_tanks.JPEG",
+        "sourceAssetUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/LCM_8_mechanized_landing_craft_with_M60_tanks.JPEG/960px-LCM_8_mechanized_landing_craft_with_M60_tanks.JPEG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "creator": "PHCS Ron Bayles",
+        "credit": "PHCS Ron Bayles",
+        "license": "Public domain",
+        "licenseUrl": "https://commons.wikimedia.org/wiki/File:LCM_8_mechanized_landing_craft_with_M60_tanks.JPEG#Licensing",
+        "rightsEvidence": "https://commons.wikimedia.org/wiki/File:LCM_8_mechanized_landing_craft_with_M60_tanks.JPEG#Licensing",
+        "attribution": "PHCS Ron Bayles",
+        "sourceSha256": "f621796c334a495123e95a5e356b9dae7faf390d78f35edbbc6850f9ac428a06",
+        "alt": "LCM-8 carrying M60 tanks, foreground — LCM-8 / Mike Boat reference photograph",
+        "framing": "Resized and padded to 3:2; complete source frame retained. WebP conversion; no generated or reconstructed details.",
+        "thumbnail": {
+          "path": "/unit-references/lcm8-thumbnail.83c122a971a41c28.webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 15096,
+          "sha256": "83c122a971a41c2872f2226a4cea18e7fb2c32591d1071de85b3ac11f5995c13"
+        },
+        "detail": {
+          "path": "/unit-references/lcm8-detail.81cd45f2c1d19b90.webp",
+          "width": 960,
+          "height": 640,
+          "bytes": 94326,
+          "sha256": "81cd45f2c1d19b908bf39d035c8ff9d35e1f3e93114330c62b355f6a1a58b078"
+        }
+      }
+    }
+  ]
+}

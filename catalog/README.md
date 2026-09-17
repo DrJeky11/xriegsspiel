@@ -91,3 +91,10 @@ Verified on 2026-09-15:
 - Browser checks: search, Red/year filtering, Blue/Red deployment, movement preview/commit, water rejection, item load/unload and JSON export. Replay matched state; a completed `equipment-laboratory.json` download was observed. No warning/error logs were returned during the tested flow. Desktop layout was visually inspected.
 
 No Quest test, multiplayer catalog test, instructor validation, complete variant/service audit or independent performance validation occurred. The reusable database and laboratory are available; historically accurate scenarios require the outstanding evidence/model work above.
+
+
+## Reference photographs and role cards
+
+The additive [reference collection](references.json) supplies ten reviewed sea-platform cards to the browser library, map assembly and Quest palette. It is versioned separately from game definitions and saves. Uncovered records remain selectable with miniature fallbacks. [Photo credits and reuse terms](../public/unit-references/README.md) accompany the local WebP assets; the SQLite database includes reference, source, media and asset tables.
+
+Run `python3 scripts/build-catalog-db.py` after editing reviewed metadata, and `python3 scripts/verify-references.py` to validate files, budgets, identities and database consistency. Reproducing derivatives requires the existing Pillow toolchain and `python3 scripts/build-reference-images.py --download`; source hashes must match. See the [implementation and testing record](../docs/design/unit-reference-cards.md#implementation-record--2026-09-16-edt) for coverage and pending headset checks.

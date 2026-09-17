@@ -2,7 +2,7 @@
 
 Implemented 2026-09-16 in the existing Three.js/TypeScript WebXR application. All eight authored maritime scenarios support complete matches against either side, with Novice, Standard and Advanced policies. These are original abstract games; this is not a trained military commander, a CPE integration, or evidence of teaching effectiveness.
 
-**Sensei follow-up, 2026-09-16:** an optional locally trained teaching-hint selector now supports Second Thomas Resupply. Add `sensei=pilot` to the Pacific workspace URL; use **Ask for a teaching hint**, or **Exercise controls → Sensei teaching hint** in the controller panel. The [training runbook](training/guided-policy-v1.md) records launch, evaluation and limitations. This policy selects explanation topics; the opponent continues to use the authored planner described below.
+**Sensei follow-up, 2026-09-16:** an optional locally trained teaching-hint selector now supports Second Thomas Resupply. Use **Ask for a teaching hint**, or **Sensei teaching hint** on the main exercise controller menu. No special URL is needed. The [training runbook](training/guided-policy-v1.md) records launch, evaluation and limitations. This policy selects explanation topics; the opponent continues to use the authored planner described below.
 
 ## Play
 

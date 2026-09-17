@@ -54,16 +54,16 @@ The model SHA-256 is `8561d9032c13952d3dac3cacdffc0a642dc3a499c8c883ca2009cb7c0e
 With the application running, open:
 
 ```text
-/pacific.html?region=palawan-spratlys&scale=focus&sensei=pilot
+/pacific.html?region=palawan-spratlys&scale=focus
 ```
 
-1. Choose **Menu → Play against AI → SPR-H01 · Second Thomas Resupply**. Choose **Start AI scenario** with either side and the baseline or Short window variant, read the mission briefing, then select **Begin guided planning**.
+1. Choose **Settings → Play against AI → SPR-H01 · Second Thomas Resupply**. Choose **Start AI scenario** with either side and the baseline or Short window variant, read the mission briefing, then select **Begin guided planning**. An existing exercise is available through **Return to active exercise** or **Saved runs**.
 2. Use **Ask for a teaching hint**. Read the question as well as the explanation. The **Evidence** disclosure shows rule/event identifiers.
 3. Read the mission briefing, then acknowledge it. This is self-report, not a comprehension score. Request another hint after previewing or drafting an order, or after a round resolves.
-4. In the Quest controller panel, use **Exercise controls → Sensei teaching hint**. Route, plan and review pages also offer the action when space permits. The same text is paginated, with **More explanation**, **Another teaching hint** and **Back to exercise** controls.
+4. In the Quest controller panel, use **Sensei teaching hint** directly on the main exercise menu. Exercise controls, route, plan and review pages also offer the action when space permits. The same text is paginated, with **More explanation**, **Another teaching hint** and **Back to exercise** controls. **Map assembly** remains available under **Exercise controls**.
 5. Before reloading or closing the page, select **Export hint review log** in the browser menu. This saves the last 200 requested hints in that page session, with observation/revision IDs, context, model decisions and evidence references. It is a partial local review log, not a durable or complete assistance record.
 
-The pilot uses the current round even when the historical event viewer is on an earlier round. Changes to the draft, preview, side, briefing acknowledgment or saved revision invalidate the displayed hint. Requests pause while disconnected, a command is pending, the exercise is paused or a contest is unresolved. Removing `sensei=pilot` disables the pilot. A page reload resets local hint history and briefing acknowledgment; saved game state still follows the existing persistence path.
+The pilot uses the current round even when the historical event viewer is on an earlier round. Changes to the draft, preview, side, briefing acknowledgment or saved revision invalidate the displayed hint. Requests pause while disconnected, a command is pending, the exercise is paused or a contest is unresolved. Sensei is available in supported exercises without a URL flag; hints remain optional and appear only when requested. Older links containing `sensei=pilot` still work. A page reload resets local hint history and briefing acknowledgment; saved game state still follows the existing persistence path.
 
 For the isolated review server used during this task:
 
@@ -72,7 +72,7 @@ npm run build
 PORT=5190 DATA_DIR=output/guided-policy-v1/preview-data npm start
 ```
 
-Open [the local pilot](http://127.0.0.1:5190/pacific.html?region=palawan-spratlys&scale=focus&sensei=pilot). Use only one server process per data directory. This preview has its own exercise database. For a browser controller-callback preview, append `&controller-preview=1&palette-review=1`; this does not emulate physical headset ergonomics.
+Open [the local pilot](http://127.0.0.1:5190/pacific.html?region=palawan-spratlys&scale=focus). Use only one server process per data directory. This preview has its own exercise database. For a browser controller-callback preview, append `&controller-preview=1&palette-review=1`; this does not emulate physical headset ergonomics.
 
 ## Owner and instructor evaluation
 
@@ -118,6 +118,8 @@ node scripts/evaluate-guided-policy.mjs --data output/guided-policy-next/data --
 Scripts write only to their output directories; they do not automatically replace the bundled checkpoint or tracked reports. Review a candidate's evidence together, then copy its checkpoint and matching reports as a versioned change and run the relevant checks. Altering features, topic definitions, rules or source behavior requires regenerating and reevaluating the corresponding data/model; changing prose requires content review as well.
 
 ## Verification and limits
+
+**Entry fix, 2026-09-16:** normal navigation could drop the URL flag that hid Sensei, and the full main controller menu offered no hint action. Supported exercises now expose Sensei without a flag, with a direct main-menu button. The Quest launcher also quotes URLs for the Android shell so query separators survive. All 121 tests, TypeScript checking and a production build passed for this fix; a simulated launcher check preserved query separators, quotes and literal dollar characters. An isolated browser run followed Settings → Play against AI → Start AI scenario → Begin guided planning → Sensei on a URL without the flag. The connected Quest browser resumed the owner's saved SPR-H01 run and opened a real hint in its controller panel without changing the round, revision or draft. These were browser/controller-callback checks, not a physical controller or readability trial. The earlier flag-gating observations below describe historical behavior.
 
 **Integration check, 2026-09-16:** combined this pilot with the Quest mission-guidance/map-continuity fixes. All **121 tests passed** in one run, TypeScript checking and an isolated production build passed, and the evaluator replayed all 360 episodes with 3,822/3,822 matching predictions. Browser/controller checks covered mission briefing → guided planning → Sensei, then regional assembly browsing → Return to active exercise → Sensei again. The scenario ID, revision and ship state were unchanged across the map return; no browser console errors were reported. The existing bundle-size warning and physical-headset/educational evaluation limits remain. Earlier evidence below describes the initial pilot before integration.
 
