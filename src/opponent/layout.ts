@@ -1,6 +1,15 @@
 import type { TerrainMap, Cell } from '../pacific/terrain.ts';
 import type { Observation } from './types.ts';
 import type { TablePiece } from '../play/piece-layer.ts';
+import { cellAt, project } from '../pacific/terrain.ts';
+
+/** An approximate regional locator, never an assembly piece or a second movement grid. */
+export function activeExerciseLocator(map: TerrainMap, exercise: TerrainMap): TablePiece[] {
+  if (exercise.view.id !== 'focus' || map.view.id !== 'overview' || exercise.region.id !== map.region.id) return [];
+  const anchor = cellAt(map, exercise.view.center); if (!anchor) return [];
+  const area = map.cells.filter(c => { const p = project(c.center, exercise.view.center); return Math.abs(p.x) <= exercise.view.widthKm/2 && Math.abs(p.z) <= exercise.view.heightKm/2; }).map(c=>c.id);
+  return [{id:'active-exercise-locator',tileId:anchor.id,force:'blue',symbol:'◇',name:'AI exercise · '+exercise.region.focusName,model:'equipment',selected:false,cargo:0,layer:'surface',labelOnly:true,areaTiles:area.length?area:[anchor.id]}];
+}
 
 /** A labeled conceptual overlay. Placement never invents tracks, safe channels or hex movement rules. */
 export function scenarioLayout(map: TerrainMap, observation: Observation, selected: string | null) {
