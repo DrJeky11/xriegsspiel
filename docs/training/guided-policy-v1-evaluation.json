@@ -1,0 +1,17 @@
+{
+  "schema": "guided-policy-runtime-evaluation/1",
+  "modelVersion": "guided-spr-h01/0.1.0",
+  "modelSHA256": "8561d9032c13952d3dac3cacdffc0a642dc3a499c8c883ca2009cb7c0eb563bb",
+  "evaluatorSHA256": "2d70074a254078c14f0c04b70cf79016a2159735ea077238868b33c6c8f08678",
+  "replayedEpisodes": 360,
+  "testDecisions": 3822,
+  "teacherAgreement": 0.9809000523286238,
+  "pythonTypeScriptPredictionMatches": 3822,
+  "maxLogitError": 2.1316282072803006e-14,
+  "latencyMs": {
+    "p50": 0.03374999999959982,
+    "p95": 0.09312499999987267,
+    "max": 0.4135420000002341
+  },
+  "interpretation": "Synthetic proxy imitation and runtime parity only. Human educational evaluation pending."
+}

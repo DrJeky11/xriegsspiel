@@ -92,6 +92,8 @@ For desktop verification only, `?controller-preview=1` shows the exact drawn pan
 
 ### Hands-on Quest checklist
 
+**Partial owner trial, 2026-09-16, 7:45 p.m. EDT:** MR entry, table/menu repositioning and terrain/label clarity received positive feedback. The owner created an empty assembly and played two rounds against AI, but scenario purpose, action availability and map/mode continuity were unclear. See the [recorded test review](quest-test-2026-09-16-1945.md). The remaining checklist and full AI-match verification are still open.
+
 1. On each workspace, enter VR seated, then MR separately if offered. Verify the original terrain appearance and readable controller panel.
 2. Browse picture tiles by domain/role, change force, search an exact name, and inspect an unavailable record. Grip an eligible miniature, lower it over a hex and release. Verify the browser sees exactly one new ID on that map. Repeat placement, invalid/off-map release, controller disconnection and headset-menu interruption.
 3. Grip a placed miniature and move it to a legal hex; attempt an invalid drop. Check map highlights, native coordinates, identity and budgets. Test the pointer preview/confirm fallback separately.

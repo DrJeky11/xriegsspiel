@@ -10,6 +10,9 @@ import { installNavigation, hasNavigation, tileLabel } from './geography.ts';
 import { vesselBoard } from '../scenario/navigation.ts';
 import type { GrabBindings } from '../play/spatial-palette.ts';
 import { scenarioLayout } from './layout.ts';
+import { guidedHint } from '../sensei/model.ts';
+import { supportsGuide } from '../sensei/guided-policy.ts';
+import type { GuideDecision, Lesson } from '../sensei/guided-policy.ts';
 
 interface SavedRun { id: string; playerToken: string; refereeToken?: string; title: string; mapId: string }
 interface Options {
@@ -31,10 +34,14 @@ export async function initOpponentWorkspace(options: Options) {
   let saved: SavedRun[] = []; try { saved = JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { /* Empty local library if storage is unavailable. */ }
   let scenarioId = 'SPR-H01', difficulty: Difficulty = 'standard', humanSide: Side = 'blue', asReferee = false, shortWindow = false;
   let reviewRound: number | null = null;
+  const senseiPilot = new URL(location.href).searchParams.get('sensei') === 'pilot';
+  let hintState: {key: string; decision: GuideDecision} | null = null;
+  const hintHistory = new Map<string, Lesson[]>(), briefAcknowledged = new Set<string>();
+  const hintLog: Record<string, unknown>[] = [];
   let movePreview: Candidate | null = null, held: string | null = null;
   let actionFilter: 'mission' | 'move' = 'move';
   let selected: string | null = null, group = 'Staff', draft: Order[] = [], confirm = false, pending: OpponentCommand | null = null;
-  let message = 'Choose a scenario and the side you want to play.', xrPage: 'home' | 'actions' | 'plan' | 'brief' | 'review' | 'reports' | 'controls' | 'saved' | 'route' = 'home', xrIndex = 0, fetchGeneration = 0;
+  let message = 'Choose a scenario and the side you want to play.', xrPage: 'home' | 'actions' | 'plan' | 'brief' | 'review' | 'reports' | 'controls' | 'saved' | 'route' | 'sensei' = 'home', xrIndex = 0, fetchGeneration = 0;
   const root = options.root;
   const api = async <T>(path: string, body?: unknown, referee = asReferee): Promise<T> => {
     const query = credentials ? `?run=${credentials.id}&side=${view?.observation.side ?? humanSide}` : '';
@@ -46,6 +53,30 @@ export async function initOpponentWorkspace(options: Options) {
   const brief = (): Brief => view ? { ...view.observation.scenario, objectives: view.observation.objectives, guidance: view.observation.guidance } : catalog.find(s => s.id === scenarioId)!;
   const persist = () => { try { localStorage.setItem(storageKey, JSON.stringify(saved)); } catch { message = 'Browser storage unavailable. Keep the invitation link to resume this run.'; } };
   const canOrder = () => !!view && online && !busy && !pending && !view.paused && !view.contest && view.phase === 'planning' && !view.sealed[view.observation.side] && (view.observation.side === view.humanSide || asReferee && view.takeover);
+  const hintSession = () => `${view?.id}:${view?.observation.side}`;
+  const canHint = () => senseiPilot && !!view && supportsGuide(view.observation) && online && !busy && !pending && !view.paused && !view.contest;
+  const hintKey = () => JSON.stringify([view?.id, view?.revision, view?.observation.side, draft, movePreview?.id, briefAcknowledged.has(hintSession())]);
+  const currentHint = () => hintState?.key === hintKey() ? hintState.decision.hint : null;
+  function requestHint() {
+    if (!view || !canHint()) return;
+    const key=hintSession(), seen=hintHistory.get(key)??[];
+    const context={phase:view.phase, mode:'practice' as const, requested:true, briefRead:briefAcknowledged.has(key),
+      draft:view.phase==='planning'?structuredClone(draft):[], previewId:movePreview?.id, seen:[...seen]};
+    const decision=guidedHint(view.observation,context);
+    hintState={key:hintKey(),decision};
+    if(decision.hint){
+      hintHistory.set(key,[...seen,decision.hint.id].slice(-8));
+      hintLog.push({id:crypto.randomUUID(),time:new Date().toISOString(),runId:view.id,observationId:view.observationId,
+        revision:view.revision,side:view.observation.side,round:view.observation.round,context,decision});
+      if(hintLog.length>200)hintLog.shift();
+    }
+    go('sensei');
+  }
+  function exportHints() {
+    const blob=new Blob([JSON.stringify({schema:'guided-pilot-review/1',trainingPermission:'unspecified',
+      scope:'Last 200 requested hints in this page session; not a complete assistance record.',records:hintLog},null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='guided-pilot-review.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
   const show = () => { active = true; options.show(); render(); };
   const hide = () => { active = false; options.hide(); };
   const status = (text: string) => { message = text; render(); };
@@ -131,6 +162,7 @@ export async function initOpponentWorkspace(options: Options) {
     const progress = o ? Object.entries(o.metrics).filter(([key]) => !/^(blue|red)_/.test(key)) : [];
     const roundToReview = reviewRound ?? o?.round;
     const record = view?.review.find(r => r.round === roundToReview);
+    const hint=currentHint();
     root.innerHTML = `<p class="eyebrow">Play against AI</p><h2>${esc(view ? s.title : 'Choose your opposition')}</h2><p class="muted">${esc(summary)}</p><p id="op-status" role="status" aria-live="polite">${esc(message)}</p>
     ${view ? `<div class="op-metrics"><b>${3 - used} CP in draft</b><span>${o!.pressure}/${s.pressureTokens} pressure left</span><span>${view.phase === 'planning' ? 'Sealed planning' : view.phase === 'review' ? 'Result review' : 'Exercise complete'}${view.paused ? ' · PAUSED' : ''}</span></div><p><strong>Your mission</strong><br>${esc(o!.objectives[o!.side])}</p>
       ${view.result ? `<section class="op-result"><p class="eyebrow">${esc(view.result.outcome.replaceAll('_', ' '))}</p><h2>${view.result.scores?.blue.total} Blue / ${view.result.scores?.red.total} Red</h2><p>${esc(view.result.reason)}</p><p>Game outcome and diagnostic points are separate from learning assessment.</p></section>` : ''}
@@ -150,6 +182,12 @@ export async function initOpponentWorkspace(options: Options) {
     const el = <T extends HTMLElement = HTMLElement>(id: string) => root.querySelector<T>(`#op-${id}`);
     const on = (id: string, fn: () => void) => { const e = el(id); if (e) (e as HTMLButtonElement).onclick = fn; };
     on('start', () => void start());
+    if (senseiPilot && o && supportsGuide(o)) {
+      const section=document.createElement('section');section.className='op-orders';
+      section.innerHTML=`<h3>Sensei pilot · current round ${o.round}</h3><p>Optional practice hints for evaluation by you and your instructor.</p><button id="op-hint" ${canHint()?'':'disabled'}>Ask for a teaching hint</button><button id="op-hint-brief" ${briefAcknowledged.has(hintSession())?'disabled':''}>${briefAcknowledged.has(hintSession())?'Briefing acknowledged':'I have read my mission briefing'}</button>${hint?`<h3>${esc(hint.title)}</h3><p>${esc(hint.text)}</p><p><b>${esc(hint.question)}</b></p><details><summary>Evidence</summary><p>${esc(hint.ruleRefs.join(' · '))}${hint.eventIds.length?'<br>'+esc(hint.eventIds.join(' · ')):''}</p></details>`:''}${hintLog.length?'<button id="op-hint-export">Export hint review log</button>':''}`;
+      root.querySelector('.op-orders')?.insertAdjacentElement('afterend',section)??root.appendChild(section);
+      on('hint',requestHint);on('hint-brief',()=>{briefAcknowledged.add(hintSession());render();});on('hint-export',exportHints);
+    }
     on('focus',()=>{const a=o?.assets.find(a=>a.id===selected);if(a?.tileId)options.focusTile(a.tileId);});
     on('route-add', () => movePreview && add(movePreview)); on('route-cancel', () => {movePreview=null; render();});
     const filter=el<HTMLSelectElement>('filter'); if(filter)filter.onchange=()=>{actionFilter=filter.value as typeof actionFilter; xrIndex=0;render();};
@@ -211,6 +249,12 @@ export async function initOpponentWorkspace(options: Options) {
       panel.lines = view.result ? [title(view.result.outcome.replaceAll('_', ' ')), `Blue ${view.result.scores?.blue.total} / Red ${view.result.scores?.red.total}`, ...wrap(view.result.reason).slice(0, 3), 'Full replay export is available in the browser.'] : [`Round ${o!.round} results`, current?.id ?? '', ...wrap(current?.message ?? '').slice(0, 4), view.contest ? 'CONTEST OPEN · advancement frozen' : 'Review before continuing.'];
       panel.buttons = [button('Next event', () => { xrIndex++; render(); }), button(o!.finished ? 'Finish review & score' : 'Next round', () => void send({ type: 'next' }), view.phase === 'review' && !view.contest && !view.paused), button('Contest this event', () => current && void send({ type: 'contest', eventId: current.id, reason: 'Participant requests referee review of this event.' }), view.phase === 'review' && !view.contest), button('Reports', () => go('reports')), button('Exercise controls', () => go('controls')), button('New scenario', setup)];
       if (view.contest && asReferee) panel.buttons = [button('Uphold recorded result', () => void send({ type: 'ruling', disposition: 'uphold', reason: 'Referee reviewed the event and upheld the recorded result.' })), button('Replay disputed round', () => void send({ type: 'ruling', disposition: 'replay', reason: 'Referee requested a teaching replay; previous disclosures retained.' })), button('Exercise controls', () => go('controls'))];
+    } else if (xrPage === 'sensei') {
+      const hint=currentHint(),lines=hint?[...wrap(hint.title),...wrap(hint.text),...wrap(hint.question)]:['The exercise or draft changed. Ask for a fresh hint.'];
+      const pages=Math.max(1,Math.ceil(lines.length/6));xrIndex=Math.min(xrIndex,pages-1);
+      panel.title='SENSEI · PRACTICE PILOT';panel.lines=[`Current round ${o!.round} · ${xrIndex+1}/${pages}`,...lines.slice(xrIndex*6,xrIndex*6+6)];
+      panel.buttons=[button('More explanation',()=>{xrIndex=(xrIndex+1)%pages;render();},pages>1),button('Another teaching hint',requestHint,canHint()),
+        button('Mark briefing read',()=>{briefAcknowledged.add(hintSession());requestHint();},!briefAcknowledged.has(hintSession())),back];
     } else if (xrPage === 'controls') {
       panel.lines = [title(difficulty) + ' opponent', asReferee ? 'REFEREE CONTROLS' : 'Player controls', view.takeover ? 'Human controls the opposing side.' : 'AI controls the opposing side.', short(message)];
       panel.buttons = [button(view.paused ? 'Resume exercise' : 'Pause exercise', () => void send({ type: 'pause', paused: !view!.paused })), button(asReferee ? 'Leave referee controls' : 'Referee controls', () => void refereeMode(), !!credentials?.refereeToken), ...(asReferee ? [button(view.takeover ? 'Restore AI control' : 'Take over AI side', () => void send({ type: 'takeover', enabled: !view!.takeover }), view.phase === 'planning'), button('Switch controlled side', () => void controlSide(), view.takeover)] : []), button('New scenario', setup), button('Map assembly', hide), back];
@@ -218,6 +262,7 @@ export async function initOpponentWorkspace(options: Options) {
       panel.lines = [`Round ${o!.round}/${s.rounds} · ${title(difficulty)} AI`, `${o!.side.toUpperCase()} · ${s.actors[o!.side]}`, `${3 - used} CP remaining in draft · pressure ${o!.pressure}`, ...wrap(o!.objectives[o!.side]).slice(0, 3), short(message)];
       panel.buttons = [button('Choose unit / staff orders', () => go('actions'), canOrder()), button(`Review plan (${draft.length} orders)`, () => go('plan')), button('Briefing & rules', () => go('brief')), button('Reports', () => go('reports')), button('Exercise controls', () => go('controls')), button('Refresh saved state', () => { pending = null; void refresh(); }), button('Map assembly', hide)];
     }
+    if (canHint() && xrPage !== 'sensei' && panel.buttons.length < 7) panel.buttons.push(button('Sensei teaching hint',requestHint));
     if (busy) panel.lines = ['Saving / preparing opponent…', ...panel.lines.slice(0, 6)];
     if (pending && !busy) panel.buttons = [button('Retry identical command', () => void send(pending!.operation)), button('Refresh saved state', () => { pending = null; void refresh(); }), ...panel.buttons.slice(0, 5)];
     options.setPanel(panel);
